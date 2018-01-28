@@ -17,3 +17,5 @@
     # Append angles, angular velocities, end effector
 
 # REdundancy resolution
+    # Moore Penrose Pseudo-Inverse minimises KE (OLS)
+    # pinv on MATLAB
