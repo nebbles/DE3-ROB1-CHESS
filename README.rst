@@ -11,6 +11,8 @@ Project CHESS:
 - Paolo Ruegg
 - Sylvia Zhang
 
+Guide:
+
 - See the ``game-engine`` branch for developments on the chess logic and decision libraries.
 - See the ``perception`` branch for developments on converting rgb image feed and tracking of chess board.
 - See the ``motion`` branch for development of motion planning and motion controllers.
