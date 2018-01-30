@@ -3,12 +3,12 @@ DE3 Group Project for Robotics 1
 
 Project CHESS:
 
-- Anna Bernbaum
-- Ben Greenberg
-- Josephine Latreille
-- Sanish Mistry
-- Leah Pattison
-- Paolo Ruegg
+- Anna Bernbaum (`@AnnaBernbaum <https://github.com/AnnaBernbaum>`_)
+- Ben Greenberg (`@nebbles <https://github.com/nebbles>`_)
+- Josephine Latreille (`@josephine-latreille <https://github.com/josephine-latreille>`_)
+- Sanish Mistry (`@sanish96 <https://github.com/sanish96>`_)
+- Leah Pattison (`@leahpattison <https://github.com/leahpattison>`_)
+- Paolo Ruegg (`@pa17 <https://github.com/pa17>`_)
 - Sylvia Zhang
 
 Guide:
