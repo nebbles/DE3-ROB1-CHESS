@@ -1,1 +1,4 @@
 .idea
+
+# Ignore build directory in docs dir
+/docs/build
