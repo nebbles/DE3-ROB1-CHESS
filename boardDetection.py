@@ -1,15 +1,20 @@
-import numpy as np
 import cv2
+import numpy as np
+import copy
 
-img = cv2.imread('emptyBoard.jpg',0)
-cv2.imshow("Original",img)
+img = cv2.imread('emptyBoard.jpg',1)
+img_orig = copy.copy(img)
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-ret, thresh_basic = cv2.threshold(img,70,255,cv2.THRESH_BINARY)
-cv2.imshow("Basic Binary",thresh_basic)
-
-thres_adapt = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 115, 1)
-cv2.imshow("Adaptive Threshold",thres_adapt)
-
+###HARRIS
+# must give a float32 data type input
+gray = np.float32(gray)
+dst = cv2.cornerHarris(gray, 2, 3, 0.05)
+# result is dilated for marking the corners, not important
+dst = cv2.dilate(dst, None)
+# Threshold for an optimal value, it may vary depending on the image.
+img[dst > 0.001 * dst.max()] = [0, 0, 255]
+cv2.imshow('Harris Corner Detector', img)
 
 
 cv2.waitKey(0)

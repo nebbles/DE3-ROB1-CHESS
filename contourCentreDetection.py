@@ -19,14 +19,12 @@ for c in contours:
 
     area = cv2.contourArea(c)
     perimeter = cv2.arcLength(c, True)
-    try:
+    if area > 200:
         M = cv2.moments(c)
         cx = int( M['m10']/M['m00'])
         cy = int( M['m01']/M['m00'])
-        cv2.circle(objects, (cx,cy), 4, (0,0,255), -1)
-    except:
-        print("Failed")
-        pass
+        #cv2.circle(objects, (cx,cy), 4, (0,0,255), -1)
+        cv2.drawContours(objects, [c], -1, color, -1)
 
     print("Area: {}, perimeter: {}".format(area,perimeter))
 
