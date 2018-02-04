@@ -13,6 +13,7 @@ index = -1
 thickness = 4
 color = (255, 0, 255)
 
+
 cv2.drawContours(img2, contours, index, color, thickness)
 cv2.imshow("Contours",img2)
 

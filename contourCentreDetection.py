@@ -25,7 +25,9 @@ for c in contours:
         cy = int( M['m01']/M['m00'])
         cv2.circle(objects, (cx,cy), 4, (0,0,255), -1)
     except:
+        print("Failed")
         pass
+
     print("Area: {}, perimeter: {}".format(area,perimeter))
 
 cv2.imshow("Contours",objects)
