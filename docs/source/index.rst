@@ -10,7 +10,16 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
+   :caption: Working with FRANKA Panda
 
+   franka
+   workstation
+
+.. toctree::
+  :maxdepth: 2
+  :caption: Project Management
+
+  documentation
 
 
 Indices and tables
@@ -19,4 +28,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
