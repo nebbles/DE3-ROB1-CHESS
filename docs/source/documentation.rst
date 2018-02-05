@@ -19,3 +19,4 @@ The following resources were useful in the setting up of Sphinx and Read The Doc
 * Screencast: https://www.youtube.com/watch?v=oJsUvBQyHBs
 * RTD Guide: https://docs.readthedocs.io/en/latest/getting_started.html
 * Documenting a project with Sphinx (lecture): https://www.youtube.com/watch?v=QNHM7q2hLh8
+* Sphinx markup: http://www.sphinx-doc.org/en/stable/markup/
