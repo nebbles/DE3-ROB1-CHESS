@@ -227,7 +227,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'DE3-ROB1-CHESS.tex', u'DE3-ROB1-CHESS Documentation',
-     u'Ben Greenberg', 'manual'),
+     u'Anna Bernbaum, Ben Greenberg, Josephine Latreille, Sanish Mistry, Leah Pattison, Paolo Ruegg, Sylvia Zhang', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
