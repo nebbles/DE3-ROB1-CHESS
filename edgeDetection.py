@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-img = cv2.imread("emptyBoard.jpg",1)
+img = cv2.imread("emptyBoardCropped.jpg",1)
 
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 res,thresh = cv2.threshold(hsv[:,:,0], 25, 255, cv2.THRESH_BINARY_INV)

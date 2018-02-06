@@ -2,18 +2,18 @@ import numpy as np
 import cv2
 
 
-img = cv2.imread("emptyBoard.jpg",1)
+img = cv2.imread("idealBoard.jpg")
 gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+cv2.imshow("Gray", gray)
 
 # Find the chess board corners
-ret, corners = cv2.findChessboardCorners(gray, (7,7),(8,8))
+ret, corners = cv2.findChessboardCorners(gray, (7,7),None)
 
 # If found, add object points, image points (after refining them)
 if ret == True:
-    corners2 = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
     # Draw and display the corners
-    img = cv2.drawChessboardCorners(img, (8,8), corners2,ret)
+    img = cv2.drawChessboardCorners(img, (8,8), corners,ret)
     cv2.imshow('img',img)
-    cv2.waitKey(0)
 
+cv2.waitKey(0)
 cv2.destroyAllWindows()

@@ -1,12 +1,13 @@
+from CVAnalyzer import CVAnalyzer
 import cv2
-import numpy as np
 
-img = cv2.imread('emptyBoard.jpg')
-gray= cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
-sift = cv2.SIFT()
-kp = sift.detect(gray,None)
+image = cv2.imread("emptyBoardCropped.jpg")
+board_image = cv2.imread("emptyBoardCropped.jpg")
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-img=cv2.drawKeypoints(gray,kp)
+cv_analyzer = CVAnalyzer()
+harris = cv_analyzer.get_harris_corners(gray)
+sift = cv_analyzer.get_sift_descriptors(gray,harris)
+BIH	= cv_analyzer.find_board_image_homography (board_image)
 
-cv2.imwrite('sift_keypoints.jpg',img)

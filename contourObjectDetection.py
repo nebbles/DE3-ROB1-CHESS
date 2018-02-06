@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-img = cv2.imread('emptyBoard.jpg',1)
+img = cv2.imread('emptyBoardCropped.jpg',1)
 gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 115, 1)
 cv2.imshow("Binary", thresh)
@@ -24,12 +24,16 @@ for c in contours:
     #PERIMETER
     perimeter = cv2.arcLength(c, True)
     #COEFFICIENTS OF BEING LIKELY TO BE A SQUARE
-    if area < 3000 and perimeter > 100 and area > 500 and perimeter < 300:
-        M = cv2.moments(c)
-        cx = int( M['m10']/M['m00'])
-        cy = int( M['m01']/M['m00'])
-        #cv2.circle(objects, (cx,cy), 4, (0,0,255), -1)
-        cv2.drawContours(img2, [c], -1, color, 2)
+
+    try:
+        if (area / perimeter) < 50 and (area / perimeter) > 7:
+            M = cv2.moments(c)
+            cx = int( M['m10']/M['m00'])
+            cy = int( M['m01']/M['m00'])
+            #cv2.circle(objects, (cx,cy), 4, (0,0,255), -1)
+            cv2.drawContours(img2, [c], -1, color, 2)
+    except:
+        pass
 
     print("Area: {}, perimeter: {}".format(area,perimeter))
 

@@ -3,7 +3,7 @@ import numpy as np
 
 # read and scale down image
 # wget https://bigsnarf.files.wordpress.com/2017/05/hammer.png
-img = cv2.imread('emptyBoard.jpg', cv2.IMREAD_UNCHANGED)
+img = cv2.imread('emptyBoardCropped.jpg', cv2.IMREAD_UNCHANGED)
 
 # threshold image
 ret, threshed_img = cv2.threshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY),
@@ -44,7 +44,7 @@ for c in contours:
     area = cv2.contourArea(c)
     #PERIMETER
     perimeter = cv2.arcLength(c, True)
-    if area > 100 and perimeter < 500:
+    if area > 50 and perimeter < 10000:
         cv2.drawContours(img, [c], -1, (255, 255, 0), 1)
 print(len(contours))
 

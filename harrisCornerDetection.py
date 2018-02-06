@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import copy
 
-img = cv2.imread('emptyBoard.jpg')
+img = cv2.imread('emptyBoardCropped.jpg')
 img_orig = copy.copy(img)
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
