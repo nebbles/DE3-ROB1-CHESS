@@ -10,7 +10,7 @@ Generally the set up procedure follows the guide provided on the `FRANKA documen
 Requirements for FRANKA Workstation
 ===================================
 
-#. Install the latest version of Ubuntu (may need to partition hard drive; use Boot Camp on Macintosh)
+#. Install the latest version of Ubuntu (may need to partition hard drive)
 #. `Install the realtime kernel patch`_
 #. Once completed, ensure you are running a real-time kernel with ``uname -r``
 #. Install ROS Kinetic

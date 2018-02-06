@@ -51,8 +51,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'DE3-ROB1-CHESS'
-copyright = u'2018, Ben Greenberg'
-author = u'Ben Greenberg'
+copyright = u'2018, Ben Greenberg et al'
+author = u'Anna Bernbaum, Ben Greenberg, Josephine Latreille, Sanish Mistry, Leah Pattison, Paolo Ruegg, Sylvia Zhang'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

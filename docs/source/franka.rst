@@ -7,7 +7,7 @@ Starting up the Panda
 
 The Panda arm should be connected to the workshop floor controller and powered up. When booting, the arm LEDs will flash yellow. Once the arm is booted (solid yellow when completed) you should release the brakes by connecting a computer via ethernet to the base of the arm (see image).
 
-.. figure:: franka_wiring_guide_robot_arm.png
+.. figure:: _static/franka_wiring_guide_robot_arm.png
     :align: center
     :figclass: align-center
 
@@ -38,7 +38,7 @@ Networking with Panda
 
 If you now want to use a workstation computer to control the Arm via the FRANKA Control Interface (FCI) libraries, **first ensure you have completed the above steps to unlock the Arm brakes**. Then move the ethernet cable from the base of the Arm, and connect it to the shop floor controller (as seen in image).
 
-.. figure:: franka_wiring_guide_shop_floor.png
+.. figure:: _static/franka_wiring_guide_shop_floor.png
     :align: center
     :figclass: align-center
 
@@ -51,7 +51,7 @@ With the workstation computer connected to the shop floor controller, you must s
 
 =======================  ============  ==============================
 Device                   IP Address    Notes
------------------------  ------------  ------------------------------
+=======================  ============  ==============================
 FRANKA Arm               192.168.1.0   This does not change
 Shop floor (controller)  192.168.0.88  This does not change
 Workstation              192.168.0.77  Should be static (in settings)
