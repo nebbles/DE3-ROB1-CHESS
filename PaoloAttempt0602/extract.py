@@ -27,7 +27,7 @@ def ignoreContours(img,
                    contours,
                    hierarchy=None,
                    min_ratio_bounding=0.6,
-                   min_area_percentage=0.01,
+                   min_area_percentage=0.001,
                    max_area_percentage=0.40):
     """Filters a contour list based on some rules. If hierarchy != None,
     only top-level contours are considered.
@@ -86,12 +86,12 @@ def extractBoards(img, w, h):
     ## Doc ##
 
     (thresh, im_bw) = cv2.threshold(im_gray, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-
+    cv2.imshow("Threshold", im_bw)
     ## Doc ##
     #writeDocumentationImage(im_bw, "bw")
     ## Doc ##
 
-    _, contours, hierarchy = cv2.findContours(im_bw, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    _, contours, hierarchy = cv2.findContours(im_bw, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
 
     ## Doc ##
     #doc_im_contour = cv2.cvtColor(im_gray, cv2.COLOR_GRAY2BGR)
@@ -102,9 +102,11 @@ def extractBoards(img, w, h):
     #doc_im_perspective = cv2.cvtColor(im_gray, cv2.COLOR_GRAY2BGR)
     #doc_im_contour = cv2.cvtColor(im_gray, cv2.COLOR_GRAY2BGR)
     ## Doc ##
-
+    cv2.drawContours(img, contours, -1, (255, 255, 0), 2)
     contour_ids = ignoreContours(im_bw, contours, hierarchy)
     boards = []
+    print("Number of Contours identified:")
+    print(len(contour_ids))
     for i in contour_ids:
         c = contours[i]
         c = np.squeeze(c,1)
@@ -113,7 +115,7 @@ def extractBoards(img, w, h):
         #color = randomColor()
         #drawContour(doc_im_contour, c, color)
         ## Doc ##
-
+        cv2.drawContours(img, [c], -1, (255, 0, 0), 2)
         perspective = getPerspective(img, c)
         if perspective is not None:
             b = extractPerspective(img, perspective, w, h)
@@ -122,6 +124,8 @@ def extractBoards(img, w, h):
             #drawPerspective(doc_im_perspective, perspective)
             ## Doc ##
 
+
+    cv2.imshow("Contours",img)
     ## Doc ##
     #writeDocumentationImage(boards[-1], "extracted")
     #writeDocumentationImage(doc_im_contour, "contours_filtered")

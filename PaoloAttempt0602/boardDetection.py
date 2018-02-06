@@ -7,17 +7,12 @@ from PaoloAttempt0602.extract import extractBoards, extractGrid, extractTiles, i
 from PaoloAttempt0602.util import showImage, drawPerspective, drawBoundaries, drawLines, drawPoint, drawContour, randomColor
 from PaoloAttempt0602.line import Line
 
-import random
 import cv2
-import numpy as np
-import argparse
 
-img = cv2.imread('emptyBoardCropped.jpg',1)
-img_orig = copy.copy(img)
+img = cv2.imread('test.jpg',1)
 
-
-hello = extractBoards(img, 640, 400)
-cv2.imshow("board", hello)
+hello = extractBoards(img, 400, 400)
+print (hello)
 
 
 cv2.waitKey(0)
