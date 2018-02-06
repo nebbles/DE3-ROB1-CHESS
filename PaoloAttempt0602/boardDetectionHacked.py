@@ -15,7 +15,10 @@ import argparse
 img = cv2.imread('emptyBoardCropped.jpg',1)
 img_orig = copy.copy(img)
 
-extractBoards(img, 640, 400)
+
+hello = extractBoards(img, 640, 400)
+cv2.imshow("board", hello)
+
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()

@@ -13,7 +13,7 @@ def getPerspective(image, points):
     drawContour(tmp, points, (255,), 1)
 
     grid = None
-    for i in range(houghThreshold/hough_threshold_step):
+    for i in range(houghThreshold//hough_threshold_step):
         lines = cv2.HoughLines(tmp, 1, np.pi / 180, houghThreshold-(i * hough_threshold_step))
         if lines is None:
             continue

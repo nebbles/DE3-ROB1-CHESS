@@ -91,7 +91,7 @@ def extractBoards(img, w, h):
     #writeDocumentationImage(im_bw, "bw")
     ## Doc ##
 
-    _, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    _, contours, hierarchy = cv2.findContours(im_bw, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     ## Doc ##
     #doc_im_contour = cv2.cvtColor(im_gray, cv2.COLOR_GRAY2BGR)
