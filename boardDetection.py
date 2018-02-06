@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import copy
 
+
 img = cv2.imread('emptyBoardCropped.jpg',1)
 img_orig = copy.copy(img)
 
