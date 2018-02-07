@@ -1,4 +1,4 @@
-[![Documentation Status](http://readthedocs.org/projects/de3-rob1-chess/badge/?version=latest)](http://de3-rob1-chess.readthedocs.io/en/latest/?badge=latest) 
+[![Documentation Status](http://readthedocs.org/projects/de3-rob1-chess/badge/?version=latest)](http://de3-rob1-chess.readthedocs.io/en/latest/?badge=latest)
 
 [**CLICK TO PROJECT WEBSITE AND DOCUMENTATION**](http://de3-rob1-chess.rtfd.io)
 
@@ -23,3 +23,5 @@ Guide:
 Remember to document your work as you go, *including your docstrings into classes and functions/methods*. If you aren't sure what you need to do for it, ask Ben first so he can help you add them to do the project.
 
 Finally, remember to **push your changes and updates to your relevant GitHub branch**. GitHub tracks all contributions of code to this group project.
+
+![LICENSE](CC4.0-BY.jpg)
