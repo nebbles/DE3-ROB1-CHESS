@@ -2,6 +2,9 @@
 Operating the Robot
 *******************
 
+.. note::
+  This page is still incomplete.
+
 Using the provided workstation
 ==============================
 
@@ -12,6 +15,18 @@ To log into the provided workstation:
 
 .. note::
   If you do not use a provided workstation, ensure you have completed all the steps in the :doc:`workstation` page.
+
+Understanding how to control the FRANKA
+=======================================
+
+The image below describes how we are controlling the Arm using Python. To be able to write a successful Python program, we must first understand how ROS works: how we publish and listen on topics.
+
+.. figure:: _static/franka_programming_interface.png
+    :align: center
+    :figclass: align-center
+
+    Interfacing Python with FRANKA.
+
 
 Getting Started with ROS
 ========================
