@@ -27,9 +27,13 @@ https://apple.stackexchange.com/questions/257166/installing-ubuntu-on-mac-with-m
 On Windows PC
 -------------
 
-To install Ubuntu alongside Windows, you must first shrink you current partitions down so there is space to create a new partition. To do this, follow `this guide <https://www.howtogeek.com/214571/how-to-dual-boot-linux-on-your-pc/>`_.
+To install Ubuntu alongside Windows, you must first shrink you current partitions down so there is space to create a new partition. To do this, follow `this dual boot guide`_.
 
-You may need to `defrag you partition`_ which may, or may not work using Windows' built in application. If that doesn't work, use a third party tool, like the free `AOMEI Partition Assistant`_ to shrink your C: drive.
+If you are unable to shrink a partition with free space available, you need to defrag you partition. Unfortunately this may, or may not work just using Windows' built in application. If it doesn't work, use a third party tool, like the free `AOMEI Partition Assistant`_ to shrink your drive with space.
+
+.. _`this dual boot guide`: https://www.howtogeek.com/214571/how-to-dual-boot-linux-on-your-pc/
+.. _`AOMEI Partition Assistant`: https://www.aomeitech.com/aomei-partition-assistant.html
+
 
 After you have shrunk your drive and you have a suitable amount of space for Linux (50-100GB ideally) you need to check how many partitions you currently have. If you already have 4 partitions, e.g.:
 
@@ -115,3 +119,6 @@ Install other libraries
 It is recommended that you install OMPL:
 
 http://ompl.kavrakilab.org/installation.html
+
+.. warning::
+  The installation of OMPL takes several hours.
