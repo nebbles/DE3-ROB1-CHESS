@@ -1,4 +1,4 @@
-from numpy import array, linspace, sqrt, concatenate
+from numpy import linspace, sqrt, concatenate
 from matplotlib.pyplot import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # for: fig.gca(projection = '3d')
@@ -13,23 +13,24 @@ hover = 200  # hover height
 dt = 0.0001  # resolution in seconds
 velocity = 5  # speed in mm/s
 
-positions = [] # positions list
+positions = []  # positions list
 
 
 def intermediate_coords(rest, start, goal):
     """function to generate the intermediate positions of FRANKA"""
-    rest_h = array([rest[0], rest[1], hover])
-    start_h = array([start[0], start[1], hover])
-    goal_h = array([goal[0], goal[1], hover])
+    rest_h = [rest[0], rest[1], hover]
+    start_h = [start[0], start[1], hover]
+    goal_h = [goal[0], goal[1], hover]
     return rest_h, start_h, goal_h
 
 
 def create_line(a, b, v):
     """function to create an array of poses between 2 points in space"""
     print 'Start, End:', (a, b)
-    vector = array([a[0]-b[0], a[1]-b[1], a[2]-b[2]])  # vector from b to a
+    vector = [a[0]-b[0], a[1]-b[1], a[2]-b[2]] # vector from b to a
+    vectors.append(vector)
     distance = sqrt(sum(i**2 for i in vector))  # straight line distance between points
-
+    print 'vector:', vector
     # time to complete movement
     time = v/distance
 
@@ -57,6 +58,8 @@ def create_line(a, b, v):
 rest_h, start_h, goal_h = intermediate_coords(rest, start, goal)
 
 # creating the lines
+vectors = []
+
 l1 = create_line(rest, rest_h, velocity)
 l2 = create_line(rest_h, start_h, velocity)
 l3 = create_line(start_h, start, velocity)
@@ -66,6 +69,9 @@ l6 = create_line(goal_h, goal, velocity)
 l7 = create_line(goal, goal_h, velocity)
 l8 = create_line(goal_h, rest_h, velocity)
 l9 = create_line(rest_h, rest, velocity)
+
+vectors = tuple(vectors)  # BEN HERE ARE THE VECTORS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+print "BEN'S Vectors: ", vectors
 
 # joining the lines into a trjectory
 line_list = (l1, l2, l3, l4, l5, l6, l7, l8, l9)
