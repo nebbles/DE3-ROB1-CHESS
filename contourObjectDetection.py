@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-img = cv2.imread('emptyBoardCropped.jpg',1)
+img = cv2.imread('chessboardPrinted.jpg',1)
 gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 115, 1)
 cv2.imshow("Binary", thresh)
@@ -26,7 +26,7 @@ for c in contours:
     #COEFFICIENTS OF BEING LIKELY TO BE A SQUARE
 
     try:
-        if (area / perimeter) < 50 and (area / perimeter) > 7:
+        if (area / perimeter) < 50 and (area / perimeter) > 5:
             M = cv2.moments(c)
             cx = int( M['m10']/M['m00'])
             cy = int( M['m01']/M['m00'])

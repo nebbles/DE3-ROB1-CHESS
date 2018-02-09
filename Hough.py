@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-img = cv2.imread("emptyBoardCropped.jpg",1)
+img = cv2.imread("chessboardPrinted.jpg",1)
 img = cv2.GaussianBlur(img,(5,5),0)
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
@@ -10,7 +10,7 @@ res,thresh = cv2.threshold(hsv[:,:,0], 25, 250, cv2.THRESH_BINARY_INV)
 
 cv2.imshow("Thresh",thresh)
 
-edges = cv2.Canny(img, 100, 300)
+edges = cv2.Canny(img, 100, 300) # TUNE
 cv2.imshow("Canny",edges)
 
 Rres = 1
