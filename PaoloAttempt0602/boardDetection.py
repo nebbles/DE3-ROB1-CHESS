@@ -9,7 +9,7 @@ from PaoloAttempt0602.line import Line
 
 import cv2
 
-img = cv2.imread('test.jpg',1)
+img = cv2.imread('chessboardPrinted.jpg',1)
 
 hello = extractBoards(img, 400, 400)
 print (hello)
