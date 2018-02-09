@@ -1,0 +1,9 @@
+<library path="lib/libmarkers_nodelet">
+  <class name="ros_markers/detector"
+         type="ChilitagsNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description> 
+      Nodelet for fiducial marker detection with Chilitags
+    </description>
+  </class>
+</library>
