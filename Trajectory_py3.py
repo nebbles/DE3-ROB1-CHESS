@@ -4,24 +4,24 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # for: fig.gca(projection = '3d')
 
 # start and goal poses
-x1, y1, z1 = [300, 300, 300]
-x2, y2, z2 = [100, 300, 0]
-x3, y3, z3 = [500, 300, 0]
+rest = [200, 0, 500]
+start = [400, 0, 10]
+goal = [550, 200, 10]
 hover = 200  # hover height
 
-# intermediate positions
-start = array([x1, y1, z1])
-start_h = array([x1, y1, hover])
-piece_1 = array([x2, y2, z2])
-piece_1_h = array([x2, y2, hover])
-piece_2 = array([x3, y3, z3])
-piece_2_h = array([x3, y3, hover])
-
-positions = []
-
 # selecting variables
-dt = 0.01  # resolution in seconds
+dt = 0.0001  # resolution in seconds
 velocity = 5  # speed in mm/s
+
+positions = [] # positions list
+
+
+def intermediate_coords(rest, start, goal):
+    """function to generate the intermediate positions of FRANKA"""
+    rest_h = array([rest[0], rest[1], hover])
+    start_h = array([start[0], start[1], hover])
+    goal_h = array([goal[0], goal[1], hover])
+    return rest_h, start_h, goal_h
 
 
 def create_line(a, b, v):
@@ -37,25 +37,57 @@ def create_line(a, b, v):
     n = time/dt
     n = int(n)
 
+    # pre-allocate space
+    line = np.zeros((n, 3))
+
     # generate array of poses
     line_x = linspace(a[0], b[0], n)
     line_y = linspace(a[1], b[1], n)
     line_z = linspace(a[2], b[2], n)
-    line_list = []
 
+    # append coordinates
     for i in range(n):
-        line = (line_x[i], line_y[i], line_z[i])
-        line_list.append(line)
-    return line_list
+        line[i, 0] = line_x[i]
+        line[i, 1] = line_y[i]
+        line[i, 2] = line_z[i]
+    return line
 
 
 # create complete array of poses
-line1 = concatenate((create_line(start, start_h, velocity), create_line(start_h, piece_1_h, velocity)), axis=0)
+rest_h, start_h, goal_h = intermediate_coords(rest, start, goal)
 
-print line1
+# creating the lines
+l1 = create_line(rest, rest_h, velocity)
+l2 = create_line(rest_h, start_h, velocity)
+l3 = create_line(start_h, start, velocity)
+l4 = create_line(start, start_h, velocity)
+l5 = create_line(start_h, goal_h, velocity)
+l6 = create_line(goal_h, goal, velocity)
+l7 = create_line(goal, goal_h, velocity)
+l8 = create_line(goal_h, rest_h, velocity)
+l9 = create_line(rest_h, rest, velocity)
+
+# joining the lines into a trjectory
+line_list = (l1, l2, l3, l4, l5, l6, l7, l8, l9)
+trajectory = concatenate(line_list, axis=0)
+
+line_list_1 = (l1, l2, l3)
+line_list_2 = (l4, l5, l6)
+line_list_3 = (l7, l8, l9)
+
+trajectory_1 = concatenate(line_list_1, axis=0)
+trajectory_2 = concatenate(line_list_1, axis=0)
+trajectory_3 = concatenate(line_list_1, axis=0)
+
+# action list
+print trajectory_1
+print 'grip'
+print trajectory_2
+print 'ungrip'
+print trajectory_3
 
 # plotting
 fig = matplotlib.pyplot.figure()
 ax = fig.gca(projection='3d')
-ax.plot(line1[:, 0], line1[:, 1], line1[:, 2])
+ax.plot(trajectory[:, 0], trajectory[:, 1], trajectory[:, 2])
 matplotlib.pyplot.show()
