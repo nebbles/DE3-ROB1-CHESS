@@ -70,3 +70,11 @@ Panda Software
 ==============
 
 The FRANKA Panda currently has ``v1.0.9`` which supports versions ``libfranka < 0.2.0``. Updates for the Panda can be found at: http://support.franka.de/
+
+Shutting down the Panda
+=======================
+
+Enter the web interface for the Panda. In the lower right menu, lock the brakes. Then in the top right menu, select shutdown.
+
+.. important::
+  Remember to shutdown the controller from the web interface. This device is a computer, and should not be switched off from mains.
