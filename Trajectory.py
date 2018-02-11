@@ -3,20 +3,8 @@ from matplotlib.pyplot import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # for: fig.gca(projection = '3d')
 
-# start and goal poses
-rest = [200, 0, 500]
-start = [400, 0, 10]
-goal = [550, 200, 10]
-hover = 200  # hover height
 
-# selecting variables
-dt = 0.0001  # resolution in seconds
-velocity = 5  # speed in mm/s
-
-positions = []  # positions list
-
-
-def intermediate_coords(rest, start, goal):
+def intermediate_coords(rest, start, goal, hover):
     """function to generate the intermediate positions of FRANKA"""
     rest_h = [rest[0], rest[1], hover]
     start_h = [start[0], start[1], hover]
@@ -24,10 +12,10 @@ def intermediate_coords(rest, start, goal):
     return rest_h, start_h, goal_h
 
 
-def create_line(a, b, v):
+def create_line(a, b, v, vectors, dt):
     """function to create an array of poses between 2 points in space"""
     print 'Start, End:', (a, b)
-    vector = [a[0]-b[0], a[1]-b[1], a[2]-b[2]] # vector from b to a
+    vector = [b[0]-a[0], b[1]-a[1], b[2]-a[2]]  # vector from b to a
     vectors.append(vector)
     distance = sqrt(sum(i**2 for i in vector))  # straight line distance between points
     print 'vector:', vector
@@ -54,46 +42,62 @@ def create_line(a, b, v):
     return line
 
 
-# create complete array of poses
-rest_h, start_h, goal_h = intermediate_coords(rest, start, goal)
+def output():
+    # start and goal poses
+    rest = [200, 0, 500]
+    start = [400, 0, 10]
+    goal = [550, 200, 10]
+    hover = 200  # hover height
 
-# creating the lines
-vectors = []
+    # selecting variables
+    dt = 0.0001  # resolution in seconds
+    velocity = 5  # speed in mm/s
 
-l1 = create_line(rest, rest_h, velocity)
-l2 = create_line(rest_h, start_h, velocity)
-l3 = create_line(start_h, start, velocity)
-l4 = create_line(start, start_h, velocity)
-l5 = create_line(start_h, goal_h, velocity)
-l6 = create_line(goal_h, goal, velocity)
-l7 = create_line(goal, goal_h, velocity)
-l8 = create_line(goal_h, rest_h, velocity)
-l9 = create_line(rest_h, rest, velocity)
+    # create complete array of poses
+    rest_h, start_h, goal_h = intermediate_coords(rest, start, goal, hover)
 
-vectors = tuple(vectors)  # BEN HERE ARE THE VECTORS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-print "BEN'S Vectors: ", vectors
+    # creating the lines
+    vectors = []
 
-# joining the lines into a trjectory
-line_list = (l1, l2, l3, l4, l5, l6, l7, l8, l9)
-trajectory = concatenate(line_list, axis=0)
+    l1 = create_line(rest, rest_h, velocity, vectors, dt)
+    l2 = create_line(rest_h, start_h, velocity, vectors, dt)
+    l3 = create_line(start_h, start, velocity, vectors, dt)
+    l4 = create_line(start, start_h, velocity, vectors, dt)
+    l5 = create_line(start_h, goal_h, velocity, vectors, dt)
+    l6 = create_line(goal_h, goal, velocity, vectors, dt)
+    l7 = create_line(goal, goal_h, velocity, vectors, dt)
+    l8 = create_line(goal_h, rest_h, velocity, vectors, dt)
+    l9 = create_line(rest_h, rest, velocity, vectors, dt)
 
-line_list_1 = (l1, l2, l3)
-line_list_2 = (l4, l5, l6)
-line_list_3 = (l7, l8, l9)
+    print "BEN'S Vectors: ", vectors
 
-trajectory_1 = concatenate(line_list_1, axis=0)
-trajectory_2 = concatenate(line_list_1, axis=0)
-trajectory_3 = concatenate(line_list_1, axis=0)
+    # joining the lines into a trjectory
+    line_list = (l1, l2, l3, l4, l5, l6, l7, l8, l9)
+    trajectory = concatenate(line_list, axis=0)
 
-# action list
-print trajectory_1
-print 'grip'
-print trajectory_2
-print 'ungrip'
-print trajectory_3
+    line_list_1 = (l1, l2, l3)
+    line_list_2 = (l4, l5, l6)
+    line_list_3 = (l7, l8, l9)
 
-# plotting
-fig = matplotlib.pyplot.figure()
-ax = fig.gca(projection='3d')
-ax.plot(trajectory[:, 0], trajectory[:, 1], trajectory[:, 2])
-matplotlib.pyplot.show()
+    trajectory_1 = concatenate(line_list_1, axis=0)
+    trajectory_2 = concatenate(line_list_2, axis=0)
+    trajectory_3 = concatenate(line_list_3, axis=0)
+
+    # action list
+    print trajectory_1
+    print 'grip'
+    print trajectory_2
+    print 'ungrip'
+    print trajectory_3
+
+    # plotting
+    fig = matplotlib.pyplot.figure()
+    ax = fig.gca(projection='3d')
+    ax.plot(trajectory[:, 0], trajectory[:, 1], trajectory[:, 2])
+    matplotlib.pyplot.show()
+
+    return vectors
+
+
+if __name__ == '__main__':
+    output()
