@@ -1,4 +1,6 @@
-import motion.Trajectory as Trajectory
+import sys
+sys.path.append("..")
+from motion import Trajectory
 from caller import Caller
 
 vector_list = Trajectory.get_test_trajectory()
