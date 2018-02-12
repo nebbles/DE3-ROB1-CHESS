@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
-#from lineClass import Line
-from mainDetect import processFile, imageAnalysis, cannyEdgeDetection, houghLines, houghLine2
+from mainDetect import processFile, imageAnalysis, cannyEdgeDetection, houghLines, findIntersections
 
 #Read Image
 img = cv2.imread("chessboardPrinted.jpg", 1)
@@ -16,27 +15,23 @@ extractedImage = imageAnalysis(img, processedImage)
 cannyImage = cannyEdgeDetection(extractedImage)
 
 #Hough line detection to find rho & theta of any lines
-h = houghLines(cannyImage, extractedImage)
+h,v = houghLines(cannyImage, extractedImage)
+
+print(" ")
+print ("Horizontal Hough Lines: ")
 print(h)
+print(" ")
+print ("Vertical Hough Lines: ")
+print(v)
+print(" ")
 
-# a, b, c = h.shape
-#
-# slope = []
-#
-# horizontal = []
-# vertical = []
-# for i in range(a):
-#      slope = get_slope(h[i][0][0], h[i][0][1], h[i][0][2], h[i][0][3])
-#      if slope == 'horizontal':
-#           horizontal.append(list(h[i]))
-#
-#      else:
-#           vertical.append(list(h[i]))
-#
-# print(horizontal)
+#Find intersection points from Hough lines
+intersections = findIntersections(h,v)
+print("Number of intersection points found and filtered: " + str(len(intersections)))
 
+for intersection in intersections:
+    cv2.circle(extractedImage, intersection,radius=3,color=(255,255,255),thickness=1)
 
-
-
+cv2.imshow("Intersections", extractedImage)
 cv2.waitKey(0)
 cv2.destroyAllWindows()

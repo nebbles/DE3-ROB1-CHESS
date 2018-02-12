@@ -3,7 +3,7 @@ import numpy as np
 #from lineClass import Line, filterCloseLines, categoriseLines
 from numpy import sum
 import sys
-from lineClass2 import Line
+from lineClass import Line
 import cmath
 
 def processFile(file):
@@ -129,7 +129,7 @@ def houghLines(edges, image):
 
         New.append([x1,y1,x2,y2])
 
-    print(New)
+    #print(New)
     for i in range(N):
         x1 = lines[i][0][0]
         y1 = lines[i][0][1]
@@ -138,14 +138,16 @@ def houghLines(edges, image):
 
     #     cv2.line(image, (x1, y1), (x2, y2), (255, 0, 0), 2,cv2.LINE_AA)
     # cv2.imshow('Hough lines', image)
-    print(len(New))
+    #print(len(New))
 
     lines = [Line(x1=New[i][0],y1= New[i][1], x2= New[i][2], y2=New[i][3]) for i in range(len(New))]
 
-
+    # Categorise the lines into horizontal or vertical
     horizontal, vertical = categoriseLines(lines)
 
-    drawLines(image, vertical)
+    # Show lines
+    #drawLines(image, vertical)
+    #drawLines(image, horizontal)
 
     return horizontal, vertical
 
@@ -154,11 +156,50 @@ def houghLines(edges, image):
 #     cv2.imshow('Hough lines', image)
 
 def drawLines(image, lines, color=(0,0,255), thickness=2):
-    print("Going to print: ", len(lines))
+    #print("Going to print: ", len(lines))
     for l in lines:
         l.draw(image, color, thickness)
         cv2.imshow('image', image)
 
+
+def findIntersections(horizontals,verticals):
+    '''
+    WARNING: This function is trashy af. IDK why it works but it does. Finds intersections between Hough lines
+    :param lines:
+    :return:
+    '''
+    intersections = []
+
+    # Finding the intersection points
+    for horizontal in horizontals:
+        for vertical in verticals:
+
+            d = horizontal.dy*vertical.dx-horizontal.dx*vertical.dy
+            dx = horizontal.c*vertical.dx-horizontal.dx*vertical.c
+            dy=horizontal.dy*vertical.c-horizontal.c*vertical.dy
+
+            if d != 0:
+                x =abs(int(dx/d))
+                y= abs(int(dy/d))
+            else:
+                return False
+
+            intersections.append((x,y))
+
+    # Filtering intersection points
+    minDistance = 10
+
+    for intersection in intersections:
+        for neighbor in intersections:
+            distanceToNeighbour = np.sqrt((intersection[0] - neighbor[0]) ** 2 + (
+            intersection[1] - neighbor[1]) ** 2)
+            if distanceToNeighbour:
+                if distanceToNeighbour < minDistance:
+                    intersections.remove(neighbor)
+                if distanceToNeighbour == 0:
+                    intersections.remove(neighbor)
+
+    return intersections
 
 def showImage(image, name="image"):
     print("Showing image: '%s'" % name)
@@ -166,55 +207,6 @@ def showImage(image, name="image"):
     cv2.imshow('image', image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
-#
-def houghLine2(edges, extracted):
-    '''
-    Hough Line detect v2 : better version
-    :param edges: Canny edges
-    :param extracted: Processed Image
-    :return: rho & theta - line angles
-    '''
-    hough_threshold_min = int(50.0)
-    hough_threshold_max = int(150.0)
-    hough_threshold_step = int(20.0)
-    for i in range(5):
-        lines = cv2.HoughLines(edges, 1, np.pi / 180, hough_threshold_max - (hough_threshold_step * i))
-        if lines is None:
-            continue
-
-    w, h, _ = extracted.shape
-    close_threshold_v = (w / 9) / 6000
-    close_threshold_h = (h / 9) / 30
-
-
-    # a, b, c = lines.shape
-    # for i in range(a):
-    #     rho = lines[i][0][0]
-    #     theta = lines[i][0][1]
-    #     a = np.cos(theta)
-    #     b = np.sin(theta)
-    #     x0, y0 = a * rho, b * rho
-    #     pt1 = (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a)))
-    #     pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
-    #     cv2.line(extracted, pt1, pt2, (0, 0, 255), 2, cv2.LINE_AA)
-    # # Show image
-    # cv2.imshow('Hough lines', extracted)
-
-    #Putting into the Line class
-    lines = [Line(l[0], l[1]) for l in lines[0]]
-    horizontal, vertical = categoriseLines(lines)
-
-
-
-    # vertical = filterCloseLines(vertical, horizontal=False, threshold=close_threshold_v)
-    # horizontal = filterCloseLines(horizontal, horizontal=True, threshold=close_threshold_h)
-
-    # if len(vertical) >= 8 and \
-    #                 len(horizontal) >= 8:
-    return horizontal, vertical
-
-
 
 
 
