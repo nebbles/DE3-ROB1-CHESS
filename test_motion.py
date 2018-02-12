@@ -1,19 +1,16 @@
-# import sys
-# sys.path.append("..")
 from motion import Trajectory
 from franka.caller import Caller
 
 vector_list = Trajectory.get_test_trajectory()
 
 new_vectors = []
-
 for vector in vector_list:
     dx = float(vector[0])/1000.0
     dy = float(vector[1])/1000.0
     dz = float(vector[2])/1000.0
     new_vectors.append([dx, dy, dz])
 
-print("New vectors: ", new_vectors)
+print("New vectors (mm converted to m): ", new_vectors)
 
 arm = Caller(debug_flag=True)
 for move in new_vectors:
