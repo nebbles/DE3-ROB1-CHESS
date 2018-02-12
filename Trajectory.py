@@ -14,11 +14,11 @@ def intermediate_coords(rest, start, goal, hover):
 
 def create_line(a, b, v, vectors, dt):
     """function to create an array of poses between 2 points in space"""
-    print 'Start, End:', (a, b)
+    print('Start, End:', (a, b))
     vector = [b[0]-a[0], b[1]-a[1], b[2]-a[2]]  # vector from b to a
     vectors.append(vector)
     distance = sqrt(sum(i**2 for i in vector))  # straight line distance between points
-    print 'vector:', vector
+    print('vector:', vector)
     # time to complete movement
     time = v/distance
 
@@ -69,7 +69,7 @@ def output():
     l8 = create_line(goal_h, rest_h, velocity, vectors, dt)
     l9 = create_line(rest_h, rest, velocity, vectors, dt)
 
-    print "BEN'S Vectors: ", vectors
+    print("BEN'S Vectors: ", vectors)
 
     # joining the lines into a trjectory
     line_list = (l1, l2, l3, l4, l5, l6, l7, l8, l9)
@@ -84,11 +84,11 @@ def output():
     trajectory_3 = concatenate(line_list_3, axis=0)
 
     # action list
-    print trajectory_1
-    print 'grip'
-    print trajectory_2
-    print 'ungrip'
-    print trajectory_3
+    print(trajectory_1)
+    print('grip')
+    print(trajectory_2)
+    print('ungrip')
+    print(trajectory_3)
 
     # plotting
     fig = matplotlib.pyplot.figure()
