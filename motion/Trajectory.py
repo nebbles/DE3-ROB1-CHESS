@@ -41,6 +41,35 @@ def create_line(a, b, v, vectors, dt):
         line[i, 2] = line_z[i]
     return line
 
+def get_test_trajectory():
+    # start and goal poses
+    rest = [200, 0, 500]
+    start = [400, 0, 10]
+    goal = [550, 200, 10]
+    hover = 200  # hover height
+
+    # selecting variables
+    dt = 0.0001  # resolution in seconds
+    velocity = 5  # speed in mm/s
+
+    # create complete array of poses
+    rest_h, start_h, goal_h = intermediate_coords(rest, start, goal, hover)
+
+    # creating the lines
+    vectors = []
+
+    l1 = create_line(rest, rest_h, velocity, vectors, dt)
+    l2 = create_line(rest_h, start_h, velocity, vectors, dt)
+    l3 = create_line(start_h, start, velocity, vectors, dt)
+    l4 = create_line(start, start_h, velocity, vectors, dt)
+    l5 = create_line(start_h, goal_h, velocity, vectors, dt)
+    l6 = create_line(goal_h, goal, velocity, vectors, dt)
+    l7 = create_line(goal, goal_h, velocity, vectors, dt)
+    l8 = create_line(goal_h, rest_h, velocity, vectors, dt)
+    l9 = create_line(rest_h, rest, velocity, vectors, dt)
+
+    print("BEN'S Vectors: ", vectors)
+    return vectors
 
 def output():
     # start and goal poses
