@@ -100,9 +100,15 @@ def cannyEdgeDetection(image):
     return edges
 
 def categoriseLines(lines):
-    h = filter(lambda x: x.Y == 0, lines)
-    v = filter(lambda x: not x.Y ==0, lines)
-    return (h,v)
+    h = []
+    v = []
+    for i in range(len(lines)):
+        if lines[i].category == 'horizontal':
+            h.append(lines[i])
+        else:
+            v.append(lines[i])
+
+    return h,v
 
 def houghLines(edges, image):
     '''
@@ -112,27 +118,34 @@ def houghLines(edges, image):
     lines = cv2.HoughLinesP(edges, rho=1, theta=1 * np.pi / 180, threshold=40, minLineLength=100, maxLineGap=50)
     N = lines.shape[0]
     # Draw lines on image
+
+
+    New = []
     for i in range(N):
         x1 = lines[i][0][0]
         y1 = lines[i][0][1]
         x2 = lines[i][0][2]
         y2 = lines[i][0][3]
 
-        # cv2.line(image, (x1, y1), (x2, y2), (255, 0, 0), 2,cv2.LINE_AA)
-        # a_phase = cmath.phase(complex(x1,y1))
-        # b_phase = cmath.phase(complex(x2,y2))
-        # t = (a_phase-b_phase)*180/cmath.pi
-        # #print(t)
+        New.append([x1,y1,x2,y2])
 
-        xterm = y1 - y2
-        yterm = x2 - x1
-        cterm = x1*y2 - x2*y1
+    print(New)
+    for i in range(N):
+        x1 = lines[i][0][0]
+        y1 = lines[i][0][1]
+        x2 = lines[i][0][2]
+        y2 = lines[i][0][3]
+
+    #     cv2.line(image, (x1, y1), (x2, y2), (255, 0, 0), 2,cv2.LINE_AA)
     # cv2.imshow('Hough lines', image)
+    print(len(New))
 
-    lines = [Line(x1=l[0],y1= l[1], x2= l[2], y2=l[3]) for l in lines[0]]
+    lines = [Line(x1=New[i][0],y1= New[i][1], x2= New[i][2], y2=New[i][3]) for i in range(len(New))]
 
-    drawLines(image, lines)
+
     horizontal, vertical = categoriseLines(lines)
+
+    drawLines(image, vertical)
 
     return horizontal, vertical
 
@@ -141,6 +154,7 @@ def houghLines(edges, image):
 #     cv2.imshow('Hough lines', image)
 
 def drawLines(image, lines, color=(0,0,255), thickness=2):
+    print("Going to print: ", len(lines))
     for l in lines:
         l.draw(image, color, thickness)
         cv2.imshow('image', image)

@@ -10,8 +10,18 @@ class Line:
         self.y2 = y2
 
 
-        self.y = self.y2 - self.y1
-        self.x = self.x2 - self.x1
+        self.dy = self.y2 - self.y1
+        self.dx = self.x2 - self.x1
+
+        # if self.dy == 0:
+        #     self.category = 'horizontal'
+        # elif self.x1 == 0 :
+        #     self.category = 'vertical'
+        if abs(self.dx) > abs(self.dy):
+            self.category = 'horizontal'
+        else:
+            self.category = 'vertical'
+
         self.c = self.x1 * self.y2 - self.x2 * self.y1
         # self.numOfInstances = 0
 
