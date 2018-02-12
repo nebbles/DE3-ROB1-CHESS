@@ -1,4 +1,5 @@
 import subprocess
+import os
 
 
 class Caller:
@@ -23,11 +24,14 @@ class Caller:
             return
 
         dx, dy, dz = str(dx), str(dy), str(dz)
-        program = './franka_move_to_relative'
+
+        path = os.path.dirname(os.path.realpath(__file__))  # gets working dir of this file
+        program = './franka_move_to_relative'  # set executable to be used
         command = [program, self.ip_address, dx, dy, dz]
         command_str = " ".join(command)
 
         if self.debug:
+            print("Working directory: ", path)
             print("Program: ", program)
             print("IP Address of robot: ", self.ip_address)
             print("dx: ", dx)
@@ -36,7 +40,7 @@ class Caller:
             print("Command being called: ", command_str)
             print("Running FRANKA code...")
 
-        return_code = subprocess.call(command)
+        return_code = subprocess.call(command, cwd=path)
 
         if return_code == 0:
             if self.debug:
@@ -53,6 +57,7 @@ class Caller:
 
         # TODO: implement safety check for target coordinates
 
+        path = os.path.dirname(os.path.realpath(__file__))  # gets working dir of this file
         program = './franka_move_to_absolute'
         command = [program, self.ip_address, x, y, z]
         command_str = " ".join(command)
@@ -66,7 +71,7 @@ class Caller:
             print("Command being called: ", command_str)
             print("Running FRANKA code...")
 
-        return_code = subprocess.call(command)
+        return_code = subprocess.call(command, cwd=path)
 
         if return_code == 0:
             if self.debug:
