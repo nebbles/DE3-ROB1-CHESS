@@ -1,8 +1,10 @@
 import cv2
 import numpy as np
-from lineClass import Line
+#from lineClass import Line, filterCloseLines, categoriseLines
 from numpy import sum
 import sys
+from lineClass2 import Line
+import cmath
 
 def processFile(file):
     '''
@@ -97,6 +99,11 @@ def cannyEdgeDetection(image):
     cv2.imshow("Canny", edges)
     return edges
 
+def categoriseLines(lines):
+    h = filter(lambda x: x.Y == 0, lines)
+    v = filter(lambda x: not x.Y ==0, lines)
+    return (h,v)
+
 def houghLines(edges, image):
     '''
     Detects Hough lines on the image
@@ -110,11 +117,43 @@ def houghLines(edges, image):
         y1 = lines[i][0][1]
         x2 = lines[i][0][2]
         y2 = lines[i][0][3]
-        cv2.line(image, (x1, y1), (x2, y2), (255, 0, 0), 2)
-    # Show image
-    cv2.imshow('Hough lines', image)
-    return lines, image
 
+        # cv2.line(image, (x1, y1), (x2, y2), (255, 0, 0), 2,cv2.LINE_AA)
+        # a_phase = cmath.phase(complex(x1,y1))
+        # b_phase = cmath.phase(complex(x2,y2))
+        # t = (a_phase-b_phase)*180/cmath.pi
+        # #print(t)
+
+        xterm = y1 - y2
+        yterm = x2 - x1
+        cterm = x1*y2 - x2*y1
+    # cv2.imshow('Hough lines', image)
+
+    lines = [Line(x1=l[0],y1= l[1], x2= l[2], y2=l[3]) for l in lines[0]]
+
+    drawLines(image, lines)
+    horizontal, vertical = categoriseLines(lines)
+
+    return horizontal, vertical
+
+# def showImage(image, lines):
+#     cv2.line(image, (Line.p1), (Line.p2), (255, 0, 0), 2, cv2.LINE_AA)
+#     cv2.imshow('Hough lines', image)
+
+def drawLines(image, lines, color=(0,0,255), thickness=2):
+    for l in lines:
+        l.draw(image, color, thickness)
+        cv2.imshow('image', image)
+
+
+def showImage(image, name="image"):
+    print("Showing image: '%s'" % name)
+    cv2.namedWindow('image', cv2.WINDOW_NORMAL)
+    cv2.imshow('image', image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+#
 def houghLine2(edges, extracted):
     '''
     Hough Line detect v2 : better version
@@ -130,28 +169,40 @@ def houghLine2(edges, extracted):
         if lines is None:
             continue
 
-    a, b, c = lines.shape
-    for i in range(a):
-        rho = lines[i][0][0]
-        theta = lines[i][0][1]
-        a = np.cos(theta)
-        b = np.sin(theta)
-        x0, y0 = a * rho, b * rho
-        pt1 = (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a)))
-        pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
-        cv2.line(extracted, pt1, pt2, (0, 0, 255), 2, cv2.LINE_AA)
-    # Show image
-    cv2.imshow('Hough lines', extracted)
+    w, h, _ = extracted.shape
+    close_threshold_v = (w / 9) / 6000
+    close_threshold_h = (h / 9) / 30
 
+
+    # a, b, c = lines.shape
+    # for i in range(a):
+    #     rho = lines[i][0][0]
+    #     theta = lines[i][0][1]
+    #     a = np.cos(theta)
+    #     b = np.sin(theta)
+    #     x0, y0 = a * rho, b * rho
+    #     pt1 = (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a)))
+    #     pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
+    #     cv2.line(extracted, pt1, pt2, (0, 0, 255), 2, cv2.LINE_AA)
+    # # Show image
+    # cv2.imshow('Hough lines', extracted)
+
+    #Putting into the Line class
     lines = [Line(l[0], l[1]) for l in lines[0]]
-    # horizontal, vertical = partitionLines(lines)
+    horizontal, vertical = categoriseLines(lines)
+
+
+
     # vertical = filterCloseLines(vertical, horizontal=False, threshold=close_threshold_v)
     # horizontal = filterCloseLines(horizontal, horizontal=True, threshold=close_threshold_h)
-    #
-    # if len(vertical) >= nvertical and \
-    #                 len(horizontal) >= nhorizontal:
-    #     return (horizontal, vertical)
+
+    # if len(vertical) >= 8 and \
+    #                 len(horizontal) >= 8:
+    return horizontal, vertical
 
 
-    return rho, theta, lines
+
+
+
+
 
