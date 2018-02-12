@@ -28,42 +28,78 @@ Now run through the unlocking procedure as described in the :doc:'franka' doc.
 Understanding how to control the FRANKA
 =======================================
 
-Current method
---------------
+Setting Permissions
+-------------------
 
-The current method to control the Franka is via a custom executable C++ file written by Fabian and Petar. Once you download the file you can execute it on the command line and pass in vector arguments. You can either download it using this `link to the raw file`_, or run the following command in the directory you want the file::
+To control the Franka Arm, Fabian and Petar have written a small collection of C++ files which can be compiled to run as executables and control the Franka Arm using libfranka.
 
-  cd <desired_directory>
-  wget https://raw.githubusercontent.com/nebbles/DE3-ROB1-CHESS/master/franka/robotics1-velocityGenerator.cpp
+Firstly, you need to ensure you have set the correct permissions for libfranka.
 
-.. _`link to the raw file`: https://raw.githubusercontent.com/nebbles/DE3-ROB1-CHESS/master/franka/robotics1-velocityGenerator.cpp
+Ensure that you have run::
 
-Go to the directory storing the C++ file (robotics1-velocityGenerator.cpp). To make it an executable run the following command::
+  source /opt/ros/kinetic/setup.bash
 
-  chmod a+x robotics1-velocityGenerator.cpp
+.. note::
+  If this doesn't run, you may not have installed ROS Kinetic properly.
 
-You then need to run the executable using sudo mode::
+We then need to source ros for the root user so that libfranka has permissions to use the realtime kernel::
 
   sudo bash
   source /opt/ros/kinetic/setup.bash
 
-You can now run the executable::
+You now press **Ctrl+D** to exit out of sudo bash (the hash sign will change back to a dollar sign). You must also check that you have the correct realtime permissions for your own user. To do this, run::
 
-  sudo ./robotics1-velocityGenerator 192.168.0.88 [deltaX] [deltaY] [deltaZ]
+  ulimit -r
 
-.. note::
-  The author plans on maintaining a Python executable to maintain a module for controlling ``robotics1-velocityGenerator`` from Python.
+If the results is ``99`` then you have nothing more to do, is the result is ``0`` then go back and check you completed `the last section of the realtime kernel setup`_.
 
-Planned method
---------------
+.. _`the last section of the realtime kernel setup`: https://frankaemika.github.io/docs/installation.html#allow-a-user-to-set-real-time-permissions-for-its-processes
 
-The image below describes how we plan to control the Arm using Python. To be able to write a successful Python program, we must first understand how ROS works: how to publish and listen on topics.
+Downloading the C++ Executables and Python Class
+------------------------------------------------
 
-.. figure:: _static/franka_programming_interface.png
-    :align: center
-    :figclass: align-center
+Now that you have libfranka set up properly you can get use the C++ files provided. These resources can be found in the ``/franka`` `directory`_ of the repository. Firstly, go to your project directory in the terminal by using ``cd <project_dir>``. If you have already downloaded the files before and are replacing them with an up-to-date version, run ``rm -rf franka/`` first. To download the necessary folder, run::
 
-    Interfacing Python with FRANKA.
+  svn export https://github.com/nebbles/DE3-ROB1-CHESS/trunk/franka
+
+.. _`directory`: https://github.com/nebbles/DE3-ROB1-CHESS/tree/master/franka
+
+Once this directory is downloaded into your project directory, you need to change directory and then make the binaries executable::
+
+  cd franka/
+  chmod a+x franka*
+  chmod a-x *.cpp
+
+.. warning::
+  This next command will move the FRANKA. **Make sure you have someone in charge of the external activation device (push button)**.
+
+These binaries can now be used from the command line to control the Arm::
+
+  ./franka_move_to_relative <ip_address> <delta_X> <delta_Y> <delta_Z>
+
+Alternatively, you can control the Arm using the easy custom Python class ``Caller`` (see below).
+
+Python-Franka API with ``caller.py``
+====================================
+
+The Python-FRANKA module (``caller.py``) is designed to allow easy access to the C++ controller programs provided by Petar.
+
+.. todo::
+  Use of ``caller.py`` will be added here.
+
+General structure of project:
+
+
+.. Planned method
+.. --------------
+..
+.. The image below describes how we plan to control the Arm using Python. To be able to write a successful Python program, we must first understand how ROS works: how to publish and listen on topics.
+..
+.. .. figure:: _static/franka_programming_interface.png
+..     :align: center
+..     :figclass: align-center
+..
+..     Interfacing Python with FRANKA.
 
 
 Getting Started with ROS
