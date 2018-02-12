@@ -7,7 +7,7 @@ class Caller:
         self.ip_address = ip
         self.debug = debug_flag
 
-    def move_relative(self, dx=0, dy=0, dz=0):
+    def move_relative(self, dx='0', dy='0', dz='0'):
         program = './franka_move_to_relative'
         command = [program, self.ip_address, dx, dy, dz]
         command_str = " ".join(command)
