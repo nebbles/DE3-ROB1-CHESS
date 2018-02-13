@@ -6,7 +6,7 @@ import subprocess
 import os
 
 
-class Caller:
+class FrankaControl:
     """Class containing methods to control an instance of the Franka Arm.
 
     Will print debug information to the console when ``debug_flag=True`` argument is used. Class
@@ -18,7 +18,6 @@ class Caller:
         self.ip_address = ip
         self.debug = debug_flag
         self.path = os.path.dirname(os.path.realpath(__file__))  # gets working dir of this file
-
 
     def move_relative(self, dx: float=0.0, dy: float=0.0, dz: float=0.0):
         """Moves Franka Arm relative to its current position.
@@ -128,7 +127,7 @@ def main():
             print("Invalid input. Must be 0/1.")
 
     if testing:
-        arm = Caller(debug_flag=True)
+        arm = FrankaControl(debug_flag=True)
 
         if direction == '0':
             arm.move_relative(dx=0.05)

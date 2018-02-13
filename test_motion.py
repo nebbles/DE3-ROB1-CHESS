@@ -1,5 +1,5 @@
 from motion import Trajectory
-from franka.caller import Caller
+from franka.franka_control import FrankaControl
 
 vector_list = Trajectory.get_test_trajectory()
 
@@ -12,7 +12,7 @@ for vector in vector_list:
 
 print("New vectors (mm converted to m): ", new_vectors)
 
-arm = Caller(debug_flag=True)
+arm = FrankaControl(debug_flag=True)
 for move in new_vectors:
     x = move[0]
     y = move[1]
