@@ -189,16 +189,13 @@ def findIntersections(horizontals,verticals):
     # Filtering intersection points
     minDistance = 10
 
-    for i in range(5):
-        for intersection in intersections:
-            for neighbor in intersections:
-                distanceToNeighbour = np.sqrt((intersection[0] - neighbor[0]) ** 2 + (
-                intersection[1] - neighbor[1]) ** 2)
-                if distanceToNeighbour:
-                    if distanceToNeighbour < minDistance:
-                        intersections.remove(neighbor)
-                    elif intersection == neighbor:
-                        intersections.remove(neighbor)
+    for intersection in intersections:
+        for neighbor in intersections:
+            distanceToNeighbour = np.sqrt((intersection[0] - neighbor[0]) ** 2 + (
+            intersection[1] - neighbor[1]) ** 2)
+            # Check that it's not comparing the same ones
+            if distanceToNeighbour < minDistance and intersection != neighbor:
+                intersections.remove(neighbor)
 
     return intersections
 
