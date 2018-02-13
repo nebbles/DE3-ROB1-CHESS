@@ -115,7 +115,7 @@ def houghLines(edges, image):
     Detects Hough lines on the image
     '''
     # Detect hough lines
-    lines = cv2.HoughLinesP(edges, rho=1, theta=1 * np.pi / 180, threshold=40, minLineLength=100, maxLineGap=50)
+    lines = cv2.HoughLinesP(edges, rho=1, theta=1 * np.pi / 180, threshold=80, minLineLength=100, maxLineGap=50)
     N = lines.shape[0]
     # Draw lines on image
 
@@ -137,7 +137,7 @@ def houghLines(edges, image):
         y2 = lines[i][0][3]
 
     #     cv2.line(image, (x1, y1), (x2, y2), (255, 0, 0), 2,cv2.LINE_AA)
-    # cv2.imshow('Hough lines', image)
+    #cv2.imshow('Hough lines', image)
     #print(len(New))
 
     lines = [Line(x1=New[i][0],y1= New[i][1], x2= New[i][2], y2=New[i][3]) for i in range(len(New))]
@@ -146,8 +146,8 @@ def houghLines(edges, image):
     horizontal, vertical = categoriseLines(lines)
 
     # Show lines
-    #drawLines(image, vertical)
-    #drawLines(image, horizontal)
+    drawLines(image, vertical)
+    drawLines(image, horizontal)
 
     return horizontal, vertical
 
@@ -189,15 +189,16 @@ def findIntersections(horizontals,verticals):
     # Filtering intersection points
     minDistance = 10
 
-    for intersection in intersections:
-        for neighbor in intersections:
-            distanceToNeighbour = np.sqrt((intersection[0] - neighbor[0]) ** 2 + (
-            intersection[1] - neighbor[1]) ** 2)
-            if distanceToNeighbour:
-                if distanceToNeighbour < minDistance:
-                    intersections.remove(neighbor)
-                if distanceToNeighbour == 0:
-                    intersections.remove(neighbor)
+    for i in range(5):
+        for intersection in intersections:
+            for neighbor in intersections:
+                distanceToNeighbour = np.sqrt((intersection[0] - neighbor[0]) ** 2 + (
+                intersection[1] - neighbor[1]) ** 2)
+                if distanceToNeighbour:
+                    if distanceToNeighbour < minDistance:
+                        intersections.remove(neighbor)
+                    elif intersection == neighbor:
+                        intersections.remove(neighbor)
 
     return intersections
 
