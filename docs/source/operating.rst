@@ -80,14 +80,62 @@ These binaries can now be used from the command line to control the Arm::
 Alternatively, you can control the Arm using the easy custom Python class ``Caller`` (see below).
 
 Python-Franka API with ``caller.py``
-====================================
+------------------------------------
 
-The Python-FRANKA module (``caller.py``) is designed to allow easy access to the C++ controller programs provided by Petar.
+The Python-FRANKA module (``caller.py``) is designed to allow easy access to the C++ controller programs provided by Petar. The provided Python module, ``caller.py`` is structured as follows.
 
-.. todo::
-  Use of ``caller.py`` will be added here.
+.. automodule:: franka.caller
+  :members:
+  :undoc-members:
 
-General structure of project:
+Example
+~~~~~~~
+
+To use the ``Caller`` class in your own Python script would look something like this:
+
+.. code-block:: python
+
+   from franka.caller import Caller
+
+   arm = Caller(debug_flag=True)
+   # we set the flag true to get prints to the console about what Caller is doing
+
+   arm.move_relative(dx=0.1, dy=0.0, dz=-0.3)
+   # we tell teh arm to move down by 30cm and along x away from base by 10cm
+
+.. note::
+  This example code assumes you are following the general project structure guide. See below for more information. The code above would be called from a main script such as ``run.py``.
+
+General Structure of Project
+----------------------------
+
+The structure of the project is important to ensure that importing between modules works properly and also seperates externally maintained code from your own. An example of a project tree is::
+
+  .
+  ├── LICENSE.txt
+  ├── README.md
+  ├── run.py
+  ├── __init__.py
+  ├── docs
+  │   ├── Makefile
+  │   ├── build
+  │   ├── make.bat
+  │   └── source
+  ├── franka
+  │   ├── __init__.py
+  │   ├── caller.py
+  │   ├── franka_get_current_position
+  │   ├── franka_get_current_position.cpp
+  │   ├── franka_move_to_absolute
+  │   ├── franka_move_to_absolute.cpp
+  │   ├── franka_move_to_relative
+  │   └── franka_move_to_relative.cpp
+  ├── my_modules
+  │   ├── module1.py
+  │   ├── module2.py
+  │   ├── module3.py
+  │   ├── __init__.py
+  └── test_module.py
 
 
 .. Planned method
@@ -106,7 +154,7 @@ Getting Started with ROS
 ========================
 
 .. note::
-  Currently we are not using ROS to control the FRANKA Robot. So this section is only necessary to get practise in setting up a workspace.
+  Currently we are not using ROS to control the FRANKA Robot. So this section is only necessary to get practise in setting up a workspace. We will likely be using this in the future.
 
 #. In your home directory, ensure you have set up a `complete catkin workspace`_.
 #. Within that workspace, `create a catkin package`_.

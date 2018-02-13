@@ -1,21 +1,32 @@
+"""Python Module to control the Franka Arm though simple method calls.
+
+This module uses ``subprocess`` and ``os``.
+"""
 import subprocess
 import os
 
 
 class Caller:
-    """
-    Class which contains methods to control the Franka Panda using supporting C++ binaries.
+    """Class containing methods to control an instance of the Franka Arm.
+
+    Will print debug information to the console when ``debug_flag=True`` argument is used. Class
+    references C++ binaries to control the Franka.
+
+    IP address of Franka in Robotics Lab already configured as default.
     """
     def __init__(self, ip='192.168.0.88', debug_flag=False):
         self.ip_address = ip
         self.debug = debug_flag
+        self.path = os.path.dirname(os.path.realpath(__file__))  # gets working dir of this file
+
 
     def move_relative(self, dx: float=0.0, dy: float=0.0, dz: float=0.0):
-        """
-        Executes Franka C++ binary which moves the arm relative
-        to its current position according to the input arguments.
+        """Moves Franka Arm relative to its current position.
 
-        Returns the return_code of the C++ program.
+        Executes Franka C++ binary which moves the arm relative to its current position according
+        to the to the delta input arguments. **Note: units of distance are in metres.**
+
+        Returns the *exit code* of the C++ binary.
         """
         try:
             dx, dy, dz = float(dx), float(dy), float(dz)
@@ -25,13 +36,12 @@ class Caller:
 
         dx, dy, dz = str(dx), str(dy), str(dz)
 
-        path = os.path.dirname(os.path.realpath(__file__))  # gets working dir of this file
         program = './franka_move_to_relative'  # set executable to be used
         command = [program, self.ip_address, dx, dy, dz]
         command_str = " ".join(command)
 
         if self.debug:
-            print("Working directory: ", path)
+            print("Working directory: ", self.path)
             print("Program: ", program)
             print("IP Address of robot: ", self.ip_address)
             print("dx: ", dx)
@@ -40,29 +50,38 @@ class Caller:
             print("Command being called: ", command_str)
             print("Running FRANKA code...")
 
-        return_code = subprocess.call(command, cwd=path)
+        return_code = subprocess.call(command, cwd=self.path)
 
         if return_code == 0:
             if self.debug:
-                print("No problems")
+                print("No problems running ", program)
         else:
             print("Python has registered a problem with ", program)
 
         return return_code
 
     def move_absolute(self, coordinates: list):
+        """Moves Franka Arm to an absolute coordinate position.
+
+        Coordinates list should be in format: [x, y, z]
+
+        This method will try to move straight to the coordinates given. These coordinates
+        correspond to the internal origin defined by the Arm.
+
+        Returns the *exit code* of the C++ binary.
+        """
         if len(coordinates) > 3:
             raise ValueError("Invalid coordinates. There can only be three dimensions.")
         x, y, z = coordinates[0], coordinates[1], coordinates[2]
 
         # TODO: implement safety check for target coordinates
 
-        path = os.path.dirname(os.path.realpath(__file__))  # gets working dir of this file
         program = './franka_move_to_absolute'
         command = [program, self.ip_address, x, y, z]
         command_str = " ".join(command)
 
         if self.debug:
+            print("Working directory: ", self.path)
             print("Program: ", program)
             print("IP Address of robot: ", self.ip_address)
             print("Go to x: ", x)
@@ -71,16 +90,24 @@ class Caller:
             print("Command being called: ", command_str)
             print("Running FRANKA code...")
 
-        return_code = subprocess.call(command, cwd=path)
+        return_code = subprocess.call(command, cwd=self.path)
 
         if return_code == 0:
             if self.debug:
-                print("No problems")
+                print("No problems running ", program)
         else:
             print("Python has registered a problem with ", program)
 
+        return return_code
+
 
 def main():
+    """Used to test if module is working and can control arm.
+
+    When ``caller.py`` is run from the command line it will test to see if the Franka Arm can be
+    controlled with a simple forward and backward motion control along the x axis. Follow on
+    screen examples for usage."""
+
     while True:
         testing = input("Is this program being tested with the arm? [N/y]: ")
         if testing == '' or testing.lower() == 'n':
