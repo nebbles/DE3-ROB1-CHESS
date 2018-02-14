@@ -22,7 +22,9 @@ def processFile(file):
     adaptiveThresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 115, 1)
     # Show both thresholded images
     # cv2.imshow("HSV Thresholded",hsvThresh)
-    cv2.imshow("Adaptive Thresholding", adaptiveThresh)
+
+    ## DEBUG
+    # cv2.imshow("Adaptive Thresholding", adaptiveThresh)
     return img, adaptiveThresh
 
 
@@ -70,7 +72,9 @@ def imageAnalysis(img, processedImage):
             pass
 
     # Show filtered contoured image
-    cv2.imshow("Filtered Contours", imgContours)
+
+    ##DEBUG
+    # cv2.imshow("Filtered Contours", imgContours)
 
     # Create new all black image
     mask = np.zeros((img.shape[0], img.shape[1]), 'uint8')
@@ -83,8 +87,10 @@ def imageAnalysis(img, processedImage):
     extracted[np.where((extracted == [0, 0, 0]).all(axis=2))] = [0, 100, 0]
     # Adds same coloured line to remove red strip based on chessboard edge
     cv2.polylines(extracted, [chessboardEdge], True, (0, 100, 0), thickness=6)
+
+    ##DEBUG
     # Show image
-    cv2.imshow("Masked", extracted)
+    # cv2.imshow("Masked", extracted)
     return extracted
 
 def cannyEdgeDetection(image):
@@ -95,8 +101,10 @@ def cannyEdgeDetection(image):
     '''
     # Canny edge detection
     edges = cv2.Canny(image, 100, 300)
+
+    ##DEBUG
     # Show image
-    cv2.imshow("Canny", edges)
+    #cv2.imshow("Canny", edges)
     return edges
 
 def categoriseLines(lines):
@@ -146,8 +154,8 @@ def houghLines(edges, image):
     horizontal, vertical = categoriseLines(lines)
 
     # Show lines
-    drawLines(image, vertical)
-    drawLines(image, horizontal)
+    #drawLines(image, vertical)
+    #drawLines(image, horizontal)
 
     return horizontal, vertical
 
@@ -187,17 +195,28 @@ def findIntersections(horizontals,verticals):
             intersections.append((x,y))
 
     # Filtering intersection points
-    minDistance = 10
+    minDistance = 15
 
+    # Only works if you run it several times -- WHY? Very inefficient
+    for i in range(3):
+        for intersection in intersections:
+            for neighbor in intersections:
+                distanceToNeighbour = np.sqrt((intersection[0] - neighbor[0]) ** 2 + (intersection[1] - neighbor[1]) ** 2)
+                # Check that it's not comparing the same ones
+                if distanceToNeighbour < minDistance and intersection != neighbor:
+                    intersections.remove(neighbor)
+
+    # We still have duplicates for some reason. We'll now remove these
+    filteredIntersections = []
+    seen = set()
     for intersection in intersections:
-        for neighbor in intersections:
-            distanceToNeighbour = np.sqrt((intersection[0] - neighbor[0]) ** 2 + (
-            intersection[1] - neighbor[1]) ** 2)
-            # Check that it's not comparing the same ones
-            if distanceToNeighbour < minDistance and intersection != neighbor:
-                intersections.remove(neighbor)
+        # If value has not been encountered yet,
+        # ... add it to both list and set.
+        if intersection not in seen:
+            filteredIntersections.append(intersection)
+            seen.add(intersection)
 
-    return intersections
+    return filteredIntersections
 
 def showImage(image, name="image"):
     print("Showing image: '%s'" % name)
