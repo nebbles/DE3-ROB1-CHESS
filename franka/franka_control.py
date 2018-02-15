@@ -92,6 +92,8 @@ class FrankaControl:
             print("Command being called: ", command_str)
             print("Running FRANKA code...")
 
+        # TODO: option to suppress output
+        # TODO: catch errors returned by the subprocess
         return_code = subprocess.call(command, cwd=self.path)
 
         if return_code == 0:
@@ -132,6 +134,8 @@ class FrankaControl:
             print("Command being called: ", command_str)
             print("Running FRANKA code...")
 
+        # TODO: option to suppress output
+        # TODO: catch errors returned by the subprocess
         return_code = subprocess.call(command, cwd=self.path)
 
         if return_code == 0:
