@@ -62,7 +62,7 @@ class FrankaControl:
 
         return converted_list
 
-    def get_end_effector(self):
+    def get_end_effector_pos(self):
         """Gets current x,y,z positions for Franka Arm end effector.
 
         Returns list of x,y,z values.
@@ -237,7 +237,7 @@ def test_motion():
 def test_joints():
     """Used to test if position reporting is working from Arm.
 
-    To use this test, add the -p or --position-test flag to the command line.
+    To use this test, add the -j or --joint-test flag to the command line.
     """
     arm = FrankaControl(debug_flag=True)
     while True:
@@ -248,8 +248,12 @@ def test_joints():
 
 
 def test_position():
+    """Used to test if the Franka Arm is reporting the position of its end effector.
+
+    To use this test, add the -p or --position-test flag to the command line.
+    """
     arm = FrankaControl(debug_flag=True)
-    pos = arm.get_end_effector()
+    pos = arm.get_end_effector_pos()
     print("End effector position:")
     print("X: ", pos[0])
     print("Y: ", pos[1])
@@ -262,6 +266,8 @@ if __name__ == '__main__':
                         help='run program in testing motion mode')
     parser.add_argument('-p', '--position-test', action='store_true',
                         help='run program in testing position readings mode')
+    parser.add_argument('-j', '--joint-test', action='store_true',
+                        help='run program in testing joint readings mode')
 
     args = parser.parse_args()  # Get command line args
 
@@ -269,5 +275,7 @@ if __name__ == '__main__':
         test_motion()
     elif args.position_test:
         test_position()
+    elif args.joint_test:
+        test_joints()
     else:
         print("Try: franka_control.py --help")
