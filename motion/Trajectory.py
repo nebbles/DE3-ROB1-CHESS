@@ -43,7 +43,7 @@ def create_line(a, b, v, vectors, dt):
     return line
 
 
-def output():
+def output(visual_flag=False):
     # start and goal poses
     rest = [200, 0, 500]
     start = [400, 0, 10]
@@ -81,7 +81,7 @@ def output():
     l8 = np.delete(l8, 0, 0)
     l9 = np.delete(l9, 0, 0)
 
-    print("BEN'S Vectors: ", vectors)
+    #print("BEN'S Vectors: ", vectors)
 
     # joining the lines into a trjectory
     line_list = (l1, l2, l3, l4, l5, l6, l7, l8, l9)
@@ -123,28 +123,30 @@ def output():
 
         smooth_vectors.append(smooth_vector)
 
-    print("\nBEN'S Smooth Vectors:\n ", smooth_vectors)
+    if visual_flag:
 
-    # action list
-    print('\n-------------------------------------------------------------------\nSeries of movements:\n')
-    print('Trajectory 1:\n', trajectory_1)
-    print('grip')
-    print('Trajectory 2:\n', trajectory_2)
-    print('ungrip')
-    print('Trajectory 3:\n', trajectory_3)
+        print("\nBEN'S Smooth Vectors:\n ", smooth_vectors)
 
-    # plotting
-    fig = plt.figure()
-    ax3d = fig.add_subplot(111, projection='3d')
-    ax3d.plot(x_sample, y_sample, z_sample, 'r*')  # plotting the angled points
-    ax3d.plot(x_knots, y_knots, z_knots, 'go')  # plotting the curve knots
-    ax3d.plot(x_fine, y_fine, z_fine, 'g') # plotting the smoothed trajectory
-    plt.show()
+        # action list
+        print('\n-------------------------------------------------------------------\nSeries of movements:\n')
+        print('Trajectory 1:\n', trajectory_1)
+        print('grip')
+        print('Trajectory 2:\n', trajectory_2)
+        print('ungrip')
+        print('Trajectory 3:\n', trajectory_3)
+
+        # plotting
+        fig = plt.figure()
+        ax3d = fig.add_subplot(111, projection='3d')
+        ax3d.plot(x_sample, y_sample, z_sample, 'r*')  # plotting the angled points
+        ax3d.plot(x_knots, y_knots, z_knots, 'go')  # plotting the curve knots
+        ax3d.plot(x_fine, y_fine, z_fine, 'g') # plotting the smoothed trajectory
+        plt.show()
 
     return smooth_vectors
 
 
 if __name__ == '__main__':
-    output()
+    output(visual_flag=True)
 
 
