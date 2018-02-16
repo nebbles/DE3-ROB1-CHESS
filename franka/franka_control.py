@@ -62,6 +62,35 @@ class FrankaControl:
 
         return converted_list
 
+    def get_end_effector(self):
+        """Gets current x,y,z positions for Franka Arm end effector.
+
+        Returns list of x,y,z values.
+        """
+
+        program = './franka_get_current_position'  # set executable to be used
+        command = [program, self.ip_address]
+        command_str = " ".join(command)
+
+        if self.debug:
+            print("Working directory: ", self.path)
+            print("Program: ", program)
+            print("IP Address of robot: ", self.ip_address)
+            print("dx: ", dx)
+            print("dy: ", dy)
+            print("dz: ", dz)
+            print("Command being called: ", command_str)
+            print("Running FRANKA code...")
+
+        process = subprocess.Popen(command, stdout=subprocess.PIPE)
+        out, err = process.communicate()  # this will block until received
+        decoded_output = out.decode("utf-8")
+
+        import ast
+        converted_list = ast.literal_eval(decoded_output)
+
+        return converted_list
+
     def move_relative(self, dx=0.0, dy=0.0, dz=0.0):
         """Moves Franka Arm relative to its current position.
 
