@@ -237,7 +237,7 @@ def test_motion():
         print("Command being called: ", command_str)
 
 
-def test_position():
+def test_joints():
     """Used to test if position reporting is working from Arm.
 
     To use this test, add the -p or --position-test flag to the command line.
@@ -248,6 +248,12 @@ def test_position():
         print(
             "%8.6f   %8.6f   %1.0f   %1.0f   %8.6f   %8.6f   %1.0f   %1.0f   %1.0f   %1.0f   "
             "%1.0f   %1.0f   %1.0f   %1.0f   %5.3f   %1.0f" % tuple(matrix[0]))
+
+
+def test_position():
+    arm = FrankaControl(debug_flag=True)
+    pos = arm.get_end_effector()
+    print(pos)
 
 
 if __name__ == '__main__':
