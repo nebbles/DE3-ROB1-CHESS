@@ -76,9 +76,6 @@ class FrankaControl:
             print("Working directory: ", self.path)
             print("Program: ", program)
             print("IP Address of robot: ", self.ip_address)
-            print("dx: ", dx)
-            print("dy: ", dy)
-            print("dz: ", dz)
             print("Command being called: ", command_str)
             print("Running FRANKA code...")
 
