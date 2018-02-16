@@ -15,11 +15,11 @@ def intermediate_coords(rest, start, goal, hover):
 
 def create_line(a, b, v, vectors, dt):
     """function to create an array of poses between 2 points in space"""
-    print('Start, End:', (a, b))
+    #print('Start, End:', (a, b))
     vector = [b[0]-a[0], b[1]-a[1], b[2]-a[2]]  # vector from b to a
     vectors.append(vector)
     distance = sqrt(sum(i**2 for i in vector))  # straight line distance between points
-    print('vector:', vector)
+    #print('vector:', vector)
     # time to complete movement
     time = distance/v
 
@@ -110,6 +110,7 @@ def output(visual_flag=False):
     # extracting the smooth trajectory
     smooth_trajectory = zip(x_fine, y_fine, z_fine)
     smooth_trajectory = [list(elem) for elem in smooth_trajectory]
+    smooth_trajectory = smooth_trajectory[::100] # extracting every 100th element
 
     # Calculating vectors between points on smooth trajectory
     smooth_vectors=[]
