@@ -250,7 +250,10 @@ def test_joints():
 def test_position():
     arm = FrankaControl(debug_flag=True)
     pos = arm.get_end_effector()
-    print(pos)
+    print("End effector position:")
+    print("X: ", pos[0])
+    print("Y: ", pos[1])
+    print("Z: ", pos[2])
 
 
 if __name__ == '__main__':
