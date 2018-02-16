@@ -110,7 +110,7 @@ def output(visual_flag=False):
     # extracting the smooth trajectory
     smooth_trajectory = zip(x_fine, y_fine, z_fine)
     smooth_trajectory = [list(elem) for elem in smooth_trajectory]
-    smooth_trajectory = smooth_trajectory[::100] # extracting every 100th element
+    smooth_trajectory = smooth_trajectory[::1000] # extracting every 1000th element
 
     # Calculating vectors between points on smooth trajectory
     smooth_vectors=[]
