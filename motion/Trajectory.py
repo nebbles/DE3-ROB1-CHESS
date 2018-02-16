@@ -120,7 +120,7 @@ def output(visual_flag=False):
         previous = smooth_trajectory[i-1]
         current = smooth_trajectory[i]
 
-        smooth_vector = [previous[0] - current[0], previous[1] - current[1], previous[2] - current[2]]
+        smooth_vector = [current[0] - previous[0], current[1] - previous[1], current[2] - previous[2]]
 
         smooth_vectors.append(smooth_vector)
 
