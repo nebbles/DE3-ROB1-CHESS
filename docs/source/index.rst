@@ -46,5 +46,12 @@ Contents
 
    project-proposal
    project-plan
-   documentation
+   resources
    ground-rules
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
