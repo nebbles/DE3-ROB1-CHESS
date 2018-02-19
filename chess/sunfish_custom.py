@@ -434,8 +434,8 @@ def print_pos(pos):
     print('    a b c d e f g h \n\n')
 
 
-def main(command_queue, reply_queue):
-    pos = Position(initial, 0, (True, True), (True, True), 0, 0)
+def main(command_queue, reply_queue, valid_queue):
+    pos = Position(initial, 0, (False, False), (False, False), 0, 0)  # TODO; Removed castling rule
     searcher = Searcher()
     while True:
         print_pos(pos)
@@ -446,11 +446,12 @@ def main(command_queue, reply_queue):
 
         # We query the user until she enters a (pseudo) legal move.
         move = None
+        pass_number = 1  # We set the first pass number before entering the loop
         while move not in pos.gen_moves():
+            if pass_number > 1:  # if on the second pass, the previous must've been invalid
+                valid_queue.put(0)  # report to engine that the input was invalid
 
-            while command_queue.empty():  # TODO - Wait for a command in queue from the ChessEngine process
-                time.sleep(0.05)
-            command = command_queue.get()
+            command = command_queue.get(block=True)  # get a command from engine if available
 
             match = re.match('([a-h][1-8])'*2, command)
             if match:
@@ -458,6 +459,10 @@ def main(command_queue, reply_queue):
             else:
                 # Inform the user when invalid input (e.g. "help") is entered
                 print("Please enter a move like g8f6")
+
+            pass_number += 1
+        valid_queue.put(1)  # inform the engine that the move was accepted
+
         pos = pos.move(move)
 
         # After our move we rotate the board and print it again.
@@ -477,6 +482,6 @@ def main(command_queue, reply_queue):
         # The black player moves from a rotated position, so we have to
         # 'back rotate' the move before printing it.
         computer_move = render(119-move[0]) + render(119-move[1])
-        reply_queue.put(computer_move)  # TODO - Add the computers move as reply to ChessEngine process
+        reply_queue.put(computer_move, block=True)  # reply to engine
         print("My move:", computer_move)
         pos = pos.move(move)
