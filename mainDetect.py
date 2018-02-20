@@ -7,12 +7,12 @@ from lineClass import Line
 from squareClass import Square
 import cmath
 
-def processFile(file):
+def processFile(img):
     '''
     IMAGE INPUT
     Converts image to grayscale & applies adaptive thresholding
     '''
-    img = cv2.GaussianBlur(file,(5,5),0)
+    img = cv2.GaussianBlur(img,(5,5),0)
     # Convert to HSV
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     # Convert to grayscale
@@ -25,7 +25,7 @@ def processFile(file):
     # cv2.imshow("HSV Thresholded",hsvThresh)
 
     ## DEBUG
-    # cv2.imshow("Adaptive Thresholding", adaptiveThresh)
+    cv2.imshow("Adaptive Thresholding", adaptiveThresh)
     return img, adaptiveThresh
 
 
@@ -54,28 +54,29 @@ def imageAnalysis(img, processedImage):
         # Perimenter
         perimeter = cv2.arcLength(c, True)
         # Filtering the chessboard edge / Error handling as some contours are so small so as to give zero division
+        #For test values are 70-40, for Board values are 80 - 75 - will need to recalibrate if change
         try:
-            if (area / perimeter) < 70 and (area / perimeter) > 40:
+            if (area / perimeter) < 80 and (area / perimeter) > 75:
                 # DEBUG statements
-                # cv2.drawContours(imgContours, [c], -1, color, 2)
-                # print("Area: {}, perimeter: {}".format(area, perimeter))
+                cv2.drawContours(imgContours, [c], -1, color, 2)
+                print("Area: {}, perimeter: {}".format(area, perimeter))
 
                 # Epsilon parameter needed to fit contour to polygon
                 epsilon = 0.1 * perimeter
                 # Approximates a polygon from chessboard edge
                 chessboardEdge = cv2.approxPolyDP(c, epsilon, True)
                 # DEBUG
-                # cv2.drawContours(imgContours, [chessboardEdge], -1, color, 2)
+                #cv2.drawContours(imgContours, [chessboardEdge], -1, color, 2)
 
                 # Draw chessboard edges and assign to region of interest (ROI)
-                # roi = cv2.polylines(imgContours,[chessboardEdge],True,(0,255,255),thickness=3)
+                roi = cv2.polylines(imgContours,[chessboardEdge],True,(0,255,255),thickness=3)
         except:
             pass
 
     # Show filtered contoured image
 
     ##DEBUG
-    # cv2.imshow("Filtered Contours", imgContours)
+    cv2.imshow("Filtered Contours", imgContours)
 
     # Create new all black image
     mask = np.zeros((img.shape[0], img.shape[1]), 'uint8')
@@ -89,10 +90,10 @@ def imageAnalysis(img, processedImage):
     # Adds same coloured line to remove red strip based on chessboard edge
     cv2.polylines(extracted, [chessboardEdge], True, (0, 100, 0), thickness=6)
 
-    ##DEBUG
+    #DEBUG
     # Show image
-    # cv2.imshow("Masked", extracted)
-    return extracted
+    cv2.imshow("Masked", extracted)
+    return imgContours
 
 def cannyEdgeDetection(image):
     '''

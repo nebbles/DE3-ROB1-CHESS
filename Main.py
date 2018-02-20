@@ -4,7 +4,7 @@ import operator
 from mainDetect import *
 
 #Read Image
-img = cv2.imread("chessboardPrinted.jpg", 1)
+img = cv2.imread("Board.jpg", 1)
 
 #Process Image: convert to B/w
 img, processedImage = processFile(img)
