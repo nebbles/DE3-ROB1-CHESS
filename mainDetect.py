@@ -4,6 +4,7 @@ import numpy as np
 from numpy import sum
 import sys
 from lineClass import Line
+from squareClass import Square
 import cmath
 
 def processFile(file):
@@ -194,6 +195,8 @@ def findIntersections(horizontals,verticals):
 
             intersections.append((x,y))
 
+    ### FILTER
+
     # Filtering intersection points
     minDistance = 15
 
@@ -208,6 +211,7 @@ def findIntersections(horizontals,verticals):
 
     # We still have duplicates for some reason. We'll now remove these
     filteredIntersections = []
+    # Duplicate removal
     seen = set()
     for intersection in intersections:
         # If value has not been encountered yet,
@@ -217,6 +221,93 @@ def findIntersections(horizontals,verticals):
             seen.add(intersection)
 
     return filteredIntersections
+
+def assignIntersections(image, intersections):
+    '''
+    Takes the filtered intersections and assigns them to a list containing the corners in the format
+    [row, column, (x,y)], where row and column are from 1 to 9 indicating the horizontal and vertical
+    Hough lines.
+    :param filteredIntersections:
+    :return:
+    '''
+
+    # Sort by ascending y-coordinate and then by descending x-coordinate. Origin is therefore top-left
+    intersections.sort(key=lambda x: (x[1], -x[0]))
+
+    ## DEBUG
+    # Find chessboard corners from intersections
+    # print(" ")
+    # print("Intersections: ")
+    # print(intersections)
+    # for intersection in intersections:
+    #    cv2.circle(extractedImage, intersection, radius=3, color=(255, 255, 255), thickness=2)
+    # cv2.imshow("Intersections", extractedImage)
+
+    # Contains all the corners as a dictionary
+    corners = {}
+
+    # Initalising variables for assignment to row or column
+    row = 1
+    column = 1
+
+    # Assigning points to rows (1-9) and columns (1-9)
+    rowAssignmentThreshold = 10
+
+    # This loop runs through all the sorted
+    for i in range(1, len(intersections)):
+        if intersections[i][1] in range(intersections[i - 1][1] - rowAssignmentThreshold,
+                                        intersections[i - 1][1] + rowAssignmentThreshold):
+            corners[row,column] = intersections[i - 1]
+            column += 1
+        else:
+            corners[row, column] = intersections[i - 1]
+            row += 1
+            column = 1
+        # For last corner
+        if i == len(intersections) - 1:
+            corners[row, column] = intersections[i]
+
+    for corner in corners:
+        ## DEBUG
+        # print(corner)
+        # print(corners[corner])
+        # Draw circle
+        cv2.circle(image, corners[corner], radius=3, color=(255, 255, 255), thickness=2)
+
+    return corners, image
+
+def makeSquares(corners):
+    ##DEBUG
+    # print(corners)
+    squares = []
+    counter = 1
+    for row, col in corners:
+        # Only works if you there are four coordinates available in those indices
+        # and thus breaks when all squares have been defined
+
+        ## Needed once instantiation is working to stop loop once no more squares can be defined (n=64)
+        try:
+            c1 = corners[row, col]
+            c2 = corners[row, col + 1]
+            c3 = corners[row + 1, col]
+            c4 = corners[row + 1, col + 1]
+            ##DEBUG
+            #Print corners
+            # print("Corners: ")
+            # print(c1, c2, c3, c4)
+            square = Square(c1,c2,c3,c4)
+            squares.append(square)
+            print(" ")
+            ## Needed once instatiation is working
+        except Exception as e:
+            # print("FAIL")
+            # print(row, col)
+            # print(c1, c2, c3, c4)
+            print(e)
+            pass
+
+    print(len(squares))
+    print(squares)
 
 def showImage(image, name="image"):
     print("Showing image: '%s'" % name)
