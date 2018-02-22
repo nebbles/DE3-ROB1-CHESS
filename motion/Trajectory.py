@@ -10,9 +10,9 @@ def output(move, visual_flag=False):
 
     # start and goal poses
     rest = [200, 0, 500]
-    start = [400, 0, 10]
-    goal = [550, 200, 10]
-    died = [300, 0, 40]
+    #start = [400, 0, 10]
+    #goal = [550, 200, 10]
+    #died = [300, 0, 40]
     hover = 200  # hover height
     dead_zone = [200,300,0]
 
@@ -20,16 +20,24 @@ def output(move, visual_flag=False):
     dt = 0.1  # resolution in seconds 0.001
     velocity = 5  # speed in mm/s
 
+    # Use logic to determine movement
+    dead_status, start_AN, goal_AN, died_AN = logic(move)
+
+    # Find the start and end coordinates
+    start = AN_to_coords(start_AN)
+    goal = AN_to_coords(goal_AN)
+
+    if dead_status == 'None died':
+        died = None
+    elif dead_status == "Died":
+        died = AN_to_coords(died_AN)
+
     # create complete array of intermediary poses
     rest_h, start_h, goal_h, died_h, dead_h = intermediate_coords(rest, start, goal, hover, died, dead_zone)
-
-    # Use logic to determine movement
-    dead_status = logic(move)
 
     # algorithm to generate vectors making up the path
     if dead_status == "None died":
         vectors, line_list = move_path(dead_status, rest, start, start_h, goal, goal_h, dead_h, velocity, dt)
-        print(len(line_list), type(line_list))
     elif dead_status == "Died":
         vectors, line_list_1 = dead_path(rest, died, died_h, dead_zone, dead_h, velocity, dt)
         vectors, line_list_2 = move_path(dead_status, rest, start, start_h, goal, goal_h, dead_h, velocity, dt)
@@ -58,23 +66,42 @@ def logic(move): # move is a list of tuple(s) [(‘R’.’a4’)(‘p’, ‘a2
     """Function to decide what action needs to be made"""
     if len(move)==1:
 
-        return("None died")
-        # convert second thing in tuple into real life coords
-        # set a relavent gripper height based on the first thing in tuple
+        # extract ANs
+        start_AN = (move[0][1])[:2]
+        goal_AN = (move[0][1])[2:4]
 
+        return "None died", start_AN, goal_AN, None # no died_AN
 
     elif len(move)==2:
 
-        return("Died")
+        # extract ANs
+        start_AN = (move[1][1])[:2]
+        goal_AN = (move[1][1])[2:4]
+        died_AN = (move[0][1])
+        print(died_AN)
+        return "Died", start_AN, goal_AN, died_AN
 
-        # Removing a piece
-        # convert second thing in first tuple into real life coords
-        # select a relevent gripper height based on first thing in first tuple
+def AN_to_coords(AN): #AN = a6
+    """Function to convert the given algebraic notation into real world coordinates"""
+    x = 56 # square side length in mm
+    n = 8 # number of squares per side
 
-        # Moving a piece
-        # convert second thing in second tuple into real life coords
-        # set a relavent gripper height based on the first thing in second tuple
+    # preset coordinates of each AN
+    letters = dict([('a', x / 2), ('b', (x / 2) * 2), ('c', (x / 2) * 3), ('d', (x / 2) * 4), ('e', (x / 2) * 5),
+                    ('f', (x / 2) * 6), ('g', (x / 2) * 7), ('h', (x / 2) * 8)])
+    numbers = dict([('1', x / 2), ('2', (x / 2) * 2), ('3', (x / 2) * 3), ('4', (x / 2) * 4), ('5', (x / 2) * 5),
+                    ('6', (x / 2) * 6), ('7', (x / 2) * 7), ('8', (x / 2) * 8)])
 
+    # selecting the location
+    letter = AN[0]
+    number = AN[1]
+    x = numbers[number]
+    y = letters[letter]
+    z = 0
+
+    coord = [x,y,z]
+
+    return coord
 
 #def gripper_height():
     # Finding the gripper height depending on game engine output
@@ -97,7 +124,10 @@ def intermediate_coords(rest, start, goal, hover, died, dead_zone):
     start_h = [start[0], start[1], hover]
     goal_h = [goal[0], goal[1], hover]
     dead_h = [dead_zone[0], dead_zone[1], hover]
-    died_h = [died[0], died[1], hover]
+    if died == None:
+        died_h = None
+    else:
+        died_h = [died[0], died[1], hover]
     return rest_h, start_h, goal_h, died_h, dead_h
 
 def create_line(a, b, v, vectors, dt):
@@ -284,6 +314,6 @@ def plot(x_sample, y_sample, z_sample, x_knots, y_knots, z_knots, x_smooth, y_sm
 
 
 if __name__ == '__main__':
-    #output([("r", "a1a2"),("r", "a1a2")] ,visual_flag=True) # test for death
-    output([("r", "a1a2")] ,visual_flag=True) # test for standard move
+    output([("r", "b4"),("r", "a1a2")] ,visual_flag=True) # test for death
+    #output([("r", "a1a2")] ,visual_flag=True) # test for standard move
 
