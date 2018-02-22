@@ -10,9 +10,6 @@ def output(move, visual_flag=False):
 
     # start and goal poses
     rest = [200, 0, 500]
-    #start = [400, 0, 10]
-    #goal = [550, 200, 10]
-    #died = [300, 0, 40]
     hover = 200  # hover height
     dead_zone = [200,300,0]
 
@@ -20,10 +17,10 @@ def output(move, visual_flag=False):
     dt = 0.1  # resolution in seconds 0.001
     velocity = 5  # speed in mm/s
 
-    # Use logic to determine movement
+    # Use logic to extract information from move
     dead_status, start_AN, goal_AN, died_AN = logic(move)
 
-    # Find the start and end coordinates
+    # Find the necessary coordinates
     start = AN_to_coords(start_AN)
     goal = AN_to_coords(goal_AN)
 
@@ -35,7 +32,7 @@ def output(move, visual_flag=False):
     # create complete array of intermediary poses
     rest_h, start_h, goal_h, died_h, dead_h = intermediate_coords(rest, start, goal, hover, died, dead_zone)
 
-    # algorithm to generate vectors making up the path
+    # algorithm to generate vectors and coordinates making up the path
     if dead_status == "None died":
         vectors, line_list = move_path(dead_status, rest, start, start_h, goal, goal_h, dead_h, velocity, dt)
     elif dead_status == "Died":
@@ -46,7 +43,13 @@ def output(move, visual_flag=False):
 
     #print("BEN'S Vectors: ", vectors)
 
-    trajectory, trajectory_1, trajectory_2, trajectory_3 = generate_trajectory(line_list, dead_status)
+    # Finding the separate trajectories that surround gripping and ungripping
+    if dead_status == 'None died':
+        trajectory, trajectory_1, trajectory_2, trajectory_3 = generate_trajectory(line_list, dead_status)
+    elif dead_status == "Died":
+        trajectory, trajectory_1, trajectory_2, trajectory_3, trajectory_4, trajectory_5 = generate_trajectory(line_list, dead_status)
+
+    # Finding the smooth trajectory
     x_sample, y_sample, z_sample = data_split(trajectory)
     x_fine, y_fine, z_fine, x_knots, y_knots, z_knots = data_interpolation(trajectory, x_sample, y_sample, z_sample)
     smooth_trajectory = generate_smooth_trajectory(x_fine, y_fine, z_fine)
@@ -63,7 +66,7 @@ def output(move, visual_flag=False):
 
 
 def logic(move): # move is a list of tuple(s) [(‘R’.’a4’)(‘p’, ‘a2a4’)]
-    """Function to decide what action needs to be made"""
+    """Function to extract information from move"""
     if len(move)==1:
 
         # extract ANs
@@ -248,16 +251,20 @@ def generate_trajectory(line_list, dead_status):
 
     elif dead_status == 'Died':
 
-        # Forming the 2 movements that surround the gripping and ungripping
+        # Forming the 2 movements that surround the gripping and ungripping to remove a dead piece
         line_list_1 = (line_list[0], line_list[1])
         line_list_2 = (line_list[2], line_list[3], line_list[4])
-        line_list_3 = (line_list[5])
+        line_list_3 = (line_list[5], line_list[6], line_list[7])
+        line_list_4 = (line_list[8], line_list[9], line_list[10])
+        line_list_5 = (line_list[11], line_list[12])
 
         trajectory_1 = concatenate(line_list_1, axis=0)
         trajectory_2 = concatenate(line_list_2, axis=0)
         trajectory_3 = concatenate(line_list_3, axis=0)
+        trajectory_4 = concatenate(line_list_4, axis=0)
+        trajectory_5 = concatenate(line_list_5, axis=0)
 
-        return trajectory, trajectory_1, trajectory_2, trajectory_3
+        return trajectory, trajectory_1, trajectory_2, trajectory_3, trajectory_4, trajectory_5
 
 def data_split(trajectory):
     """function that splits the data into x, y and z's"""
