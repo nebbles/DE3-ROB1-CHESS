@@ -1,46 +1,42 @@
-import cv2
-import numpy as np
-import operator
 from mainDetect import *
 
-#Read Image
+# Read Image
 img = cv2.imread("Board.jpg", 1)
 
-#Process Image: convert to B/w
+# Process Image: convert to B/w
 img, processedImage = processFile(img)
 
-#Extract chessboard from image
+# Extract chessboard from image
 extractedImage = imageAnalysis(img, processedImage)
 
-#Chessboard Corners
+# Chessboard Corners
 cornersImage = extractedImage.copy()
 
-#Canny edge detection - find key outlines
+# Canny edge detection - find key outlines
 cannyImage = cannyEdgeDetection(extractedImage)
 
-#Hough line detection to find rho & theta of any lines
+# Hough line detection to find rho & theta of any lines
 h,v = houghLines(cannyImage, extractedImage)
 
-
-
-#Find intersection points from Hough lines
+# Find intersection points from Hough lines and filter them
 intersections = findIntersections(h,v)
 
+# Assign intersections to a sorted list of lists
 corners, cornerImage = assignIntersections(extractedImage, intersections)
 
-makeSquares(corners)
+# Copy original image to display on
+squareImage = img.copy()
 
-##DEBUG
-# print(" ")
-# print ("No. of horizontal Hough Lines: ")
-# print(len(h))
-# print(" ")
-# print ("No. of vertical Hough Lines: ")
-# print(len(v))
-# print(" ")
-# print("Number of intersection points found and filtered: " + str(len(intersections)))
+# Get list of Square class instances
+squares = makeSquares(corners)
 
-cv2.imshow("Corners", cornerImage)
+# Draw the squares and classify them (draws the square color on the image)
+for square in squares:
+    square.draw(squareImage)
+    square.classify(squareImage)
+
+cv2.imshow("Classified Squares", squareImage)
+
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 

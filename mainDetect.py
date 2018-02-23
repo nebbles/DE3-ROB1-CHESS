@@ -25,7 +25,7 @@ def processFile(img):
     # cv2.imshow("HSV Thresholded",hsvThresh)
 
     ## DEBUG
-    cv2.imshow("Adaptive Thresholding", adaptiveThresh)
+    # cv2.imshow("Adaptive Thresholding", adaptiveThresh)
     return img, adaptiveThresh
 
 
@@ -58,8 +58,8 @@ def imageAnalysis(img, processedImage):
         try:
             if (area / perimeter) < 80 and (area / perimeter) > 75:
                 # DEBUG statements
-                cv2.drawContours(imgContours, [c], -1, color, 2)
-                print("Area: {}, perimeter: {}".format(area, perimeter))
+                #cv2.drawContours(imgContours, [c], -1, color, 2)
+                #print("Area: {}, perimeter: {}".format(area, perimeter))
 
                 # Epsilon parameter needed to fit contour to polygon
                 epsilon = 0.1 * perimeter
@@ -76,7 +76,7 @@ def imageAnalysis(img, processedImage):
     # Show filtered contoured image
 
     ##DEBUG
-    cv2.imshow("Filtered Contours", imgContours)
+    #cv2.imshow("Filtered Contours", imgContours)
 
     # Create new all black image
     mask = np.zeros((img.shape[0], img.shape[1]), 'uint8')
@@ -92,7 +92,7 @@ def imageAnalysis(img, processedImage):
 
     #DEBUG
     # Show image
-    cv2.imshow("Masked", extracted)
+    #cv2.imshow("Masked", extracted)
     return imgContours
 
 def cannyEdgeDetection(image):
@@ -169,7 +169,8 @@ def drawLines(image, lines, color=(0,0,255), thickness=2):
     #print("Going to print: ", len(lines))
     for l in lines:
         l.draw(image, color, thickness)
-        cv2.imshow('image', image)
+        ## DEBUG
+        #cv2.imshow('image', image)
 
 
 def findIntersections(horizontals,verticals):
@@ -225,93 +226,75 @@ def findIntersections(horizontals,verticals):
 
 def assignIntersections(image, intersections):
     '''
-    Takes the filtered intersections and assigns them to a list containing the corners in the format
-    [row, column, (x,y)], where row and column are from 1 to 9 indicating the horizontal and vertical
-    Hough lines.
+    Takes the filtered intersections and assigns them to a list containing nine sorted lists, each one representing
+    one row of sorted corners. The first list for instance contains the nine corners of the first row sorted
+    in an ascending fashion.
     :param filteredIntersections:
     :return:
     '''
 
-    # Sort by ascending y-coordinate and then by descending x-coordinate. Origin is therefore top-left
-    intersections.sort(key=lambda x: (x[1], -x[0]))
+    # Corners array / Each list in list represents a row of corners
+    corners = [[],[],[],[],[],[],[],[],[]]
 
-    ## DEBUG
-    # Find chessboard corners from intersections
-    # print(" ")
-    # print("Intersections: ")
-    # print(intersections)
-    # for intersection in intersections:
-    #    cv2.circle(extractedImage, intersection, radius=3, color=(255, 255, 255), thickness=2)
-    # cv2.imshow("Intersections", extractedImage)
+    # Sort rows (ascending)
+    intersections.sort(key=lambda x: x[1])
 
-    # Contains all the corners as a dictionary
-    corners = {}
-
-    # Initalising variables for assignment to row or column
-    row = 1
-    column = 1
-
-    # Assigning points to rows (1-9) and columns (1-9)
+    # Assign rows first, afterwards it's possible to swap them around within their rows for correct sequence
+    row = 0
     rowAssignmentThreshold = 10
 
-    # This loop runs through all the sorted
     for i in range(1, len(intersections)):
         if intersections[i][1] in range(intersections[i - 1][1] - rowAssignmentThreshold,
                                         intersections[i - 1][1] + rowAssignmentThreshold):
-            corners[row,column] = intersections[i - 1]
-            column += 1
+            corners[row].append(intersections[i - 1])
         else:
-            corners[row, column] = intersections[i - 1]
+            corners[row].append(intersections[i - 1])
             row += 1
-            column = 1
         # For last corner
         if i == len(intersections) - 1:
-            corners[row, column] = intersections[i]
+            corners[row].append(intersections[i])
 
-    for corner in corners:
-        ## DEBUG
-        # print(corner)
-        # print(corners[corner])
-        # Draw circle
-        cv2.circle(image, corners[corner], radius=3, color=(255, 255, 255), thickness=2)
+    # Sort by x-coordinate within row to get correct sequence
+    for row in corners:
+        row.sort(key=lambda x: x[0])
+
+    ## DEBUG
+    # print(corners)
 
     return corners, image
 
 def makeSquares(corners):
-    ##DEBUG
-    # print(corners)
+    '''
+    Instantiates the 64 squares when given 81 corner points
+    :param corners:
+    :return:
+    '''
+
+    # List of Square objects
     squares = []
-    counter = 1
-    for row, col in corners:
-        # Only works if you there are four coordinates available in those indices
-        # and thus breaks when all squares have been defined
 
-        ## Needed once instantiation is working to stop loop once no more squares can be defined (n=64)
-        try:
-            c1 = corners[row, col]
-            c2 = corners[row, col + 1]
-            c3 = corners[row + 1, col]
-            c4 = corners[row + 1, col + 1]
-            ##DEBUG
-            #Print corners
-            # print("Corners: ")
-            # print(c1, c2, c3, c4)
-            square = Square(c1,c2,c3,c4)
+    # Lists containing positional information
+    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    numbers = ['1', '2', '3', '4', '5', '6', '7', '8']
+
+    for i in range(8):
+        for j in range(8):
+            # Make the square - yay!
+            position = letters[-i-1] + numbers[-j-1]
+            c1 = corners[i][j]
+            c2 = corners[i][j+1]
+            c3 = corners[i+1][j+1]
+            c4 = corners[i+1][j]
+            square = Square(position, c1, c2, c3, c4)
             squares.append(square)
-            print(" ")
-            ## Needed once instatiation is working
-        except Exception as e:
-            # print("FAIL")
-            # print(row, col)
-            # print(c1, c2, c3, c4)
-            print(e)
-            pass
 
-    print(len(squares))
-    print(squares)
+    ## DEBUG
+    # print("Number of Squares found: " + str(len(squares)))
+
+    return squares
 
 def showImage(image, name="image"):
-    print("Showing image: '%s'" % name)
+    #print("Showing image: '%s'" % name)
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
     cv2.imshow('image', image)
     cv2.waitKey(0)
