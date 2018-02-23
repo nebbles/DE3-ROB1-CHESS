@@ -1,15 +1,21 @@
 from numpy import linspace, sqrt, concatenate
+from matplotlib import interactive
 from matplotlib.pyplot import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # for: fig.gca(projection = '3d')
 from scipy import interpolate
+from franka.franka_control import FrankaControl
+
 
 
 def output(move, visual_flag=False):
     """ function to run the code, outputs list of vectors to complete the trajectectory"""
 
+    callib()
+
     # start and goal poses
-    rest = [200, 0, 500]
+    rest = [0, 0, 500]
+    #rest = arm.get_end_effector_pos()
     hover = 200  # hover height
     dead_zone = [200,300,0]
 
@@ -64,6 +70,125 @@ def output(move, visual_flag=False):
 
     return smooth_trajectory
 
+def callib():#trajectory_chess):
+    """Function to convert the trajectory from the chess frame to the FRANKA frame"""
+
+    # collect data from 4 FRANKA frame points
+    arm = FrankaControl()#debug=True)
+
+    valid = input("Move the arm to A1 corner")
+    if valid == "":
+        pass
+    else:
+        print('YOU FUCKED UP')
+    #corner_1_FRANKA = arm.get_end_effector_pos()
+    corner_1_FRANKA = [0, 0, 0];
+
+    valid = input("Move the arm to A8 corner")
+    if valid == "":
+        pass
+    else:
+        print('YOU FUCKED UP')
+    #corner_2_FRANKA = arm.get_end_effector_pos()
+    corner_2_FRANKA = [0,908,0];
+
+    valid = input("Move the arm to H8 corner")
+    if valid == "":
+        pass
+    else:
+        print('YOU FUCKED UP')
+    #corner_3_FRANKA = arm.get_end_effector_pos()
+    corner_3_FRANKA = [908, 908, 0];
+
+    valid = input("Move the arm to H1 corner")
+    if valid == "":
+        pass
+    else:
+        print('YOU FUCKED UP')
+    #corner_4_FRANKA = arm.get_end_effector_pos()
+    corner_4_FRANKA = [908,0,0]
+
+
+    valid = input("Move arm to the top left-hand corner of the box")
+    if valid == "":
+        pass
+    else:
+        print('YOU FUCKED UP')
+    #box_FRANKA = arm.get_end_effector_pos()
+    box_FRANKA = [0, 908, 200]
+
+    # Coordinates in chess frame
+    corner_1_chess = [0, 0, 0]
+    corner_2_chess = [0, 454, 0]
+    corner_3_chess = [454, 454, 0 ]
+    corner_4_chess = [454, 0, 0]
+    box_chess = [0, 454, 100]
+
+    FRANKA_points = [corner_1_FRANKA, corner_2_FRANKA, corner_3_FRANKA, corner_4_FRANKA, box_FRANKA]
+    chess_points = [corner_1_chess, corner_2_chess, corner_3_chess, corner_4_chess, box_chess]
+
+    # visualise points
+    fig = plt.figure()
+    x_FRANKA, y_FRANKA, z_FRANKA = data_split(FRANKA_points)
+    x_chess, y_chess, z_chess = data_split(chess_points)
+    ax3d = fig.add_subplot(221, projection='3d')
+    ax3d.plot(x_chess, y_chess, z_chess, 'go')
+    ax3d.plot(x_FRANKA, y_FRANKA ,z_FRANKA, 'ro')
+    ax3d.set_xlabel('X')
+    ax3d.set_ylabel('Y')
+    ax3d.set_zlabel('Z')
+    #figA.show()
+
+    # plot linear regression
+    ax3d = fig.add_subplot(222)
+    plt.plot(x_chess, x_FRANKA, 'go')
+    ax3d.set_xlabel('Chess x points')
+    ax3d.set_ylabel('FRANKA x points')
+    a, b = best_fit(x_chess, x_FRANKA)
+    xfit = [a + b * xi for xi in x_chess]
+    plt.plot(x_chess, xfit)
+
+    ax3d = fig.add_subplot(223)
+    plt.plot(y_chess, y_FRANKA, 'go')
+    ax3d.set_xlabel('Chess y points')
+    ax3d.set_ylabel('FRANKA y points')
+    a, b = best_fit(y_chess, y_FRANKA)
+    yfit = [a + b * yi for yi in y_chess]
+    plt.plot(y_chess, yfit)
+
+    ax3d = fig.add_subplot(224)
+    plt.plot(z_chess, z_FRANKA, 'go')
+    ax3d.set_xlabel('Chess z points')
+    ax3d.set_ylabel('FRANKA z points')
+    a, b = best_fit(z_chess, z_FRANKA)
+    zfit = [a + b * zi for zi in z_chess]
+    plt.plot(z_chess, zfit)
+
+    plt.show()
+
+
+    # linear regression between FRANKA frame and chess frame
+    # Equation of line is transformation matrix
+    # transform from chess to franka frames
+
+    #return trajectory_FRANKA
+
+
+def best_fit(X, Y):
+
+    xbar = sum(X)/len(X)
+    ybar = sum(Y)/len(Y)
+    n = len(X) # or len(Y)
+
+    numer = sum([xi*yi for xi,yi in zip(X, Y)]) - n * xbar * ybar
+    denum = sum([xi**2 for xi in X]) - n * xbar**2
+
+    b = numer / denum
+    a = ybar - b * xbar
+
+    print('best fit line:\ny = {:.2f} + {:.2f}x'.format(a, b))
+
+    return a, b
 
 def logic(move): # move is a list of tuple(s) [(‘R’.’a4’)(‘p’, ‘a2a4’)]
     """Function to extract information from move"""
@@ -81,7 +206,6 @@ def logic(move): # move is a list of tuple(s) [(‘R’.’a4’)(‘p’, ‘a2
         start_AN = (move[1][1])[:2]
         goal_AN = (move[1][1])[2:4]
         died_AN = (move[0][1])
-        print(died_AN)
         return "Died", start_AN, goal_AN, died_AN
 
 def AN_to_coords(AN): #AN = a6
@@ -321,6 +445,6 @@ def plot(x_sample, y_sample, z_sample, x_knots, y_knots, z_knots, x_smooth, y_sm
 
 
 if __name__ == '__main__':
-    output([("r", "b4"),("r", "a1a2")] ,visual_flag=True) # test for death
+    output([("r", "b4"),("r", "a1a2")] ,visual_flag=False) # test for death
     #output([("r", "a1a2")] ,visual_flag=True) # test for standard move
 
