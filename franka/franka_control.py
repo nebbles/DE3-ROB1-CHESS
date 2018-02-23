@@ -2,11 +2,17 @@
 
 This module uses ``subprocess`` and ``os``.
 """
+from __future__ import print_function
 import subprocess
 import os
+import sys
+import argparse
+
+if sys.version_info[:2] <= (2, 7):
+    input = raw_input
 
 
-class Caller:
+class FrankaControl(object):
     """Class containing methods to control an instance of the Franka Arm.
 
     Will print debug information to the console when ``debug_flag=True`` argument is used. Class
@@ -19,8 +25,68 @@ class Caller:
         self.debug = debug_flag
         self.path = os.path.dirname(os.path.realpath(__file__))  # gets working dir of this file
 
+    def get_joint_positions(self):
+        """Gets current joint positions for Franka Arm.
 
-    def move_relative(self, dx: float=0.0, dy: float=0.0, dz: float=0.0):
+        This will return a list of lists of joint position data. This data structure has not been
+        documented yet and is not recommended for use.
+        """
+
+        program = './print_joint_positions'  # set executable to be used
+        command = [program, self.ip_address]
+        command_str = " ".join(command)
+
+        if self.debug:
+            print("Working directory: ", self.path)
+            print("Program: ", program)
+            print("IP Address of robot: ", self.ip_address)
+            print("Command being called: ", command_str)
+            print("Running FRANKA code...")
+
+        process = subprocess.Popen(command, stdout=subprocess.PIPE)
+        out, err = process.communicate()  # this will block until received
+        decoded_output = out.decode("utf-8")
+
+        import ast
+        string_list = decoded_output.split("\n")
+
+        converted_list = []
+        for idx, lit in enumerate(string_list):
+            x = lit
+            x = ast.literal_eval(x)
+            converted_list.append(x)
+            if idx == 7:
+                break  # We have parsed all 8 items from ./get_joint_positions
+
+        return converted_list
+
+    def get_end_effector_pos(self):
+        """Gets current x,y,z positions for Franka Arm end effector.
+
+        Returns list of x,y,z values.
+        """
+
+        program = './franka_get_current_position'  # set executable to be used
+        command = [program, self.ip_address]
+        command_str = " ".join(command)
+
+        if self.debug:
+            print("Working directory: ", self.path)
+            print("Program: ", program)
+            print("IP Address of robot: ", self.ip_address)
+            print("Command being called: ", command_str)
+            print("Running FRANKA code...")
+
+        process = subprocess.Popen(command, stdout=subprocess.PIPE)
+        out, err = process.communicate()  # this will block until received
+        decoded_output = out.decode("utf-8")
+
+        import ast
+        converted_list = ast.literal_eval(decoded_output)
+
+        return converted_list
+
+    def move_relative(self, dx=0.0, dy=0.0, dz=0.0):
         """Moves Franka Arm relative to its current position.
 
         Executes Franka C++ binary which moves the arm relative to its current position according
@@ -50,6 +116,8 @@ class Caller:
             print("Command being called: ", command_str)
             print("Running FRANKA code...")
 
+        # TODO: option to suppress output
+        # TODO: catch errors returned by the subprocess
         return_code = subprocess.call(command, cwd=self.path)
 
         if return_code == 0:
@@ -60,7 +128,7 @@ class Caller:
 
         return return_code
 
-    def move_absolute(self, coordinates: list):
+    def move_absolute(self, coordinates):
         """Moves Franka Arm to an absolute coordinate position.
 
         Coordinates list should be in format: [x, y, z]
@@ -90,6 +158,8 @@ class Caller:
             print("Command being called: ", command_str)
             print("Running FRANKA code...")
 
+        # TODO: option to suppress output
+        # TODO: catch errors returned by the subprocess
         return_code = subprocess.call(command, cwd=self.path)
 
         if return_code == 0:
@@ -101,12 +171,15 @@ class Caller:
         return return_code
 
 
-def main():
-    """Used to test if module is working and can control arm.
+def test_motion():
+    """Used to test if module is working and can move arm.
 
-    When ``caller.py`` is run from the command line it will test to see if the Franka Arm can be
+    When module is run from the command line it will test to see if the Franka Arm can be
     controlled with a simple forward and backward motion control along the x axis. Follow on
-    screen examples for usage."""
+    screen examples for usage.
+
+    To use, call the -m or --motion-test flag from the command line.
+    """
 
     while True:
         testing = input("Is this program being tested with the arm? [N/y]: ")
@@ -128,7 +201,7 @@ def main():
             print("Invalid input. Must be 0/1.")
 
     if testing:
-        arm = Caller(debug_flag=True)
+        arm = FrankaControl(debug_flag=True)
 
         if direction == '0':
             arm.move_relative(dx=0.05)
@@ -140,9 +213,9 @@ def main():
         dy = '0'
         dz = '0'
         if direction == '0':
-            dx = 0.05
+            dx = '0.05'
         elif direction == '1':
-            dx = -0.05
+            dx = '-0.05'
         print("dx: ", dx)
         print("dy: ", dy)
         print("dz: ", dz)
@@ -159,5 +232,48 @@ def main():
         print("Command being called: ", command_str)
 
 
+def test_joints():
+    """Used to test if position reporting is working from Arm.
+
+    To use this test, add the -j or --joint-test flag to the command line.
+    """
+    arm = FrankaControl(debug_flag=True)
+    while True:
+        matrix = arm.get_joint_positions()
+        print(
+            "%8.6f   %8.6f   %1.0f   %1.0f   %8.6f   %8.6f   %1.0f   %1.0f   %1.0f   %1.0f   "
+            "%1.0f   %1.0f   %1.0f   %1.0f   %5.3f   %1.0f" % tuple(matrix[0]))
+
+
+def test_position():
+    """Used to test if the Franka Arm is reporting the position of its end effector.
+
+    To use this test, add the -p or --position-test flag to the command line.
+    """
+    arm = FrankaControl(debug_flag=True)
+    pos = arm.get_end_effector_pos()
+    print("End effector position:")
+    print("X: ", pos[0])
+    print("Y: ", pos[1])
+    print("Z: ", pos[2])
+
+
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Control Franka Arm with Python.')
+    parser.add_argument('-m', '--motion-test', action='store_true',
+                        help='run program in testing motion mode')
+    parser.add_argument('-p', '--position-test', action='store_true',
+                        help='run program in testing position readings mode')
+    parser.add_argument('-j', '--joint-test', action='store_true',
+                        help='run program in testing joint readings mode')
+
+    args = parser.parse_args()  # Get command line args
+
+    if args.motion_test:
+        test_motion()
+    elif args.position_test:
+        test_position()
+    elif args.joint_test:
+        test_joints()
+    else:
+        print("Try: franka_control.py --help")

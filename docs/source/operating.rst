@@ -79,25 +79,25 @@ These binaries can now be used from the command line to control the Arm::
 
 Alternatively, you can control the Arm using the easy custom Python class ``Caller`` (see below).
 
-Python-Franka API with ``caller.py``
-------------------------------------
+Python-Franka API with ``franka_control.py``
+--------------------------------------------
 
-The Python-FRANKA module (``caller.py``) is designed to allow easy access to the C++ controller programs provided by Petar. The provided Python module, ``caller.py`` is structured as follows.
+The Python-FRANKA module (``franka_control.py``) is designed to allow easy access to the C++ controller programs provided by Petar. The provided Python module is structured as follows.
 
-.. automodule:: franka.caller
+.. automodule:: franka.franka_control
   :members:
   :undoc-members:
 
 Example
 ~~~~~~~
 
-To use the ``Caller`` class in your own Python script would look something like this:
+To use the ``FrankaControl`` class in your own Python script would look something like this:
 
 .. code-block:: python
 
-   from franka.caller import Caller
+   from franka.franka_control import FrankaControl
 
-   arm = Caller(debug_flag=True)
+   arm = FrankaControl(debug_flag=True)
    # we set the flag true to get prints to the console about what Caller is doing
 
    arm.move_relative(dx=0.1, dy=0.0, dz=-0.3)
@@ -123,7 +123,7 @@ The structure of the project is important to ensure that importing between modul
   │   └── source
   ├── franka
   │   ├── __init__.py
-  │   ├── caller.py
+  │   ├── franka_control.py
   │   ├── franka_get_current_position
   │   ├── franka_get_current_position.cpp
   │   ├── franka_move_to_absolute
@@ -135,7 +135,7 @@ The structure of the project is important to ensure that importing between modul
   │   ├── module2.py
   │   ├── module3.py
   │   ├── __init__.py
-  └── test_module.py
+  └── test_script.py
 
 
 .. Planned method
