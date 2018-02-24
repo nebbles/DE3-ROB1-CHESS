@@ -1,12 +1,12 @@
-*******************
-Operating the Robot
-*******************
+*******************************
+Operating the Robot with Python
+*******************************
 
 .. note::
-  This page is still incomplete.
+  This page is still incomplete and will continue to be actively updated.
 
-Using the provided workstation
-==============================
+Starting up FRANKA & using provided workstations
+================================================
 
 To log into the workstation:
 
@@ -16,14 +16,11 @@ To log into the workstation:
 .. note::
   If you do not use a provided workstation, ensure you have completed all the steps in the :doc:`workstation` page.
 
-Starting up FRANKA
-==================
-
 Connect your workstation to the network via ethernet. Power up the FRANKA and when booted (solid yellow), type the following into the URL bar in a browser::
 
   http://192.168.0.88
 
-Now run through the unlocking procedure as described in the :doc:'franka' doc.
+Now run through the unlocking procedure as described in the :doc:`./franka` doc.
 
 Understanding how to control the FRANKA
 =======================================

@@ -77,7 +77,7 @@ class FrankaControl(object):
             print("Command being called: ", command_str)
             print("Running FRANKA code...")
 
-        process = subprocess.Popen(command, stdout=subprocess.PIPE)
+        process = subprocess.Popen(command, cwd=self.path, stdout=subprocess.PIPE)
         out, err = process.communicate()  # this will block until received
         decoded_output = out.decode("utf-8")
 
