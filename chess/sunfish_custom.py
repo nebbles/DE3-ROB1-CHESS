@@ -461,7 +461,6 @@ def main(command_queue, reply_queue, valid_queue):
                 print("Please enter a move like g8f6")
 
             pass_number += 1
-        valid_queue.put(1)  # inform the engine that the move was accepted
 
         pos = pos.move(move)
 
@@ -471,6 +470,7 @@ def main(command_queue, reply_queue, valid_queue):
 
         if pos.score <= -MATE_LOWER:
             print("You won")
+            valid_queue.put(1)  # inform engine that the move was accepted and user won
             break
 
         # Fire up the engine to look for a move.
@@ -478,10 +478,16 @@ def main(command_queue, reply_queue, valid_queue):
 
         if score == MATE_UPPER:
             print("Checkmate!")
-
+            valid_queue.put(2)  # inform engine that the move was accepted and computer won
+        else:
+            valid_queue.put(3)  # inform engine that the move was accepted and sunfish will reply
         # The black player moves from a rotated position, so we have to
         # 'back rotate' the move before printing it.
         computer_move = render(119-move[0]) + render(119-move[1])
         reply_queue.put(computer_move, block=True)  # reply to engine
         print("My move:", computer_move)
         pos = pos.move(move)
+
+
+if __name__ == '__main__':
+    main()
