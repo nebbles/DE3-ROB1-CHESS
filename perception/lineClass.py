@@ -11,6 +11,7 @@ class Line:
 
         self.dy = self.y2 - self.y1
         self.dx = self.x2 - self.x1
+        self.center = ((self.x1 + self.x2) / 2, (self.y1 + self.y2) / 2)
 
         if abs(self.dx) > abs(self.dy):
             self.category = 'horizontal'
@@ -44,3 +45,21 @@ class Line:
         x, y = np.linalg.solve(a,b)
 
         return x,y
+
+
+def filterClose(lines, horizontal=True, threshold = 40):
+    if horizontal:
+        item = 1
+    else:
+        item = 0
+
+    i = 0
+    ret = []
+
+    while i < len(lines):
+        itmp = i
+        while i < len(lines) and (lines[i].center[item] - lines[itmp].center[item] < threshold):
+            i += 1
+        ret.append(lines[itmp + int((i - itmp) / 2)])
+    return ret
+

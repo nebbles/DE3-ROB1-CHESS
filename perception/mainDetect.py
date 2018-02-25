@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from lineClass import Line
+from lineClass import Line, filterClose
 from squareClass import Square
 
 def processFile(img):
@@ -41,29 +41,43 @@ def imageAnalysis(img, processedImage):
     # Create copy of original image
     imgContours = img.copy()
 
-    for c in contours:
+    for c in range(len(contours)):
         # Area
-        area = cv2.contourArea(c)
+        area = cv2.contourArea(contours[c])
         # Perimenter
-        perimeter = cv2.arcLength(c, True)
+        perimeter = cv2.arcLength(contours[c], True)
         # Filtering the chessboard edge / Error handling as some contours are so small so as to give zero division
         #For test values are 70-40, for Board values are 80 - 75 - will need to recalibrate if change
-        try:
-            if (area / perimeter) < 90 and (area / perimeter) > 75:
-                # DEBUG statements
-                #cv2.drawContours(imgContours, [c], -1, color, 2)
-                #print("Area: {}, perimeter: {}".format(area, perimeter))
-
-                # Epsilon parameter needed to fit contour to polygon
-                epsilon = 0.1 * perimeter
-                # Approximates a polygon from chessboard edge
-                chessboardEdge = cv2.approxPolyDP(c, epsilon, True)
-
-                ## DEBUG
-                # cv2.drawContours(imgContours, [chessboardEdge], -1, color, 2)
-        except:
+        #the largest square is always the largest ratio
+        if c ==0:
+            Lratio = 0
+        if perimeter > 0:
+            ratio = area / perimeter
+            if ratio > Lratio:
+                largest=contours[c]
+                Lratio = ratio
+                Lperimeter=perimeter
+                Larea = area
+        else:
             pass
 
+    # DEBUG statements
+    # cv2.drawContours(imgContours, [largest], -1, color, 2)
+
+    # Epsilon parameter needed to fit contour to polygon
+    epsilon = 0.1 * Lperimeter
+    # Approximates a polygon from chessboard edge
+    chessboardEdge = cv2.approxPolyDP(largest, epsilon, True)
+    # DEBUG
+    # cv2.drawContours(imgContours, [chessboardEdge], -1, color, 2)
+
+    # Draw chessboard edges and assign to region of interest (ROI)
+    roi = cv2.polylines(imgContours,[chessboardEdge],True,(0,255,255),thickness=3)
+
+    # Show filtered contoured image
+
+    #DEBUG
+    cv2.imshow("Filtered Contours", imgContours)
     ## DEBUG
     #cv2.imshow("Filtered Contours", imgContours)
 
@@ -99,15 +113,31 @@ def cannyEdgeDetection(image):
     return edges
 
 def categoriseLines(lines):
-    h = []
-    v = []
+    '''
+    Sorts the lines into horizontal & Vertical. Then sorts the lines based on their respective centers
+    (x for vertical, y for horizontal). H
+    :param lines: detected lines on image, in lines class
+    :return: horizontal lines, vertical lines
+    '''
+    horizontal = []
+    vertical = []
     for i in range(len(lines)):
         if lines[i].category == 'horizontal':
-            h.append(lines[i])
+            horizontal.append(lines[i])
         else:
-            v.append(lines[i])
+            vertical.append(lines[i])
 
-    return h,v
+    #takes center of line & sorts
+    horizontal = [(l.center[1], l) for l in horizontal]
+    vertical = [(l.center[0], l) for l in vertical]
+
+    horizontal.sort()
+    vertical.sort()
+
+    horizontal = [l[1] for l in horizontal]
+    vertical = [l[1] for l in vertical]
+
+    return horizontal,vertical
 
 def houghLines(edges, image):
     '''
@@ -118,7 +148,7 @@ def houghLines(edges, image):
     '''
 
     # Detect hough lines
-    lines = cv2.HoughLinesP(edges, rho=1, theta=1 * np.pi / 180, threshold=60, minLineLength=100, maxLineGap=50)
+    lines = cv2.HoughLinesP(edges, rho=1, theta=1 * np.pi / 180, threshold=80, minLineLength=100, maxLineGap=50)
     N = lines.shape[0]
 
     # Draw lines on image
@@ -135,12 +165,17 @@ def houghLines(edges, image):
 
     # Categorise the lines into horizontal or vertical
     horizontal, vertical = categoriseLines(lines)
+    # Filter out close lines based to achieve 9
 
-    # Show lines
-    drawLines(image, vertical)
-    drawLines(image, horizontal)
-
-    return horizontal, vertical
+    # STANDARD THRESHOLD SHOULD BE 20
+    ver = filterClose(vertical, horizontal=False, threshold=20)
+    hor = filterClose(horizontal, horizontal=True, threshold=20)
+    print(len(ver))
+    print(len(hor))
+    # DEBUG TO SHOW LINES
+    drawLines(image, ver)
+    drawLines(image, hor)
+    return hor, ver
 
 # def showImage(image, lines):
 #     cv2.line(image, (Line.p1), (Line.p2), (255, 0, 0), 2, cv2.LINE_AA)
@@ -151,7 +186,7 @@ def drawLines(image, lines, color=(0,0,255), thickness=2):
     for l in lines:
         l.draw(image, color, thickness)
         ## DEBUG
-        #cv2.imshow('image', image)
+        cv2.imshow('image', image)
 
 
 def findIntersections(horizontals,verticals):
