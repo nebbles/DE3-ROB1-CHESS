@@ -3,6 +3,7 @@ import numpy as np
 import random
 
 class Square:
+    '''Class holding the position of a chess square'''
     def __init__(self, position, c1, c2, c3, c4):
         # ID
         self.position = position
@@ -26,11 +27,25 @@ class Square:
         self.roi = (cx, cy)
 
     def draw(self, image, color=(0, 0, 255), thickness=2):
+        '''
+        Draws the square onto an image
+        :param image:
+        :param color:
+        :param thickness:
+        :return:
+        '''
         cv2.drawContours(image, [self.contours], 0, color, thickness)
         ## DEBUG
         #cv2.circle(image, self.roi, 10, (0, 0, 255), 1)
 
     def roiColor(self, image, radius=10):
+        '''
+        Finds the averaged color within the ROI within the square. The ROI is a circle with radius r from
+        the centre of the square.
+        :param image:
+        :param radius:
+        :return:
+        '''
         # Initialise mask
         maskImage = np.zeros((image.shape[0], image.shape[1]), np.uint8)
         # Draw the ROI circle on the mask
@@ -46,6 +61,11 @@ class Square:
         return average
 
     def classify(self, image):
+        '''
+        Classifies the square into empty ('E'), occupied by a black piece ('B') or occupied by a white piece ('W')
+        :param image:
+        :return:
+        '''
         # Find Color of ROI
         rgb = self.roiColor(image)
 

@@ -1,7 +1,7 @@
 from mainDetect import *
 
 # Read Image
-img = cv2.imread("Board.jpg", 1)
+img = cv2.imread("chessboard2303test/0.jpeg", 1)
 
 # Process Image: convert to B/w
 img, processedImage = processFile(img)
@@ -39,4 +39,3 @@ cv2.imshow("Classified Squares", squareImage)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-

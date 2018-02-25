@@ -1,16 +1,13 @@
 import cv2
 import numpy as np
-#from lineClass import Line, filterCloseLines, categoriseLines
-from numpy import sum
-import sys
 from lineClass import Line
 from squareClass import Square
-import cmath
 
 def processFile(img):
     '''
-    IMAGE INPUT
-    Converts image to grayscale & applies adaptive thresholding
+    Converts input image to grayscale & applies adaptive thresholding
+    :param img:
+    :return:
     '''
     img = cv2.GaussianBlur(img,(5,5),0)
     # Convert to HSV
@@ -31,8 +28,10 @@ def processFile(img):
 
 def imageAnalysis(img, processedImage):
     '''
-    IMAGE ANALYSIS
     Finds the contours in the chessboard
+    :param img:
+    :param processedImage:
+    :return:
     '''
 
     ### CHESSBOARD EXTRACTION (Contours)
@@ -41,12 +40,6 @@ def imageAnalysis(img, processedImage):
     _, contours, hierarchy = cv2.findContours(processedImage, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     # Create copy of original image
     imgContours = img.copy()
-    # Contour detection parameters
-    index = -1
-    thickness = 4
-    color = (255, 0, 255)
-    # Initialise empty numpy array
-    objects = np.zeros([img.shape[0], img.shape[1], 3], 'uint8')
 
     for c in contours:
         # Area
@@ -56,7 +49,7 @@ def imageAnalysis(img, processedImage):
         # Filtering the chessboard edge / Error handling as some contours are so small so as to give zero division
         #For test values are 70-40, for Board values are 80 - 75 - will need to recalibrate if change
         try:
-            if (area / perimeter) < 80 and (area / perimeter) > 75:
+            if (area / perimeter) < 90 and (area / perimeter) > 75:
                 # DEBUG statements
                 #cv2.drawContours(imgContours, [c], -1, color, 2)
                 #print("Area: {}, perimeter: {}".format(area, perimeter))
@@ -65,17 +58,13 @@ def imageAnalysis(img, processedImage):
                 epsilon = 0.1 * perimeter
                 # Approximates a polygon from chessboard edge
                 chessboardEdge = cv2.approxPolyDP(c, epsilon, True)
-                # DEBUG
-                #cv2.drawContours(imgContours, [chessboardEdge], -1, color, 2)
 
-                # Draw chessboard edges and assign to region of interest (ROI)
-                roi = cv2.polylines(imgContours,[chessboardEdge],True,(0,255,255),thickness=3)
+                ## DEBUG
+                # cv2.drawContours(imgContours, [chessboardEdge], -1, color, 2)
         except:
             pass
 
-    # Show filtered contoured image
-
-    ##DEBUG
+    ## DEBUG
     #cv2.imshow("Filtered Contours", imgContours)
 
     # Create new all black image
@@ -86,20 +75,20 @@ def imageAnalysis(img, processedImage):
     extracted = np.zeros_like(img)
     extracted[mask == 255] = img[mask == 255]
     # Make mask green in order to facilitate removal of the red strip around chessboard
-    extracted[np.where((extracted == [0, 0, 0]).all(axis=2))] = [0, 100, 0]
+    extracted[np.where((extracted == [0, 0, 0]).all(axis=2))] = [0, 0, 100]
     # Adds same coloured line to remove red strip based on chessboard edge
-    cv2.polylines(extracted, [chessboardEdge], True, (0, 100, 0), thickness=6)
+    cv2.polylines(extracted, [chessboardEdge], True, (0, 0, 100), thickness=15)
 
-    #DEBUG
-    # Show image
+    ## DEBUG
     #cv2.imshow("Masked", extracted)
-    return imgContours
+
+    return extracted
 
 def cannyEdgeDetection(image):
     '''
     Runs Canny edge detection
-    Parameters: Processed Image
-    Returns edges
+    :param image:
+    :return:
     '''
     # Canny edge detection
     edges = cv2.Canny(image, 100, 300)
@@ -122,14 +111,17 @@ def categoriseLines(lines):
 
 def houghLines(edges, image):
     '''
-    Detects Hough lines on the image
+    Detects Hough lines
+    :param edges:
+    :param image:
+    :return:
     '''
+
     # Detect hough lines
-    lines = cv2.HoughLinesP(edges, rho=1, theta=1 * np.pi / 180, threshold=80, minLineLength=100, maxLineGap=50)
+    lines = cv2.HoughLinesP(edges, rho=1, theta=1 * np.pi / 180, threshold=60, minLineLength=100, maxLineGap=50)
     N = lines.shape[0]
+
     # Draw lines on image
-
-
     New = []
     for i in range(N):
         x1 = lines[i][0][0]
@@ -139,25 +131,14 @@ def houghLines(edges, image):
 
         New.append([x1,y1,x2,y2])
 
-    #print(New)
-    for i in range(N):
-        x1 = lines[i][0][0]
-        y1 = lines[i][0][1]
-        x2 = lines[i][0][2]
-        y2 = lines[i][0][3]
-
-    #     cv2.line(image, (x1, y1), (x2, y2), (255, 0, 0), 2,cv2.LINE_AA)
-    #cv2.imshow('Hough lines', image)
-    #print(len(New))
-
     lines = [Line(x1=New[i][0],y1= New[i][1], x2= New[i][2], y2=New[i][3]) for i in range(len(New))]
 
     # Categorise the lines into horizontal or vertical
     horizontal, vertical = categoriseLines(lines)
 
     # Show lines
-    #drawLines(image, vertical)
-    #drawLines(image, horizontal)
+    drawLines(image, vertical)
+    drawLines(image, horizontal)
 
     return horizontal, vertical
 
@@ -221,6 +202,9 @@ def findIntersections(horizontals,verticals):
         if intersection not in seen:
             filteredIntersections.append(intersection)
             seen.add(intersection)
+
+    ## DEBUG
+    #print(len(filteredIntersections))
 
     return filteredIntersections
 
@@ -299,8 +283,4 @@ def showImage(image, name="image"):
     cv2.imshow('image', image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
-
-
-
 

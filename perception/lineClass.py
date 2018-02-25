@@ -20,10 +20,20 @@ class Line:
         self.c = -(self.x1 * self.y2 - self.x2 * self.y1)
 
     def draw(self, image, color=(0, 0, 255), thickness=2):
+        '''
+        Draws line onto image
+        :param image:
+        :param color:
+        :param thickness:
+        :return:
+        '''
         cv2.line(image, (self.x1, self.y1), (self.x2, self.y2), color, thickness)
 
     def intersect(self, other):
-        '''Where do lines self and other intersect?
+        '''
+        Finds intersections points between two lines
+        :param other:
+        :return:
         '''
 
         if self.x * other.b == other.a * self.y:
