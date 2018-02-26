@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 from lineClass import Line, filterClose
 from squareClass import Square
+from skimage.measure import compare_ssim
+import imutils
 
 def processFile(img):
     '''
@@ -77,7 +79,7 @@ def imageAnalysis(img, processedImage):
     # Show filtered contoured image
 
     #DEBUG
-    cv2.imshow("Filtered Contours", imgContours)
+    #cv2.imshow("Filtered Contours", imgContours)
     ## DEBUG
     #cv2.imshow("Filtered Contours", imgContours)
 
@@ -170,11 +172,11 @@ def houghLines(edges, image):
     # STANDARD THRESHOLD SHOULD BE 20
     ver = filterClose(vertical, horizontal=False, threshold=20)
     hor = filterClose(horizontal, horizontal=True, threshold=20)
-    print(len(ver))
-    print(len(hor))
+    #print(len(ver))
+    #print(len(hor))
     # DEBUG TO SHOW LINES
-    drawLines(image, ver)
-    drawLines(image, hor)
+    #drawLines(image, ver)
+    #drawLines(image, hor)
     return hor, ver
 
 # def showImage(image, lines):
@@ -219,13 +221,14 @@ def findIntersections(horizontals,verticals):
     minDistance = 15
 
     # Only works if you run it several times -- WHY? Very inefficient
-    for i in range(3):
-        for intersection in intersections:
-            for neighbor in intersections:
-                distanceToNeighbour = np.sqrt((intersection[0] - neighbor[0]) ** 2 + (intersection[1] - neighbor[1]) ** 2)
-                # Check that it's not comparing the same ones
-                if distanceToNeighbour < minDistance and intersection != neighbor:
-                    intersections.remove(neighbor)
+    # Now also works if run only once so comment the loop out
+    #for i in range(3):
+    for intersection in intersections:
+        for neighbor in intersections:
+            distanceToNeighbour = np.sqrt((intersection[0] - neighbor[0]) ** 2 + (intersection[1] - neighbor[1]) ** 2)
+            # Check that it's not comparing the same ones
+            if distanceToNeighbour < minDistance and intersection != neighbor:
+                intersections.remove(neighbor)
 
     # We still have duplicates for some reason. We'll now remove these
     filteredIntersections = []
@@ -311,6 +314,55 @@ def makeSquares(corners):
     # print("Number of Squares found: " + str(len(squares)))
 
     return squares
+
+def detectSquareChange(previous, current):
+    '''
+    Take a previous and a current image and returns the squares where a change happened, i.e. a figure has been
+    moved from or to.
+    :param previous:
+    :param current:
+    :return:
+    '''
+
+    # Convert the images to grayscale
+    grayA = cv2.cvtColor(previous, cv2.COLOR_BGR2GRAY)
+    grayB = cv2.cvtColor(current, cv2.COLOR_BGR2GRAY)
+
+    # Computes the Structural Similarity Index (SSIM) between previous and current
+    (score, diff) = compare_ssim(grayA, grayB, full=True)
+    diff = (diff * 255).astype("uint8")
+
+    ## DEBUG
+    # print("SSIM: {}".format(score))
+
+    # Threshold the difference image, followed by finding contours to obtain the regions of the two input images that differ
+    thresh = cv2.threshold(diff, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+    cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+
+    # Loop over the contours to return centres of differences
+    centres = []
+
+    for c in cnts:
+        # Compute the bounding box and find its centre
+        try:
+            # Area
+            area = cv2.contourArea(c)
+            # Perimenter
+            perimeter = cv2.arcLength(c, True)
+            if area > 100:
+                (x, y, w, h) = cv2.boundingRect(c)
+                centre = (int(x + w / 2), int(y + h / 2))
+                centres.append(centre)
+                cv2.circle(current, centre, 3, 255, 2)
+                cv2.rectangle(current, (x, y), (x + w, y + h), (0, 0, 255), 2)
+        except:
+            pass
+
+    ## DEBUG
+    #cv2.imshow("Detected Move", current)
+
+    return centres
 
 def showImage(image, name="image"):
     #print("Showing image: '%s'" % name)

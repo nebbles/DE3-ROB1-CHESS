@@ -1,6 +1,12 @@
+import cv2
 from mainDetect import *
+from boardClass import Board
 
-# Read Image
+'''
+1. Generate Board class holding information about the 64 squares
+'''
+
+# Read image of empty chessboard
 img = cv2.imread("chessboard2303test/0.jpeg", 1)
 
 # Process Image: convert to B/w
@@ -30,12 +36,45 @@ squareImage = img.copy()
 # Get list of Square class instances
 squares = makeSquares(corners)
 
-# Draw the squares and classify them (draws the square color on the image)
-for square in squares:
-    square.draw(squareImage)
-    square.classify(squareImage)
+# Make a Board class from all the squares to hold information
+board = Board(squares)
 
+'''
+2. Start game by taking picture of populated chessboard
+'''
+
+# Initialise the BWE Matrix
+board.initBWE()
+
+# TODO: Get picture of populated board at start of game
+
+# Initialising previous variable with empty chessboard
+previous = cv2.imread("chessboard2303test/1.jpeg", 1)
+
+'''
+3. Find BWE matrix by analysing current images and comparing them to previous ones
+'''
+
+# This will need to be a loop at some point that does its calculations as soon as it
+# receives the new image from the camera --> Sylvia's code
+#while True:
+
+# Getting current image
+current = cv2.imread("chessboard2303test/2.jpeg", 1)
+
+# Find the centre of the image differences
+centres = detectSquareChange(previous, current)
+
+# Now we want to check in which square the change has happened
+match = board.whichSquares(centres)
+
+# Update the BWE
+board.updateBWE(match)
+
+# Show the classified squares
+board.draw(squareImage)
 cv2.imshow("Classified Squares", squareImage)
 
+# Wait for user input
 cv2.waitKey(0)
 cv2.destroyAllWindows()
