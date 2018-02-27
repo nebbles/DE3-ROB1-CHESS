@@ -7,7 +7,6 @@ from scipy import interpolate
 from franka.franka_control import FrankaControl
 
 
-
 def output(move, board_points, dead_zone, rest, hover, visual_flag=False):
     """ function to run the code, outputs list of vectors to complete the trajectectory"""
 
@@ -33,7 +32,6 @@ def output(move, board_points, dead_zone, rest, hover, visual_flag=False):
         died = None
     elif dead_status == "Died":
         died = AN_to_coords(died_AN, board_points)
-        print('died',died)
 
     # create complete array of intermediary poses
     rest_h, start_h, goal_h, died_h, dead_h = intermediate_coords(rest, start, goal, hover, died, dead_zone)
@@ -59,7 +57,7 @@ def output(move, board_points, dead_zone, rest, hover, visual_flag=False):
     x_sample, y_sample, z_sample = data_split(trajectory)
     x_fine, y_fine, z_fine, x_knots, y_knots, z_knots = data_interpolation(trajectory, x_sample, y_sample, z_sample)
     smooth_trajectory = generate_smooth_trajectory(x_fine, y_fine, z_fine)
-    x_smooth, y_smooth, z_smooth = data_split(smooth_trajectory) # actually just splitting into x, y and z
+    x_smooth, y_smooth, z_smooth = data_split(smooth_trajectory)  # actually just splitting into x, y and z
 
     if visual_flag:
         print("\nBEN'S Smooth Trajectory:\n ", smooth_trajectory)
@@ -69,7 +67,6 @@ def output(move, board_points, dead_zone, rest, hover, visual_flag=False):
         print_actions(trajectory_1,trajectory_2)
 
     return smooth_trajectory
-
 
 
 def best_fit(X, Y):
@@ -87,6 +84,7 @@ def best_fit(X, Y):
     print('best fit line:\ny = {:.2f} + {:.2f}x'.format(a, b))
 
     return a, b
+
 
 def logic(move): # move is a list of tuple(s) [(‘R’.’a4’)(‘p’, ‘a2a4’)]
     """Function to extract information from move"""
@@ -106,6 +104,7 @@ def logic(move): # move is a list of tuple(s) [(‘R’.’a4’)(‘p’, ‘a2
         died_AN = (move[0][1])
         return "Died", start_AN, goal_AN, died_AN
 
+
 def AN_to_coords(AN, board_points): #AN = a6
     """Function to convert the given algebraic notation into real world coordinates"""
 
@@ -119,7 +118,7 @@ def AN_to_coords(AN, board_points): #AN = a6
 
     n = 8 # number of squares
 
-    # preset coordinates of each AN
+    # find coordinates of each AN
     letters = dict([('a', x / 2), ('b', (x / 2) * 2), ('c', (x / 2) * 3), ('d', (x / 2) * 4), ('e', (x / 2) * 5),
                     ('f', (x / 2) * 6), ('g', (x / 2) * 7), ('h', (x / 2) * 8)])
     numbers = dict([('1', y / 2), ('2', (y / 2) * 2), ('3', (y / 2) * 3), ('4', (y / 2) * 4), ('5', (y / 2) * 5),
@@ -163,8 +162,10 @@ def intermediate_coords(rest, start, goal, hover, died, dead_zone):
         died_h = [died[0], died[1], hover]
     return rest_h, start_h, goal_h, died_h, dead_h
 
+
 def create_line(a, b, v, vectors, dt):
-    """function to create an array of poses between 2 points in space"""
+    """function to create a list of coordinates between 2 points in space"""
+
     vector = [b[0]-a[0], b[1]-a[1], b[2]-a[2]]  # vector from b to a
     vectors.append(vector)
     distance = sqrt(sum(i**2 for i in vector))  # straight line distance between points
@@ -234,7 +235,8 @@ def move_path(dead_status, rest, start, start_h, goal, goal_h, dead_zone_h, velo
             line = np.delete(line, 0, 0)
             lines.append(line)
 
-    return vectors,lines
+    return vectors, lines
+
 
 def dead_path(rest, died, died_h, dead_zone, dead_zone_h, velocity, dt):
 
@@ -260,12 +262,12 @@ def dead_path(rest, died, died_h, dead_zone, dead_zone_h, velocity, dt):
 
 
 def generate_trajectory(line_list, dead_status):
-    """function that generate full trajectory from different paths"""
+    """Function that generates full trajectory from individual lines"""
 
     trajectory = concatenate(line_list, axis=0)
 
     # joining the lines into a trajectory
-    if dead_status =='None died':
+    if dead_status == 'None died':
 
         # Forming the 3 movements that surround the gripping and ungripping
         line_list_1 = (line_list[0], line_list[1])
@@ -295,8 +297,10 @@ def generate_trajectory(line_list, dead_status):
 
         return trajectory, trajectory_1, trajectory_2, trajectory_3, trajectory_4, trajectory_5
 
+
 def data_split(trajectory):
     """function that splits the data into x, y and z's"""
+
     x_sample = [(trajectory[i][0]) for i in range(len(trajectory))]
     y_sample = [(trajectory[i][1]) for i in range(len(trajectory))]
     z_sample = [(trajectory[i][2]) for i in range(len(trajectory))]
@@ -305,6 +309,7 @@ def data_split(trajectory):
 
 def data_interpolation(trajectory, x_sample, y_sample, z_sample):
     """function that performs interpolation to find smoothed trajectory"""
+
     tck, u = interpolate.splprep([x_sample, y_sample, z_sample], s=10000)  # s is amount of smoothness
     x_knots, y_knots, z_knots = interpolate.splev(tck[0], tck)
     u_fine = np.linspace(0, 1, len(trajectory))
@@ -314,10 +319,12 @@ def data_interpolation(trajectory, x_sample, y_sample, z_sample):
 
 def generate_smooth_trajectory(x_fine, y_fine, z_fine):
     """function that extracts the smooth trajectory"""
+
     smooth_trajectory = zip(x_fine, y_fine, z_fine)
     smooth_trajectory = [list(elem) for elem in smooth_trajectory]
     # smooth_trajectory = smooth_trajectory[::1000] # extracting every 1000th element when a smaller dt is used
     return smooth_trajectory
+
 
 #
 # def split_xyz(smooth_trajectory): # previously generate vectors
@@ -340,7 +347,7 @@ def generate_smooth_trajectory(x_fine, y_fine, z_fine):
 
 
 def plot(x_sample, y_sample, z_sample, x_knots, y_knots, z_knots, x_smooth, y_smooth, z_smooth):
-    """function that plots trajectory"""
+    """Function that plots trajectory"""
     fig = plt.figure()
     ax3d = fig.add_subplot(111, projection='3d')
     ax3d.plot(x_sample, y_sample, z_sample, 'r')  # plotting the angled points
@@ -350,6 +357,6 @@ def plot(x_sample, y_sample, z_sample, x_knots, y_knots, z_knots, x_smooth, y_sm
 
 
 if __name__ == '__main__':
-    output([("r", "b4"),("r", "a1a2")] ,visual_flag=True) # test for death
-    #output([("r", "a1a2")] ,visual_flag=True) # test for standard move
+    #output([("r", "b4"),("r", "a1a2")] ,visual_flag=True) # test for death
+    output([("r", "a1a2")] ,visual_flag=True) # test for standard move
 
