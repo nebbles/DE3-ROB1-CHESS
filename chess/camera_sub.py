@@ -44,11 +44,6 @@ class image_converter:
       depth_image = ((255*depth_image_raw)).astype(np.uint8)
     except CvBridgeError as e:
       print(e)
-    else:
-        # Save OpenCV2 image as a jpeg 
-        cv2.imwrite('camera_image.jpeg', cv_image)
-        cv2.imwrite('depth_image.jpeg', depth_image)
- 
 
     cv2.imshow("Image window", cv_image)
     cv2.imshow("Depth window", depth_image)
@@ -71,3 +66,4 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv)
+  
