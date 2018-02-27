@@ -1,4 +1,6 @@
 .idea
+*.pyc
+/__pycache__
 
 # Ignore build directory in docs dir
 /docs/build
