@@ -8,10 +8,9 @@ from franka.franka_control import FrankaControl
 
 
 
-def output(move, visual_flag=False):
+def output(move, board_points, dead_zone, rest, hover, visual_flag=False):
     """ function to run the code, outputs list of vectors to complete the trajectectory"""
 
-    board_points, dead_zone, rest, hover = callib()
 
     # start and goal poses
     #rest = [0, 0, 500]
@@ -70,134 +69,6 @@ def output(move, visual_flag=False):
 
     return smooth_trajectory
 
-
-def callib():#trajectory_chess):
-    """Function to gather the FRANKA frame coordinates of the key positions"""
-
-    # collect data from 4 FRANKA frame points
-    arm = FrankaControl()#debug=True)
-
-    print("For the followign commands, place the FRANKA end effector in the centre of the relevant square\n")
-
-    valid = input("Move the arm to A1 corner")
-    if valid == "":
-        pass
-    else:
-        print('YOU FUCKED UP')
-    #corner_A1_FRANKA = arm.get_end_effector_pos()
-    corner_A1_FRANKA = [0, 0, 0];
-
-    valid = input("Move the arm to A8 corner")
-    if valid == "":
-        pass
-    else:
-        print('YOU FUCKED UP')
-    #corner_A8_FRANKA = arm.get_end_effector_pos()
-    corner_A8_FRANKA = [0,908,0];
-
-    valid = input("Move the arm to H8 corner")
-    if valid == "":
-        pass
-    else:
-        print('YOU FUCKED UP')
-    #corner_H8_FRANKA = arm.get_end_effector_pos()
-    corner_H8_FRANKA = [908, 908, 0];
-
-    valid = input("Move the arm to H1 corner")
-    if valid == "":
-        pass
-    else:
-        print('YOU FUCKED UP')
-    #corner_H1_FRANKA = arm.get_end_effector_pos()
-    corner_H1_FRANKA = [908,0,0]
-
-
-    valid = input("Move arm to the desired hover height")
-    if valid == "":
-        pass
-    else:
-        print('YOU FUCKED UP')
-    #box_FRANKA = arm.get_end_effector_pos()
-    hover_FRANKA = [0, 0, 200]
-    hover_height = hover_FRANKA[2]
-
-    valid = input("Move arm to the dead zone")
-    if valid == "":
-        pass
-    else:
-        print('YOU FUCKED UP')
-    # dead_zone = arm.get_end_effector_pos()
-    dead_zone = [200, 300, 0]
-
-    valid = input("Move arm to the rest position")
-    if valid == "":
-        pass
-    else:
-        print('YOU FUCKED UP')
-    # dead_zone = arm.get_end_effector_pos()
-    rest = [0, 0, 200]
-
-    # Coordinates in chess frame
-    # corner_A1_chess = [0, 0, 0]
-    # corner_A8_chess = [0, 454, 0]
-    # corner_H8_chess = [454, 454, 0 ]
-    # corner_H1_chess = [454, 0, 0]
-
-
-    # FRANKA_points = [corner_A1_FRANKA, corner_A8_FRANKA, corner_H8_FRANKA, corner_H1_FRANKA]
-    # chess_points = [corner_A1_chess, corner_A8_chess, corner_H8_chess, corner_H1_chess]
-
-    board_points = [corner_A1_FRANKA, corner_A8_FRANKA, corner_H8_FRANKA, corner_H1_FRANKA]
-
-    return board_points, dead_zone, rest, hover_height
-
-    # # visualise points
-    # fig = plt.figure()
-    # x_FRANKA, y_FRANKA, z_FRANKA = data_split(FRANKA_points)
-    # x_chess, y_chess, z_chess = data_split(chess_points)
-    # ax3d = fig.add_subplot(221, projection='3d')
-    # ax3d.plot(x_chess, y_chess, z_chess, 'go')
-    # ax3d.plot(x_FRANKA, y_FRANKA ,z_FRANKA, 'ro')
-    # ax3d.set_xlabel('X')
-    # ax3d.set_ylabel('Y')
-    # ax3d.set_zlabel('Z')
-    #
-    # # plot linear regression
-    # ax3d = fig.add_subplot(222)
-    # plt.plot(x_chess, x_FRANKA, 'go')
-    # ax3d.set_xlabel('Chess x points')
-    # ax3d.set_ylabel('FRANKA x points')
-    # a, b = best_fit(x_chess, x_FRANKA)
-    # xfit = [a + b * xi for xi in x_chess]
-    # plt.plot(x_chess, xfit)
-    #
-    # ax3d = fig.add_subplot(223)
-    # plt.plot(y_chess, y_FRANKA, 'go')
-    # ax3d.set_xlabel('Chess y points')
-    # ax3d.set_ylabel('FRANKA y points')
-    # a, b = best_fit(y_chess, y_FRANKA)
-    # yfit = [a + b * yi for yi in y_chess]
-    # plt.plot(y_chess, yfit)
-    #
-    # ax3d = fig.add_subplot(224)
-    # plt.plot(z_chess, z_FRANKA, 'go')
-    # ax3d.set_xlabel('Chess z points')
-    # ax3d.set_ylabel('FRANKA z points')
-    # a, b = best_fit(z_chess, z_FRANKA)
-    # zfit = [a + b * zi for zi in z_chess]
-    # plt.plot(z_chess, zfit)
-    #
-    # plt.show()
-
-
-
-
-
-    # linear regression between FRANKA frame and chess frame
-    # Equation of line is transformation matrix
-    # transform from chess to franka frames
-
-    #return trajectory_FRANKA
 
 
 def best_fit(X, Y):
