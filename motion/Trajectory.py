@@ -19,8 +19,8 @@ def output(move, board_points, dead_zone, rest, hover, visual_flag=False):
     #dead_zone = [200,300,0]
 
     # variables
-    dt = 0.1  # resolution in seconds 0.001
-    velocity = 5  # speed in mm/s
+    dt = 0.01  # resolution in seconds 0.001
+    velocity = 0.5  # speed in mm/s
 
     # Use logic to extract information from move
     dead_status, start_AN, goal_AN, died_AN = logic(move)
@@ -33,6 +33,7 @@ def output(move, board_points, dead_zone, rest, hover, visual_flag=False):
         died = None
     elif dead_status == "Died":
         died = AN_to_coords(died_AN, board_points)
+        print('died',died)
 
     # create complete array of intermediary poses
     rest_h, start_h, goal_h, died_h, dead_h = intermediate_coords(rest, start, goal, hover, died, dead_zone)
@@ -167,7 +168,6 @@ def create_line(a, b, v, vectors, dt):
     vector = [b[0]-a[0], b[1]-a[1], b[2]-a[2]]  # vector from b to a
     vectors.append(vector)
     distance = sqrt(sum(i**2 for i in vector))  # straight line distance between points
-
     # time to complete movement
     time = distance/v
 

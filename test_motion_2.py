@@ -2,7 +2,7 @@ from motion import Trajectory
 from franka.franka_control import FrankaControl
 
 # collect data from 4 FRANKA frame points
-arm = FrankaControl(debug_flag=True)  # debug=True)
+arm = FrankaControl(debug_flag=False)  # debug=True)
 
 def callib(arm):#trajectory_chess):
     """Function to gather the FRANKA frame coordinates of the key positions"""
@@ -17,8 +17,9 @@ def callib(arm):#trajectory_chess):
     try:
         corner_A1_FRANKA = arm.get_end_effector_pos()
         print('We are using actual Franka coordinates')
+        print(corner_A1_FRANKA)
     except:
-        corner_A1_FRANKA = [0,0,0]
+        corner_A1_FRANKA = [0.501, 0.199, 0.048]
 
     valid = input("Move the arm to A8 corner")
     if valid == "":
@@ -28,7 +29,7 @@ def callib(arm):#trajectory_chess):
     try:
         corner_A8_FRANKA = arm.get_end_effector_pos()
     except:
-        corner_A8_FRANKA = [0,908,0]
+        corner_A8_FRANKA = [0.739,0.14,0.0344]
 
     valid = input("Move the arm to H8 corner")
     if valid == "":
@@ -38,7 +39,7 @@ def callib(arm):#trajectory_chess):
     try:
         corner_H8_FRANKA = arm.get_end_effector_pos()
     except:
-        corner_H8_FRANKA = [908, 908, 0];
+        corner_H8_FRANKA = [0.71, -0.176, 0];
 
     valid = input("Move the arm to H1 corner")
     if valid == "":
@@ -48,7 +49,7 @@ def callib(arm):#trajectory_chess):
     try:
         corner_H1_FRANKA = arm.get_end_effector_pos()
     except:
-        corner_H1_FRANKA = [908,0,0]
+        corner_H1_FRANKA = [0.468,-0.138,-0.0156]
 
 
     valid = input("Move arm to the desired hover height")
@@ -60,7 +61,7 @@ def callib(arm):#trajectory_chess):
         hover_FRANKA = arm.get_end_effector_pos()
         hover = hover_FRANKA[2]
     except:
-        hover_FRANKA = [0, 0, 200]
+        hover_FRANKA = [0.505,-0.0483,0.165]
         hover = hover_FRANKA[2]
 
     valid = input("Move arm to the dead zone")
@@ -71,7 +72,7 @@ def callib(arm):#trajectory_chess):
     try:
         dead_zone = arm.get_end_effector_pos()
     except:
-        dead_zone = [200, 300, 0]
+        dead_zone = [0.363, -0.482, 0.245]
 
     valid = input("Move arm to the rest position")
     if valid == "":
@@ -81,7 +82,7 @@ def callib(arm):#trajectory_chess):
     try:
         rest = arm.get_end_effector_pos()
     except:
-        rest = [0, 0, 200]
+        rest = [0.29,0.125,0.818]
 
     board_points = [corner_A1_FRANKA, corner_A8_FRANKA, corner_H8_FRANKA, corner_H1_FRANKA]
 
@@ -92,5 +93,7 @@ board_points, dead_zone, rest, hover = callib(arm)
 trajectory = Trajectory.output([("r", "b4"),("r", "a1a2")], board_points, dead_zone, rest, hover, visual_flag=False)
 
 for move in trajectory:
-    print(move,'\n')
-    arm.move_absolute(move)
+    try:
+        arm.move_absolute(move)
+    except:
+        print(move, '\n')
