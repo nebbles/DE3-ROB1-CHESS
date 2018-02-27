@@ -2,7 +2,7 @@ from motion import Trajectory
 from franka.franka_control import FrankaControl
 
 # collect data from 4 FRANKA frame points
-arm = FrankaControl(debug_flag=False)  # debug=True)
+arm = FrankaControl(debug_flag=True)  # debug=True)
 
 def callib(arm):#trajectory_chess):
     """Function to gather the FRANKA frame coordinates of the key positions"""
@@ -16,6 +16,7 @@ def callib(arm):#trajectory_chess):
         print('YOU FUCKED UP')
     try:
         corner_A1_FRANKA = arm.get_end_effector_pos()
+        print('We are using actual Franka coordinates')
     except:
         corner_A1_FRANKA = [0,0,0]
 
@@ -81,7 +82,6 @@ def callib(arm):#trajectory_chess):
         rest = arm.get_end_effector_pos()
     except:
         rest = [0, 0, 200]
-        print('wtf')
 
     board_points = [corner_A1_FRANKA, corner_A8_FRANKA, corner_H8_FRANKA, corner_H1_FRANKA]
 
@@ -89,4 +89,8 @@ def callib(arm):#trajectory_chess):
 
 board_points, dead_zone, rest, hover = callib(arm)
 
-trajectory = Trajectory.output([("r", "b4"),("r", "a1a2")], board_points, dead_zone, rest, hover, visual_flag=True)
+trajectory = Trajectory.output([("r", "b4"),("r", "a1a2")], board_points, dead_zone, rest, hover, visual_flag=False)
+
+for move in trajectory:
+    print(move,'\n')
+    arm.move_absolute(move)
