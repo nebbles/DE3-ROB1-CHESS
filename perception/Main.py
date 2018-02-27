@@ -39,12 +39,17 @@ squares = makeSquares(corners)
 # Make a Board class from all the squares to hold information
 board = Board(squares)
 
+## DEBUG
+# Show the classified squares
+#board.draw(squareImage)
+#cv2.imshow("Classified Squares", squareImage)
+
 '''
 2. Start game by taking picture of populated chessboard
 '''
 
-# Initialise the BWE Matrix
-board.initBWE()
+# Assign the initial BWE Matrix to the squares
+board.assignBWE()
 
 # TODO: Get picture of populated board at start of game
 
@@ -61,19 +66,27 @@ previous = cv2.imread("chessboard2303test/1.jpeg", 1)
 
 # Getting current image
 current = cv2.imread("chessboard2303test/2.jpeg", 1)
+# Copy to detect color changes --> Attention there's a weird error when you try to use the same ones
+currentCopy = current.copy()
 
 # Find the centre of the image differences
 centres = detectSquareChange(previous, current)
 
 # Now we want to check in which square the change has happened
-match = board.whichSquares(centres)
+matches = board.whichSquares(centres)
 
-# Update the BWE
-board.updateBWE(match)
+# Print first
+board.getBWE()
 
-# Show the classified squares
-board.draw(squareImage)
-cv2.imshow("Classified Squares", squareImage)
+# Update the BWE by looking at which squares have changed
+board.updateBWE(matches, currentCopy)
+
+# Print second
+board.getBWE()
+
+# Show BWE Update
+cv2.imshow("Updating BWE", currentCopy)
+
 
 # Wait for user input
 cv2.waitKey(0)

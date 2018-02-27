@@ -295,9 +295,10 @@ def makeSquares(corners):
     # List of Square objects
     squares = []
 
-    # Lists containing positional information
+    # Lists containing positional and index information
     letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
     numbers = ['1', '2', '3', '4', '5', '6', '7', '8']
+    index = 0
 
     for i in range(8):
         for j in range(8):
@@ -307,8 +308,9 @@ def makeSquares(corners):
             c2 = corners[i][j+1]
             c3 = corners[i+1][j+1]
             c4 = corners[i+1][j]
-            square = Square(position, c1, c2, c3, c4)
+            square = Square(position, c1, c2, c3, c4, index)
             squares.append(square)
+            index += 1
 
     ## DEBUG
     # print("Number of Squares found: " + str(len(squares)))

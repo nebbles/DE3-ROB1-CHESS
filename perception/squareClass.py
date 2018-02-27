@@ -4,14 +4,17 @@ import random
 
 class Square:
     '''Class holding the position of a chess square'''
-    def __init__(self, position, c1, c2, c3, c4):
+    def __init__(self, position, c1, c2, c3, c4, index, state=''):
         # ID
         self.position = position
+        self.index = index
         # Corners
         self.c1 = c1
         self.c2 = c2
         self.c3 = c3
         self.c4 = c4
+        # State
+        self.state = state
 
         # Actual polygon as a numpy array of corners
         self.contours = np.array([c1, c2, c3, c4], dtype=np.int32)
@@ -60,7 +63,7 @@ class Square:
 
         return average
 
-    def classify(self, image):
+    def classify(self, image, drawParam=True):
         '''
         Classifies the square into empty ('E'), occupied by a black piece ('B') or occupied by a white piece ('W')
         :param image:
@@ -69,26 +72,38 @@ class Square:
         # Find Color of ROI
         rgb = self.roiColor(image)
 
-        # The flag will be returned and populate the BWE matrix
-        flag = ''
+        # Flag
+        state = ''
 
-        # Ideal RGB
+        # Ideal RGB for EMPTY
         blackEmpty = (70,25,25)
         whiteEmpty = (205,155,150)
 
+        # Ideal RGB for WHITE
+        occupiedWhite = (222,146,96)
+        # IDEAL RGB for BLACK
+        occupiedBlack = (103,35,32)
+
         absDiffBE = 0
         absDiffWE = 0
-        for i in range(len(rgb)):
-            absDiffBE += abs(blackEmpty[i]-rgb[i])
-            absDiffWE += abs(whiteEmpty[i] - rgb[i])
+        absDiffOW = 0
+        absDiffOB = 0
 
-        if absDiffBE < absDiffWE:
-            flag = 'B'
-            cv2.putText(image, flag, self.roi, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
-        else:
-            flag = 'W'
-            cv2.putText(image, flag, self.roi, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
+        for i in range(len(rgb)):
+            absDiffBE += blackEmpty[i] - rgb[i]
+            absDiffWE += whiteEmpty[i] - rgb[i]
+            absDiffOW += occupiedWhite[i] - rgb[i]
+            absDiffOB += occupiedBlack[i] - rgb[i]
+
+        absDiff = [(absDiffBE, 'E'),(absDiffWE, 'E'),(absDiffOW, 'W'),(absDiffOB, 'B')]
+        absDiff.sort(key=lambda x: x[0])
+
+        print(absDiff)
+
+        state = str(absDiff[0][1])
+        if drawParam:
+            cv2.putText(image, state, self.roi, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
 
         ## DEBUG
         # print(flag)
-        return flag
+        return state
