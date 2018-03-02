@@ -1,6 +1,8 @@
 import cv2
+import rospy
 from mainDetect import *
 from boardClass import Board
+from camera_sub import image_converter
 
 '''
 0. High-level functions
@@ -50,7 +52,7 @@ def makeBoard(image):
 
     return board
 
-def bwe():
+def bwe(current):
     '''
     Takes care of taking the camera picture, comparing it to the previous one, updating the BWE and returning it
     :return:
@@ -58,9 +60,12 @@ def bwe():
     global previous
 
     # TODO: Get current image
+
+    ## DEBUG
     # Getting current image
-    currentPath = "chessboard2303test/2.jpeg"
-    current = cv2.imread(currentPath, 1)
+    #currentPath = "chessboard2303test/2.jpeg"
+
+    current = cv2.imread(current, 1)
 
     # Copy to detect color changes --> Attention there's a weird error when you try to use the same ones
     currentCopy = current.copy()
@@ -95,18 +100,31 @@ def printBwe(bwe):
 1. Calibrate game by taking picture of empty chessboard
 '''
 
+# Instantiate image converter
+ic = image_converter()
+# Initialise rospy node
+rospy.init_node('image_converter', anonymous=True)
+
+# Get image of empty board
+rgbImage, depthImage = ic.image_return()
+
 # TODO: GET EMPTY CHESSBOARD PIC
-imgPathEmpty = "chessboard2303test/0.jpeg"
+## DEBUG
+# imgPathEmpty = "chessboard2303test/0.jpeg"
+# Read image of empty chessboard
+# img = cv2.imread(imgPathEmpty, 1)
 
 '''
 2. Generate Board class holding information about the 64 squares
+
+When done press any key to continue
 '''
 
-# Read image of empty chessboard
-img = cv2.imread(imgPathEmpty, 1)
-
 # Make the board class / This contains most of the image analysis
-board = makeBoard(img)
+board = makeBoard(rgbImage)
+
+# Press key to continue
+cv2.waitKey(0)
 
 '''
 3. Populate board and assign BWE matrix
@@ -114,11 +132,17 @@ board = makeBoard(img)
 
 # TODO: Get picture of populated board at start of game
 
-# Initialising previous variable with empty chessboard
-previousPath = "chessboard2303test/1.jpeg"
+## DEBUG
+# Initialising previous variable with populated chessboard
+#previousPath = "chessboard2303test/1.jpeg"
+#global previous
+#previous = cv2.imread(previousPath, 1)
+
+# Get image of populated board
+rgbImage, depthImage = ic.image_return()
 
 global previous
-previous = cv2.imread(previousPath, 1)
+previous = rgbImage
 
 # Assign the initial BWE Matrix to the squares
 board.assignBWE()
@@ -127,9 +151,22 @@ board.assignBWE()
 4. Find BWE matrix by analysing current images and comparing them to previous ones
 '''
 
-bwe = bwe()
-printBwe(bwe)
+try:
+    # Spin rospy
+    rospy.spin()
 
-# Wait for user input
-cv2.waitKey(0)
+    # Get new image
+    currentImage, depthImage = ic.image_return()
+
+    # Update BWE
+    bwe = bwe(currentImage)
+
+    # Print the new BWE
+    printBwe(bwe)
+
+    # Wait for user input
+    cv2.waitKey(0)
+except KeyboardInterrupt:
+    print("Shutting down")
+
 cv2.destroyAllWindows()
