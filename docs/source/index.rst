@@ -36,6 +36,7 @@ Contents
    :caption: Project Development
 
    controller
+   calibration
    perception
    chess-engine
    motion
