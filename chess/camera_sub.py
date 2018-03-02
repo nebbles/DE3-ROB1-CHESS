@@ -23,18 +23,17 @@ import cv2
 class image_converter:
 
   def __init__(self):
-    #self.image_pub = rospy.Publisher("/camera/rgb/image_rect_color",Image)
-
+  
     self.bridge = CvBridge()
     image_sub = Subscriber("/camera/rgb/image_rect_color",Image)
     depth_sub = Subscriber("/camera/depth_registered/image_raw", Image)
 
     tss = message_filters.ApproximateTimeSynchronizer([image_sub, depth_sub],queue_size=10, slop=0.5)
-    # self.callback_d(image_sub,depth_sub)                                    
+    
     tss.registerCallback(self.callback)
     print('init')
 
-  def callback(self,img, depth):
+  def callback(self, img, depth):
     try:
       cv_image = self.bridge.imgmsg_to_cv2(img, "bgr8")
     except CvBridgeError as e:
@@ -44,16 +43,16 @@ class image_converter:
       depth_image = ((255*depth_image_raw)).astype(np.uint8)
     except CvBridgeError as e:
       print(e)
-
+  
     cv2.imshow("Image window", cv_image)
     cv2.imshow("Depth window", depth_image)
     cv2.waitKey(1)
+    
+    return cv_image, depth_image
 
-    #try:
-    #  self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
-    #except CvBridgeError as e:
-    #  print(e)
-
+    def image_return():
+        cv_image, depth_image = self.callback(image_sub,depth_sub)
+        return cv_image, depth_image
 
 def main(args):
   ic = image_converter()
@@ -66,4 +65,3 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv)
-  
