@@ -11,7 +11,9 @@ class Line:
 
         self.dy = self.y2 - self.y1
         self.dx = self.x2 - self.x1
-        self.center = ((self.x1 + self.x2) / 2, (self.y1 + self.y2) / 2)
+        self.centerH = (self.y1 + self.y2) / 2
+        self.centerV = (self.x1 + self.x2) / 2
+        self.center = (self.centerV, self.centerH)
 
         if abs(self.dx) > abs(self.dy):
             self.category = 'horizontal'
