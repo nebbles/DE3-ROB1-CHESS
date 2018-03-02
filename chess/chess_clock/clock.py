@@ -29,17 +29,17 @@ b_on = False
 
 pygame.init()
 pygame.display.init()
-screen = pygame.display.set_mode((800, 600))
+screen = pygame.display.set_mode((1280, 720))
 pygame.display.set_caption("Chess Clock")
 
 background = pygame.Surface(screen.get_size())
 rect = background.fill((0, 0, 0))
 
-clock_image, clock_rect = load_image("clock_image.png")
+clock_image, clock_rect = load_image("clock_image_new.png")
 
 clock = pygame.time.Clock()
 
-font = pygame.font.Font("clock_font.ttf", 34)
+font = pygame.font.Font("clock_font_digi.ttf", 120)
 
 while True:
     clock.tick(30)
@@ -108,9 +108,9 @@ while True:
     time_b_txt = font.render(time_b_str, 1, (255, 255, 255))
 
     time_a_rect = time_a_txt.get_rect()
-    time_a_rect.center = (310, 310)
+    time_a_rect.center = (360, 383)
     time_b_rect = time_b_txt.get_rect()
-    time_b_rect.center = (525, 310)
+    time_b_rect.center = (920, 383)
 
     screen.blit(background, rect)
     screen.blit(clock_image, clock_rect)
