@@ -46,7 +46,7 @@ class image_converter:
   
     cv2.imshow("Image window", cv_image)
     cv2.imshow("Depth window", depth_image)
-    cv2.waitKey(1)
+    cv2.waitKey(0)
     
     return cv_image, depth_image
 
