@@ -33,7 +33,7 @@ class image_converter:
     tss.registerCallback(self.callback)
     print('init')
 
-  def callback(self, img, depth):
+  def callback(self, img, depth, debug=False):
     try:
       cv_image = self.bridge.imgmsg_to_cv2(img, "bgr8")
     except CvBridgeError as e:
@@ -43,16 +43,14 @@ class image_converter:
       depth_image = ((255*depth_image_raw)).astype(np.uint8)
     except CvBridgeError as e:
       print(e)
-  
-    cv2.imshow("Image window", cv_image)
-    cv2.imshow("Depth window", depth_image)
-    cv2.waitKey(1)
-    
-    return cv_image, depth_image
 
-  def image_return(self):
-      cv_image, depth_image = self.callback(self.image_sub,self.depth_sub)
-      return cv_image, depth_image
+    ## DEBUG
+    if debug:
+      cv2.imshow("Image window", cv_image)
+      cv2.imshow("Depth window", depth_image)
+      cv2.waitKey(1)
+
+    return cv_image, depth_image
 
 
 def main(args):

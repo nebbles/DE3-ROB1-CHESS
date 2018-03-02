@@ -106,7 +106,7 @@ ic = image_converter()
 rospy.init_node('image_converter', anonymous=True)
 
 # Get image of empty board
-rgbImage, depthImage = ic.image_return()
+rgbImage, depthImage = ic.callback(debug=True)
 
 # TODO: GET EMPTY CHESSBOARD PIC
 ## DEBUG
@@ -121,10 +121,15 @@ When done press any key to continue
 '''
 
 # Make the board class / This contains most of the image analysis
-board = makeBoard(rgbImage)
+try:
+    board = makeBoard(rgbImage)
+except:
+    print("Error: Board couldn't be instantiated")
 
 # Press key to continue
+print("Press any key to continue!")
 cv2.waitKey(0)
+print("Board generated. Continuing...")
 
 '''
 3. Populate board and assign BWE matrix
@@ -139,13 +144,16 @@ cv2.waitKey(0)
 #previous = cv2.imread(previousPath, 1)
 
 # Get image of populated board
-rgbImage, depthImage = ic.image_return()
+rgbImage, depthImage = ic.callback(debug=True)
 
 global previous
 previous = rgbImage
 
 # Assign the initial BWE Matrix to the squares
 board.assignBWE()
+
+print("BWE assigned")
+
 
 '''
 4. Find BWE matrix by analysing current images and comparing them to previous ones
@@ -156,7 +164,7 @@ try:
     rospy.spin()
 
     # Get new image
-    currentImage, depthImage = ic.image_return()
+    currentImage, depthImage = ic.callback(debug=True)
 
     # Update BWE
     bwe = bwe(currentImage)
@@ -164,7 +172,7 @@ try:
     # Print the new BWE
     printBwe(bwe)
 
-    # Wait for user input
+    print("Please make a move and then press any key.")
     cv2.waitKey(0)
 except KeyboardInterrupt:
     print("Shutting down")
