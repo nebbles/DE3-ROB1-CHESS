@@ -28,6 +28,7 @@ class Square:
 
         # ROI is the small circle within the square on which we will do the averaging
         self.roi = (cx, cy)
+        self.radius = 5
 
     def draw(self, image, color=(0, 0, 255), thickness=2):
         '''
@@ -39,9 +40,9 @@ class Square:
         '''
         cv2.drawContours(image, [self.contours], 0, color, thickness)
         ## DEBUG
-        #cv2.circle(image, self.roi, 10, (0, 0, 255), 1)
+        cv2.circle(image, self.roi, self.radius, (0, 0, 255), 1)
 
-    def roiColor(self, image, radius=10):
+    def roiColor(self, image):
         '''
         Finds the averaged color within the ROI within the square. The ROI is a circle with radius r from
         the centre of the square.
@@ -52,7 +53,7 @@ class Square:
         # Initialise mask
         maskImage = np.zeros((image.shape[0], image.shape[1]), np.uint8)
         # Draw the ROI circle on the mask
-        cv2.circle(maskImage, self.roi, radius, (255, 255, 255), -1)
+        cv2.circle(maskImage, self.roi, self.radius, (255, 255, 255), -1)
         # Find the average color
         average_raw = cv2.mean(image, mask=maskImage)[::-1]
         # Need int format so reassign variable
@@ -63,7 +64,7 @@ class Square:
 
         return average
 
-    def classify(self, image, drawParam=True):
+    def classify(self, image, drawParam=False):
         '''
         Classifies the square into empty ('E'), occupied by a black piece ('B') or occupied by a white piece ('W')
         :param image:
@@ -90,15 +91,19 @@ class Square:
         absDiffOB = 0
 
         for i in range(len(rgb)):
-            absDiffBE += blackEmpty[i] - rgb[i]
-            absDiffWE += whiteEmpty[i] - rgb[i]
-            absDiffOW += occupiedWhite[i] - rgb[i]
-            absDiffOB += occupiedBlack[i] - rgb[i]
+            absDiffBE += (blackEmpty[i] - rgb[i])**2
+            absDiffWE += (whiteEmpty[i] - rgb[i])**2
+            absDiffOW += (occupiedWhite[i] - rgb[i])**2
+            absDiffOB += (occupiedBlack[i] - rgb[i])**2
+
+        absDiffBE = np.sqrt(absDiffBE)
+        absDiffWE = np.sqrt(absDiffWE)
+        absDiffOW = np.sqrt(absDiffOW)
+        absDiffOB = np.sqrt(absDiffOB)
 
         absDiff = [(absDiffBE, 'E'),(absDiffWE, 'E'),(absDiffOW, 'W'),(absDiffOB, 'B')]
         absDiff.sort(key=lambda x: x[0])
 
-        print(absDiff)
 
         state = str(absDiff[0][1])
         if drawParam:

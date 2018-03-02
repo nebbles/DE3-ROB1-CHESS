@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 class Board:
     '''Holds all the squares and the BWE matrix'''
@@ -47,14 +48,27 @@ class Board:
             self.BWEmatrix[match.index] = state
 
     def getBWE(self):
+        '''
+        Converts BWE from list of strings to a rotated numpy array
+        :return:
+        '''
+        bwe = np.zeros((8,8),dtype=np.int8)
 
-        print("This is the BWE matrix: ")
-        print("")
+        counter = 0
+
         for i in range(8):
-            print(self.BWEmatrix[8 * i + 0]+self.BWEmatrix[8 * i + 1]+self.BWEmatrix[8 * i + 2]+self.BWEmatrix[8 * i + 3]
-                  +self.BWEmatrix[8 * i + 4]+self.BWEmatrix[8 * i + 5]+self.BWEmatrix[8 * i + 6]+
-                  self.BWEmatrix[8 * i + 7])
-        print("")
+            for j in range(8):
+                if self.BWEmatrix[counter] == 'E':
+                    tmp = 0
+                elif self.BWEmatrix[counter] == 'W':
+                    tmp = 1
+                elif self.BWEmatrix[counter] == 'B':
+                    tmp = 2
+                bwe[i][j] = tmp
+                counter += 1
+
+        # Rotation in return statement
+        return np.rot90(bwe)
 
     def whichSquares(self, points):
         '''
