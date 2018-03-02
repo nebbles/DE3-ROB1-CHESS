@@ -5,6 +5,7 @@ from squareClass import Square
 from skimage.measure import compare_ssim
 import imutils
 from boardClass import Board
+import operator
 
 def processFile(img):
     '''
@@ -131,14 +132,22 @@ def categoriseLines(lines):
             vertical.append(lines[i])
 
     #takes center of line & sorts
-    horizontal = [(l.center[1], l) for l in horizontal]
-    vertical = [(l.center[0], l) for l in vertical]
+    print(horizontal)
 
-    horizontal.sort()
-    vertical.sort()
+    horizontal = sorted(horizontal, key=operator.attrgetter('centerH'))
+    vertical = sorted(vertical, key=operator.attrgetter('centerV'))
 
-    horizontal = [l[1] for l in horizontal]
-    vertical = [l[1] for l in vertical]
+    # sorted(horizontal, key=lambda l: l.getCenterH)
+    #
+    # horizontal = [(l.getCenter[1], l) for l in horizontal]
+    # vertical = [(l.getCenter[0], l) for l in vertical]
+    # #todo change to get center function;
+    # print(horizontal)
+    # # horizontal.sort()
+    # # vertical.sort()
+    #
+    # horizontal = [l[1] for l in horizontal]
+    # vertical = [l[1] for l in vertical]
 
     return horizontal,vertical
 
