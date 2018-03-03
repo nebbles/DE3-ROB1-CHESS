@@ -1,3 +1,5 @@
+#
+# Benedict Greenberg, March 2018
 import numpy as np
 
 
