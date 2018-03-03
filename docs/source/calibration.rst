@@ -2,15 +2,19 @@
 Calibration
 ***********
 
+To use our reference frame conversion code, use the following command in the terminal when in the directory you want it copied to::
+
+  svn export https://github.com/nebbles/DE3-ROB1-CHESS/trunk/calibration.py
+
 Introduction
 ============
 
-Intro to our calibration procedure...
+.. todo:: Intro to our calibration procedure...
 
 Procedure
 =========
 
-The procedure as follows... move in contained area, detect markers
+.. todo:: The procedure as follows... move in contained area, detect markers
 
 Reference Frames
 ================
@@ -63,7 +67,7 @@ Where :math:`m_{ij}` is the unknown in *X*,
       m_{41}&m_{42}&m_{43}&m_{44}
     \end{bmatrix}
 
-In MATLab, the function for solving this equation is simply ``X = a\b``, or less commonly written as ``X = mldivide(a,b)``. `The mldivide() function`_ in MATLab is a complex one, and utilises many different possible algorithms depending on its inputs. To get the similar behaviour in Python, we use `numpy's lstsq function`_ which has similarites and differences which have been discussed `{1}`_ `{2}`_, but ultimately provides us the same functionality of returning a least square solution to the equation. We use the function as in our example belows::
+In MATLab, the function for solving this equation is simply ``X = a\b``, or less commonly written as ``X = mldivide(a,b)``. `The mldivide() function`_ in MATLab is a complex one, and utilises many different possible algorithms depending on its inputs. To get the similar behaviour in Python, we use `numpy's lstsq function`_ which has similarites and differences which have been discussed `{1}`_ `{2}`_, but ultimately provides us the same functionality of returning a least square solution to the equation. We use the function as in our example below::
 
   import numpy as np
   from numpy import random
