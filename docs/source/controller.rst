@@ -2,6 +2,8 @@
 Controller API
 **************
 
+.. todo:: redo and add system diagram
+
 Below is the specification for the modules of the Chess Project Python Program. This is to ensure that each module fulfills its function and that the overall goal of the project is achieved. Each module can then seperately be improved and updated, assuming compliance with this specification.
 
 **Clock** module:
