@@ -4,7 +4,7 @@
 
 # DE3 Group Project for Robotics 1
 
-Project CHESS:
+Project CHESS Team:
 
 - Anna Bernbaum ([@AnnaBernbaum](https://github.com/AnnaBernbaum))
 - Ben Greenberg ([@nebbles](https://github.com/nebbles))
@@ -14,14 +14,40 @@ Project CHESS:
 - Paolo Ruegg ([@pa17](https://github.com/pa17))
 - Sylvia Zhang
 
-Guide:
+## Popular source code
 
-- See the ``game-engine`` branch for developments on the chess logic and decision libraries.
-- See the ``perception`` branch for developments on converting rgb image feed and tracking of chess board.
-- See the ``motion`` branch for development of motion planning and motion controllers.
+* Source code for controlling Franka without ROS
 
-Remember to document your work as you go, *including your docstrings into classes and functions/methods*. If you aren't sure what you need to do for it, ask Ben first so he can help you add them to do the project.
+```bash
+svn export https://github.com/nebbles/DE3-ROB1-CHESS/trunk/franka
+```
 
-Finally, remember to **push your changes and updates to your relevant GitHub branch**. GitHub tracks all contributions of code to this group project.
+* Source code for controlling Franka with ROS
+
+todo
+
+* Source code for converting between reference frames
+
+```bash
+svn export https://github.com/nebbles/DE3-ROB1-CHESS/trunk/calibration.py
+```
+
+## Downloading the repository
+
+```bash
+git clone http://github.com/nebbles/DE3-ROB1-CHESS
+```
+
+## Installation
+
+todo
+
+## Compiling the documentation offline
+
+```bash
+cd docs/
+make html
+open build/html/index.html
+```
 
 ![LICENSE](CC4.0-BY.jpg)
