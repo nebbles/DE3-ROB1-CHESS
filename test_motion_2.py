@@ -77,7 +77,9 @@ def callib(arm):#trajectory_chess):
 board_points, dead_zone, rest, hover = callib(arm)
 
 # Find trajectory
-trajectory = Trajectory.output([("r", "b4"), ("r", "a1a2")], board_points, dead_zone, rest, hover, visual_flag=False)
+trajectory = Trajectory.output([("r", "b4"), ("r", "a1b4")], board_points, dead_zone, rest, hover, visual_flag=True)
+#trajectory = Trajectory.output([("r", "a1a2")], board_points, dead_zone, rest, hover, visual_flag=True) # test for life
+
 
 # Execute trajectory
 for move in trajectory:

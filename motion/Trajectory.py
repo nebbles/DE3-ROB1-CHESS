@@ -10,16 +10,8 @@ from franka.franka_control import FrankaControl
 def output(move, board_points, dead_zone, rest, hover, visual_flag=False):
     """ function to run the code, outputs list of vectors to complete the trajectectory"""
 
-
-    # start and goal poses
-    #rest = [0, 0, 500]
-    #rest = arm.get_end_effector_pos()
-    #hover = 200  # hover height
-    #dead_zone = [200,300,0]
-
-    # variables
-    dt = 0.01  # resolution in seconds 0.001
-    velocity = 0.5  # speed in mm/s
+    # resolution - distance between each point in m
+    n = 0.002
 
     # Use logic to extract information from move
     dead_status, start_AN, goal_AN, died_AN = logic(move)
@@ -28,24 +20,16 @@ def output(move, board_points, dead_zone, rest, hover, visual_flag=False):
     start = AN_to_coords(start_AN, board_points)
     goal = AN_to_coords(goal_AN, board_points)
 
-    if dead_status == 'None died':
-        died = None
-    elif dead_status == "Died":
-        died = AN_to_coords(died_AN, board_points)
-
     # create complete array of intermediary poses
-    rest_h, start_h, goal_h, died_h, dead_h = intermediate_coords(rest, start, goal, hover, died, dead_zone)
+    rest_h, start_h, goal_h, deadzone_h = intermediate_coords(rest, start, goal, hover, dead_zone)
 
-    # algorithm to generate vectors and coordinates making up the path
-    if dead_status == "None died":
-        vectors, line_list = move_path(dead_status, rest, start, start_h, goal, goal_h, dead_h, velocity, dt)
-    elif dead_status == "Died":
-        vectors, line_list_1 = dead_path(rest, died, died_h, dead_zone, dead_h, velocity, dt)
-        vectors, line_list_2 = move_path(dead_status, rest, start, start_h, goal, goal_h, dead_h, velocity, dt)
-
-        line_list = line_list_1 + line_list_2
-
-    #print("BEN'S Vectors: ", vectors)
+    # generate vectors and coordinates making up the path
+    line_list_current = start_path(dead_status, rest, start_h, goal_h, n) # start path
+    if dead_status == "Died":
+        line_list_dead = dead_path(rest, goal, goal_h, dead_zone, deadzone_h, start_h, n) # dead path
+        line_list_current = line_list_current + line_list_dead
+    line_list_move = move_path(rest, start, start_h, goal, goal_h, n) # move path
+    line_list = line_list_current + line_list_move
 
     # Finding the separate trajectories that surround gripping and ungripping
     if dead_status == 'None died':
@@ -57,14 +41,11 @@ def output(move, board_points, dead_zone, rest, hover, visual_flag=False):
     x_sample, y_sample, z_sample = data_split(trajectory)
     x_fine, y_fine, z_fine, x_knots, y_knots, z_knots = data_interpolation(trajectory, x_sample, y_sample, z_sample)
     smooth_trajectory = generate_smooth_trajectory(x_fine, y_fine, z_fine)
-    x_smooth, y_smooth, z_smooth = data_split(smooth_trajectory)  # actually just splitting into x, y and z
+    x_smooth, y_smooth, z_smooth = data_split(smooth_trajectory)
 
+    # plot the trajectory
     if visual_flag:
-        print("\nBEN'S Smooth Trajectory:\n ", smooth_trajectory)
-
-        # display trajectory
         plot(x_sample, y_sample, z_sample, x_knots, y_knots, z_knots, x_smooth, y_smooth, z_smooth)
-        print_actions(trajectory_1,trajectory_2)
 
     return smooth_trajectory
 
@@ -139,7 +120,6 @@ def AN_to_coords(AN, board_points): #AN = a6
     # Finding the gripper height depending on game engine output
     # dictionary of heights for each piece
 
-
 def print_actions(trajectory_1, trajectory_2, trajectory_3):
     """function that prints action list for Franka"""
     print('\n-------------------------------------------------------------------\nSeries of movements:\n')
@@ -150,115 +130,93 @@ def print_actions(trajectory_1, trajectory_2, trajectory_3):
     print('Trajectory 3:\n', trajectory_3)
 
 
-def intermediate_coords(rest, start, goal, hover, died, dead_zone):
+def intermediate_coords(rest, start, goal, hover, dead_zone):
     """function to generate the intermediate positions of FRANKA"""
     rest_h = [rest[0], rest[1], hover]
     start_h = [start[0], start[1], hover]
     goal_h = [goal[0], goal[1], hover]
-    dead_h = [dead_zone[0], dead_zone[1], hover]
-    if died == None:
-        died_h = None
-    else:
-        died_h = [died[0], died[1], hover]
-    return rest_h, start_h, goal_h, died_h, dead_h
+    deadzone_h = [dead_zone[0], dead_zone[1], hover]
+
+    return rest_h, start_h, goal_h, deadzone_h
 
 
-def create_line(a, b, v, vectors, dt):
+def create_line(a, b, n):
     """function to create a list of coordinates between 2 points in space"""
 
-    vector = [b[0]-a[0], b[1]-a[1], b[2]-a[2]]  # vector from b to a
-    vectors.append(vector)
-    distance = sqrt(sum(i**2 for i in vector))  # straight line distance between points
-    # time to complete movement
-    time = distance/v
+    vector = [b[0] - a[0], b[1] - a[1], b[2] - a[2]]  # vector from b to a
+    distance = sqrt(sum(i ** 2 for i in vector))
 
-    # number of points
-    n = time/dt
-    n = int(n)
+    # number of points on line
+    i = int(distance/n)
 
     # pre-allocate space
-    line = np.zeros((n, 3))
+    line = np.zeros((i, 3))
 
     # generate array of poses
-    line_x = linspace(a[0], b[0], n)
-    line_y = linspace(a[1], b[1], n)
-    line_z = linspace(a[2], b[2], n)
+    line_x = linspace(a[0], b[0], i)
+    line_y = linspace(a[1], b[1], i)
+    line_z = linspace(a[2], b[2], i)
 
     # append coordinates
-    for i in range(n):
-        line[i, 0] = line_x[i]
-        line[i, 1] = line_y[i]
-        line[i, 2] = line_z[i]
-
+    for j in range(i):
+        line[j, 0] = line_x[j]
+        line[j, 1] = line_y[j]
+        line[j, 2] = line_z[j]
+    print(line)
     return line
 
 
-def move_path(dead_status, rest, start, start_h, goal, goal_h, dead_zone_h, velocity, dt):
-
-    vectors = []
+def start_path(dead_status, rest, start_h, goal_h, n):
 
     if dead_status == 'None died':
-
-        l1 = create_line(rest, start_h, velocity, vectors, dt)
-        l2 = create_line(start_h, start, velocity, vectors, dt)
-        # grip
-        l3 = create_line(start, start_h, velocity, vectors, dt)
-        l4 = create_line(start_h, goal_h, velocity, vectors, dt)
-        l5 = create_line(goal_h, goal, velocity, vectors, dt)
-        # ungrip
-        l6 = create_line(goal, goal_h, velocity, vectors, dt)
-        l7 = create_line(goal_h, rest, velocity, vectors, dt)
-
-        # Remove duplicates
-        line_list = [l1, l2, l3, l4, l5, l6, l7]
-        lines = []
-        for line in line_list:
-            line = np.delete(line, 0, 0)
-            lines.append(line)
-
-    elif dead_status == "Died":
-
-        l1 = create_line(dead_zone_h, start_h, velocity, vectors, dt)
-        l2 = create_line(start_h, start, velocity, vectors, dt)
-        # grip
-        l3 = create_line(start, start_h, velocity, vectors, dt)
-        l4 = create_line(start_h, goal_h, velocity, vectors, dt)
-        l5 = create_line(goal_h, goal, velocity, vectors, dt)
-        # ungrip
-        l6 = create_line(goal, goal_h, velocity, vectors, dt)
-        l7 = create_line(goal_h, rest, velocity, vectors, dt)
-
-        # Remove duplicates
-        line_list = [l1, l2, l3, l4, l5, l6, l7]
-        lines =[]
-        for line in line_list:
-            line = np.delete(line, 0, 0)
-            lines.append(line)
-
-    return vectors, lines
+        l0 = create_line(rest, start_h, n)
+    elif dead_status == 'Died':
+        l0 = create_line(rest, goal_h, n)
+    return [l0]
 
 
-def dead_path(rest, died, died_h, dead_zone, dead_zone_h, velocity, dt):
+def move_path(rest, start, start_h, goal, goal_h, n):
 
-    vectors = []
-
-    l1 = create_line(rest, died_h, velocity, vectors, dt)
-    l2 = create_line(died_h, died, velocity, vectors, dt)
+    l1 = create_line(start_h, start, n)
     # grip
-    l3 = create_line(died, died_h, velocity, vectors, dt)
-    l4 = create_line(died_h, dead_zone_h, velocity, vectors, dt)
-    l5 = create_line(dead_zone_h, dead_zone, velocity, vectors, dt)
+    l2 = create_line(start, start_h, n)
+    l3 = create_line(start_h, goal_h, n)
+    l4 = create_line(goal_h, goal, n)
     # ungrip
-    l6 = create_line(dead_zone, dead_zone_h, velocity, vectors, dt)
+    l5 = create_line(goal, goal_h, n)
+    l6 = create_line(goal_h, rest, n)
 
     # Remove duplicates
     line_list = [l1, l2, l3, l4, l5, l6]
+
     lines = []
     for line in line_list:
         line = np.delete(line, 0, 0)
         lines.append(line)
 
-    return vectors, lines
+    return lines
+
+
+def dead_path(rest, goal, died_h, dead_zone, dead_zone_h, start_h, n):
+
+    l1 = create_line(rest, died_h, n)
+    l2 = create_line(died_h, goal, n)
+    # grip
+    l3 = create_line(goal, died_h, n)
+    l4 = create_line(died_h, dead_zone_h, n)
+    l5 = create_line(dead_zone_h, dead_zone, n)
+    # ungrip
+    l6 = create_line(dead_zone, dead_zone_h, n)
+    l7 = create_line(dead_zone_h, start_h, n)
+
+    # Remove duplicates
+    line_list = [l1, l2, l3, l4, l5, l6, l7]
+    lines = []
+    for line in line_list:
+        line = np.delete(line, 0, 0)
+        lines.append(line)
+
+    return lines
 
 
 def generate_trajectory(line_list, dead_status):
@@ -326,7 +284,21 @@ def generate_smooth_trajectory(x_fine, y_fine, z_fine):
     return smooth_trajectory
 
 
-#
+def generate_vectors(smooth_trajectory):
+
+    smooth_vectors = []
+    for i in range(1, len(smooth_trajectory)):
+        previous = smooth_trajectory[i-1]
+        current = smooth_trajectory[i]
+
+        smooth_vector = [previous[0] - current[0], previous[1] - current[1], previous[2] - current[2]]
+
+        smooth_vectors.append(smooth_vector)
+
+    return smooth_vectors
+
+
+
 # def split_xyz(smooth_trajectory): # previously generate vectors
 #     """function that calculates vectors between points on smooth trajectory"""
 #     #smooth_vectors = []
