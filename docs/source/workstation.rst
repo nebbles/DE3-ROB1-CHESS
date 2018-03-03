@@ -81,7 +81,7 @@ Install FRANKA Libraries
 Option 1: Install binaries via ``apt``
 --------------------------------------
 
-Binary packages for ``libfranka`` and ``franka_ros`` are available from the ROS repositories. After setting up `ROS Kinetic <wiki.ros.org/kinetic/Installation/Ubuntu>`_, execute::
+Binary packages for ``libfranka`` and ``franka_ros`` are available from the ROS repositories. After setting up `ROS Kinetic <http://wiki.ros.org/kinetic/Installation/Ubuntu>`_, execute::
 
   sudo apt install ros-kinetic-libfranka
   sudo apt install ros-kinetic-franka-ros
