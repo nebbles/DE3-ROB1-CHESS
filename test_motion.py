@@ -1,7 +1,7 @@
 from motion import Trajectory
 from franka.franka_control import FrankaControl
 
-vector_list = Trajectory.get_test_trajectory()
+vector_list = Trajectory.output()
 
 new_vectors = []
 for vector in vector_list:

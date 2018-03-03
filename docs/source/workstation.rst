@@ -9,7 +9,6 @@ Requirements for FRANKA Workstation
 
 #. `Install Ubuntu`_ (you may need to partition hard drive)
 #. `Install the realtime kernel patch`_
-#. `Install the realtime kernel patch`_
 #. `Install ROS Kinetic`_
 #. `Install FRANKA Libraries`_
 #. `Install other libraries`_
@@ -81,12 +80,14 @@ Install FRANKA Libraries
 Option 1: Install binaries via ``apt``
 --------------------------------------
 
-Binary packages for ``libfranka`` and ``franka_ros`` are available from the ROS repositories. After setting up `ROS Kinetic <wiki.ros.org/kinetic/Installation/Ubuntu>`_, execute::
+Binary packages for ``libfranka`` and ``franka_ros`` are available from the ROS repositories. After setting up `ROS Kinetic <http://wiki.ros.org/kinetic/Installation/Ubuntu>`_, execute::
 
   sudo apt install ros-kinetic-libfranka
   sudo apt install ros-kinetic-franka-ros
 
 Note that if you use ``apt-get`` or ``apt`` to install a package on Ubuntu, you can use ``dpkg -L <packagename>`` to find where on the system the files for a particular package are installed.
+
+.. warning:: Franka Emika have updated the version of libfranka distributed by ROS from 0.1.0 to 0.2.0 which means it no longer supports the firmware version used in the lab. For more information on software versions, see :ref:`franka-emika-software`.
 
 Option 2: Install and compile from source (**not recommended**)
 ---------------------------------------------------------------

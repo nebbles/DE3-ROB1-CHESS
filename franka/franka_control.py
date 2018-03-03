@@ -1,3 +1,5 @@
+#
+# Benedict Greenberg, March 2018
 """Python Module to control the Franka Arm though simple method calls.
 
 This module uses ``subprocess`` and ``os``.
@@ -141,6 +143,14 @@ class FrankaControl(object):
         if len(coordinates) > 3:
             raise ValueError("Invalid coordinates. There can only be three dimensions.")
         x, y, z = coordinates[0], coordinates[1], coordinates[2]
+
+        try:
+            x, y, z = float(x), float(y), float(z)
+        except ValueError:
+            print("Arguments are invalid: must be floats")
+            return
+
+        x, y, z = str(x), str(y), str(z)
 
         # TODO: implement safety check for target coordinates
 
