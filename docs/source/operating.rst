@@ -1,32 +1,22 @@
-*******************************
-Operating the Robot with Python
-*******************************
+*********************
+Operating without ROS
+*********************
 
-.. note::
-  This page is still incomplete and will continue to be actively updated.
+.. note:: This method is deprecated. It is now recommended you use ROS to control the Arm using a Python publisher. See :doc:`franka_ros` for more information.
 
-Starting up FRANKA & using provided workstations
-================================================
-
-To log into the workstation:
-
-* Username: ``robin``
-* Password: ``deniro``
-
-.. note::
-  If you do not use a provided workstation, ensure you have completed all the steps in the :doc:`workstation` page.
-
-Connect your workstation to the network via ethernet. Power up the FRANKA and when booted (solid yellow), type the following into the URL bar in a browser::
-
-  http://192.168.0.88
-
-Now run through the unlocking procedure as described in the :doc:`./franka` doc.
-
-Understanding how to control the FRANKA
-=======================================
+.. Planned method
+.. --------------
+..
+.. The image below describes how we plan to control the Arm using Python. To be able to write a successful Python program, we must first understand how ROS works: how to publish and listen on topics.
+..
+.. .. figure:: _static/franka_programming_interface.png
+..     :align: center
+..     :figclass: align-center
+..
+..     Interfacing Python with FRANKA.
 
 Setting Permissions
--------------------
+===================
 
 To control the Franka Arm, Fabian and Petar have written a small collection of C++ files which can be compiled to run as executables and control the Franka Arm using libfranka.
 
@@ -36,8 +26,8 @@ Ensure that you have run::
 
   source /opt/ros/kinetic/setup.bash
 
-.. note::
-  If this doesn't run, you may not have installed ROS Kinetic properly.
+.. hint::
+  If this doesn't run, you may not have installed ROS Kinetic properly. Check `ROS Kinetic install here <http://wiki.ros.org/kinetic/Installation/Ubuntu>`_.
 
 We then need to source ros for the root user so that libfranka has permissions to use the realtime kernel::
 
@@ -53,7 +43,7 @@ If the results is ``99`` then you have nothing more to do, is the result is ``0`
 .. _`the last section of the realtime kernel setup`: https://frankaemika.github.io/docs/installation.html#allow-a-user-to-set-real-time-permissions-for-its-processes
 
 Downloading the C++ Executables and Python Class
-------------------------------------------------
+================================================
 
 Now that you have libfranka set up properly you can get use the C++ files provided. These resources can be found in the ``/franka`` `directory`_ of the repository. Firstly, go to your project directory in the terminal by using ``cd <project_dir>``. If you have already downloaded the files before and are replacing them with an up-to-date version, run ``rm -rf franka/`` first. To download the necessary folder, run::
 
@@ -77,7 +67,7 @@ These binaries can now be used from the command line to control the Arm::
 Alternatively, you can control the Arm using the easy custom Python class ``Caller`` (see below).
 
 Python-Franka API with ``franka_control.py``
---------------------------------------------
+============================================
 
 The Python-FRANKA module (``franka_control.py``) is designed to allow easy access to the C++ controller programs provided by Petar. The provided Python module is structured as follows.
 
@@ -85,8 +75,7 @@ The Python-FRANKA module (``franka_control.py``) is designed to allow easy acces
   :members:
   :undoc-members:
 
-Example
-~~~~~~~
+**Example**
 
 To use the ``FrankaControl`` class in your own Python script would look something like this:
 
@@ -104,7 +93,7 @@ To use the ``FrankaControl`` class in your own Python script would look somethin
   This example code assumes you are following the general project structure guide. See below for more information. The code above would be called from a main script such as ``run.py``.
 
 General Structure of Project
-----------------------------
+============================
 
 The structure of the project is important to ensure that importing between modules works properly and also seperates externally maintained code from your own. An example of a project tree is::
 
@@ -133,32 +122,6 @@ The structure of the project is important to ensure that importing between modul
   │   ├── module3.py
   │   ├── __init__.py
   └── test_script.py
-
-
-.. Planned method
-.. --------------
-..
-.. The image below describes how we plan to control the Arm using Python. To be able to write a successful Python program, we must first understand how ROS works: how to publish and listen on topics.
-..
-.. .. figure:: _static/franka_programming_interface.png
-..     :align: center
-..     :figclass: align-center
-..
-..     Interfacing Python with FRANKA.
-
-
-Getting Started with ROS
-========================
-
-.. note::
-  Currently we are not using ROS to control the FRANKA Robot. So this section is only necessary to get practise in setting up a workspace. We will likely be using this in the future.
-
-#. In your home directory, ensure you have set up a `complete catkin workspace`_.
-#. Within that workspace, `create a catkin package`_.
-#. TBC...
-
-.. _`complete catkin workspace`: http://wiki.ros.org/catkin/Tutorials/create_a_workspace
-.. _`create a catkin package`: http://wiki.ros.org/ROS/Tutorials/CreatingPackage
 
 Additional Resources
 ====================
