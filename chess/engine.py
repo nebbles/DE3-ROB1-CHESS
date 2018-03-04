@@ -7,10 +7,7 @@ and the chess logic underneath.
 import multiprocessing as mp
 import time
 import sys
-try:
-    import chess.sunfish_custom as sunfish
-except ImportError:
-    import sunfish_custom as sunfish
+import chess.sunfish_custom as sunfish
 
 
 class HiddenPrints:
