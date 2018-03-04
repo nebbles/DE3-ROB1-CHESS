@@ -72,7 +72,7 @@ def best_fit(X, Y):
     return a, b
 
 
-def logic(move): # move is a list of tuple(s) [(‘R’.’a4’)(‘p’, ‘a2a4’)]
+def logic(move):
     """Extracts information from move given by game engine
 
     Returns:
