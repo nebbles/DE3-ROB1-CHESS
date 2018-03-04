@@ -76,7 +76,7 @@ def logic(move):
     """Extracts information from move given by game engine
 
     Returns:
-        * A string "None died" or "Died" accordingly
+        * A string ''None died" or "Died'' accordingly
         * Algebraic notation (AN) of the start and goal
     """
 
