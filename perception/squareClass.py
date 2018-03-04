@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import random
+
 
 class Square:
     '''Class holding the position of a chess square'''

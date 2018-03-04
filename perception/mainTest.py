@@ -1,6 +1,5 @@
 import cv2
 from mainDetect import Perception
-from camera_sub import image_converter
 
 
 # TODO: Sylvia: Write a function that gets an RGB image from the camera within the Perception class in mainDetect.py

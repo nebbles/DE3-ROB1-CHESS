@@ -1,8 +1,11 @@
 import cv2
 import numpy as np
 
+
 class Board:
-    '''Holds all the squares and the BWE matrix'''
+    '''
+    Holds all the squares and the BWE matrix
+    '''
     def __init__(self, squares, BWEmatrix = [], leah = 'noob coder'):
         # Squares
         self.squares = squares
