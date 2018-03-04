@@ -43,6 +43,8 @@ def output(move, board_points, dead_zone, rest, hover, visual_flag=False):
     smooth_trajectory = generate_smooth_trajectory(x_fine, y_fine, z_fine)
     x_smooth, y_smooth, z_smooth = data_split(smooth_trajectory)
 
+    generate_vectors(smooth_trajectory)
+
     # plot the trajectory
     if visual_flag:
         plot(x_sample, y_sample, z_sample, x_knots, y_knots, z_knots, x_smooth, y_smooth, z_smooth)
@@ -268,7 +270,7 @@ def data_split(trajectory):
 def data_interpolation(trajectory, x_sample, y_sample, z_sample):
     """function that performs interpolation to find smoothed trajectory"""
 
-    tck, u = interpolate.splprep([x_sample, y_sample, z_sample], s=10000)  # s is amount of smoothness
+    tck, u = interpolate.splprep([x_sample, y_sample, z_sample], s=0.0005)  # s is amount of smoothness
     x_knots, y_knots, z_knots = interpolate.splev(tck[0], tck)
     u_fine = np.linspace(0, 1, len(trajectory))
     x_fine, y_fine, z_fine = interpolate.splev(u_fine, tck)
@@ -298,32 +300,12 @@ def generate_vectors(smooth_trajectory):
     return smooth_vectors
 
 
-
-# def split_xyz(smooth_trajectory): # previously generate vectors
-#     """function that calculates vectors between points on smooth trajectory"""
-#     #smooth_vectors = []
-#     for i in range(1, len(smooth_trajectory)):
-#
-#         #previous = smooth_trajectory[i-1]
-#         #current = smooth_trajectory[i]
-#
-#         #smooth_vector = [previous[0] - current[0], previous[1] - current[1], previous[2] - current[2]]
-#
-#         #smooth_vectors.append(smooth_vector)
-#
-#         # extracting x, y and z's from smooth_trajectory
-#         x_smooth = [(smooth_trajectory[i][0]) for i in range(len(smooth_trajectory))]
-#         y_smooth = [(smooth_trajectory[i][1]) for i in range(len(smooth_trajectory))]
-#         z_smooth = [(smooth_trajectory[i][2]) for i in range(len(smooth_trajectory))]
-#     return x_smooth, y_smooth, z_smooth
-
-
 def plot(x_sample, y_sample, z_sample, x_knots, y_knots, z_knots, x_smooth, y_smooth, z_smooth):
     """Function that plots trajectory"""
     fig = plt.figure()
     ax3d = fig.add_subplot(111, projection='3d')
     ax3d.plot(x_sample, y_sample, z_sample, 'r')  # plotting the angled points
-    ax3d.plot(x_knots, y_knots, z_knots, 'go')  # plotting the curve knots
+    #ax3d.plot(x_knots, y_knots, z_knots, 'go')  # plotting the curve knots
     ax3d.plot(x_smooth, y_smooth, z_smooth, 'g')  # plotting the smoothed trajectory
     plt.show()
 
