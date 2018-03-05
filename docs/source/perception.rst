@@ -34,7 +34,7 @@ Limitations
 ===========
 
 This perception module has limitations, which are mostly in terms of robustness and setup. With more coding effort it should
-be able to recognise the chessboard even if it is populated.
+be able to recognise the chessboard grid even if it is populated.
 
 Implementation
 ==============
@@ -50,15 +50,10 @@ Implementation
   :members:
   :undoc-members:
 
-.. automodule:: perception.mainDetect.Perception
-  :members:
-  :undoc-members:
-
 .. automodule:: perception.boardClass
   :members:
   :undoc-members:
 
-.. automodule:: perception.mainTest
+.. automodule:: perception.mainDetect
   :members:
   :undoc-members:
-

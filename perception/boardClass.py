@@ -3,9 +3,9 @@ import numpy as np
 
 
 class Board:
-    '''
+    """
     Holds all the squares and the BWE matrix
-    '''
+    """
     def __init__(self, squares, BWEmatrix = [], leah = 'noob coder'):
         # Squares
         self.squares = squares
@@ -15,20 +15,17 @@ class Board:
         self.leah = leah
 
     def draw(self,image):
-        '''
+        """
         Draws the board and classifies the squares (draws the square state on the image)
-        :param image:
-        :return:
-        '''
+        """
         for square in self.squares:
             square.draw(image)
             square.classify(image)
 
     def assignBWE(self):
-        '''
+        """
         Assigns states to squares and initialises the BWE matrix
-        :return:
-        '''
+        """
 
         for i in range(8):
             self.squares[8*i + 0].state = 'W'
@@ -46,15 +43,17 @@ class Board:
         return self.BWEmatrix
 
     def updateBWE(self, matches, current):
+        """
+        Updates the BWE
+        """
         for match in matches:
             state = match.classify(current, True)
             self.BWEmatrix[match.index] = state
 
     def getBWE(self):
-        '''
+        """
         Converts BWE from list of strings to a rotated numpy array
-        :return:
-        '''
+        """
         bwe = np.zeros((8,8),dtype=np.int8)
 
         counter = 0
@@ -74,11 +73,9 @@ class Board:
         return np.rot90(bwe)
 
     def whichSquares(self, points):
-        '''
+        """
         Returns the squares which a list of points lie within
-        :param centres:
-        :return:
-        '''
+        """
         matches = []
         for square in self.squares:
             for point in points:

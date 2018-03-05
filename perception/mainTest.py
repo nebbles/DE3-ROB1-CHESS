@@ -1,12 +1,12 @@
 import cv2
-from mainDetect import Perception
+from perception.mainDetect import Perception
 
 
 # TODO: Sylvia: Write a function that gets an RGB image from the camera within the Perception class in mainDetect.py
 
-'''
+"""
 1. Start by getting picture of empty chessboard
-'''
+"""
 
 # TODO: Sylvia: Once you've implemented that function, get the image inside the makeBoard function and remove these lines
 
@@ -14,11 +14,11 @@ imgPathEmpty = "chessboard2303test/0.jpeg"
 # Read image of empty chessboard
 empty = cv2.imread(imgPathEmpty, 1)
 
-'''
+"""
 2. Instantiate Perception object
 
 Generates Board class within the Perception object holding information about the 64 squares
-'''
+"""
 
 # Make Perception instance
 percept = Perception()
@@ -28,13 +28,13 @@ percept = Perception()
 # Make a Board instance within Perception. This assigns the grid and the initial BWE given an image of an empty board
 percept.makeBoard(empty)
 
-'''
+"""
 3. Populate board
 
 The board now needs to be populated in the normal setup. previous is initialised to the image with the populated
 chessboard with pieces in the start positions. Current is the picture taken after a move has been made. This
 needs to run in a loop so that the BWE is updated forever
-'''
+"""
 
 # TODO: Sylvia: There is something for you to do in that function
 

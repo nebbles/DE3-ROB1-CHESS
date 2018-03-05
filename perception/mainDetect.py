@@ -1,18 +1,18 @@
 import cv2
 import numpy as np
-from lineClass import Line, filterClose
-from squareClass import Square
 from skimage.measure import compare_ssim
 import imutils
-from boardClass import Board
 import operator
+from perception.lineClass import Line, filterClose
+from perception.squareClass import Square
+from perception.boardClass import Board
+
 
 class Perception:
-    '''
+    """
     The perception class contains the board as well as some functions needed to generate it and output
     a BWE matrix. The updating of the BWE is done within Board
-    '''
-
+    """
     def __init__(self, board = 0, previous = 0):
         # The Board instance
         self.board = board
@@ -20,14 +20,13 @@ class Perception:
         # The previous image
         self.previous = previous
 
-    '''
+    """
     HIGH-LEVEL FUNCTIONS
-    '''
+    """
     def initialImage(self):
-        '''
+        """
         This function sets the previous variable to the initial populated board
-        :return:
-        '''
+        """
         # TODO: Sylvia: This function needs to get an image of the populated baord in starting position
         previousPath = "chessboard2303test/1.jpeg"
         # Initialising previous variable with populated chessboard
@@ -36,12 +35,10 @@ class Perception:
         self.previous = previous
 
     def makeBoard(self, image):
-        '''
+        """
         Takes an image of an empty board and takes care of image processing and subdividing it into 64 squares
         which are then stored in one Board object that is returned.
-        :param image:
-        :return:
-        '''
+        """
         # Process Image: convert to B/w
         image, processedImage = self.processFile(image)
 
@@ -81,10 +78,9 @@ class Perception:
         cv2.imshow("Classified Squares", squareImage)
 
     def bwe(self, current, debug=False):
-        '''
+        """
         Takes care of taking the camera picture, comparing it to the previous one, updating the BWE and returning it
-        :return:
-        '''
+        """
 
         # TODO: Get current image
 
@@ -119,21 +115,22 @@ class Perception:
         return bwe
 
     def printBwe(self, bwe):
+        """
+        Prints the BWE
+        """
         print("")
         print("This is the BWE matrix: ")
         print("")
         print(bwe)
 
-    '''
+    """
     IMAGE PROCESSING
-    '''
+    """
 
     def processFile(self, img, debug=False):
-        '''
+        """
         Converts input image to grayscale & applies adaptive thresholding
-        :param img:
-        :return:
-        '''
+        """
         img = cv2.GaussianBlur(img,(5,5),0)
         # Convert to HSV
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -153,12 +150,9 @@ class Perception:
 
 
     def imageAnalysis(self, img, processedImage, debug=False):
-        '''
+        """
         Finds the contours in the chessboard
-        :param img:
-        :param processedImage:
-        :return:
-        '''
+        """
 
         ### CHESSBOARD EXTRACTION (Contours)
 
@@ -229,11 +223,9 @@ class Perception:
         return extracted
 
     def cannyEdgeDetection(self, image, debug=False):
-        '''
+        """
         Runs Canny edge detection
-        :param image:
-        :return:
-        '''
+        """
         # Canny edge detection
         edges = cv2.Canny(image, 100, 300)
 
@@ -243,17 +235,15 @@ class Perception:
 
         return edges
 
-    '''
+    """
     HOUGH LINES
-    '''
+    """
 
     def categoriseLines(self, lines, debug=False):
-        '''
+        """
         Sorts the lines into horizontal & Vertical. Then sorts the lines based on their respective centers
         (x for vertical, y for horizontal). H
-        :param lines: detected lines on image, in lines class
-        :return: horizontal lines, vertical lines
-        '''
+        """
         horizontal = []
         vertical = []
         for i in range(len(lines)):
@@ -284,12 +274,9 @@ class Perception:
         return horizontal,vertical
 
     def houghLines(self, edges, image, debug=False):
-        '''
+        """
         Detects Hough lines
-        :param edges:
-        :param image:
-        :return:
-        '''
+        """
 
         # Detect hough lines
         lines = cv2.HoughLinesP(edges, rho=1, theta=1 * np.pi / 180, threshold=80, minLineLength=100, maxLineGap=50)
@@ -328,22 +315,23 @@ class Perception:
     #     cv2.imshow('Hough lines', image)
 
     def drawLines(self, image, lines, color=(0,0,255), thickness=2):
+        """
+        What you think it does
+        """
         #print("Going to print: ", len(lines))
         for l in lines:
             l.draw(image, color, thickness)
             ## DEBUG
             cv2.imshow('image', image)
 
-    '''
+    """
     INTERSECTIONS
-    '''
+    """
 
     def findIntersections(self, horizontals,verticals, debug=False):
-        '''
+        """
         WARNING: This function is trashy af. IDK why it works but it does. Finds intersections between Hough lines
-        :param lines:
-        :return:
-        '''
+        """
         intersections = []
 
         # Finding the intersection points
@@ -394,13 +382,11 @@ class Perception:
         return filteredIntersections
 
     def assignIntersections(self, image, intersections, debug=False):
-        '''
+        """
         Takes the filtered intersections and assigns them to a list containing nine sorted lists, each one representing
         one row of sorted corners. The first list for instance contains the nine corners of the first row sorted
         in an ascending fashion.
-        :param filteredIntersections:
-        :return:
-        '''
+        """
 
         # Corners array / Each list in list represents a row of corners
         corners = [[],[],[],[],[],[],[],[],[]]
@@ -433,16 +419,14 @@ class Perception:
 
         return corners, image
 
-    '''
+    """
     SQUARE INSTANTIATION
-    '''
+    """
 
     def makeSquares(self, corners, debug=False):
-        '''
+        """
         Instantiates the 64 squares when given 81 corner points
-        :param corners:
-        :return:
-        '''
+        """
 
         # List of Square objects
         squares = []
@@ -471,13 +455,10 @@ class Perception:
         return squares
 
     def detectSquareChange(self, previous, current, debug=False):
-        '''
+        """
         Take a previous and a current image and returns the squares where a change happened, i.e. a figure has been
         moved from or to.
-        :param previous:
-        :param current:
-        :return:
-        '''
+        """
 
         # Convert the images to grayscale
         grayA = cv2.cvtColor(previous, cv2.COLOR_BGR2GRAY)
@@ -521,6 +502,9 @@ class Perception:
         return centres
 
     def showImage(self, image, name="image"):
+        """
+        Shows the image
+        """
         #print("Showing image: '%s'" % name)
         cv2.namedWindow('image', cv2.WINDOW_NORMAL)
         cv2.imshow('image', image)
