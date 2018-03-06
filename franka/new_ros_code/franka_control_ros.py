@@ -1,5 +1,8 @@
 #!/usr/bin/env python
-
+"""
+Make sure that you are running ``roscore`` and ``franka_controller_sub`` before attempting to
+move the robot using this class, as it publishes to ROS topics to interact with the Franka.
+"""
 import rospy
 from std_msgs.msg import Float64MultiArray
 from std_msgs.msg import MultiArrayDimension
@@ -7,8 +10,12 @@ import time
 
 
 class FrankaRos:
-    def __init__(self, log=True):
+    def __init__(self, log=True, ip='192.168.0.88', debug_flag=False):
         self.log = log
+        self.ip_address = ip
+        self.debug = debug_flag
+        self.path = os.path.dirname(os.path.realpath(__file__))  # gets working dir of this file
+
         # arm movement
         self.target_coords = Float64MultiArray()  # the three absolute target coordinates
         self.target_coords.layout.dim.append(MultiArrayDimension())  # coordinates
