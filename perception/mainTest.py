@@ -11,7 +11,7 @@ from perception.mainDetect import Perception
 # TODO: Sylvia: Once you've implemented that function, get the image inside the makeBoard function and remove these lines
 
 imgPathEmpty = "perception/chessboard2303test/0.jpeg"
-depthImagePath = "Depth/depth_image10.jpeg"
+depthImagePath = "perception/Depth/depth_image10.jpeg"
 # Read image of empty chessboard
 empty = cv2.imread(imgPathEmpty, 1)
 depth = cv2.imread(depthImagePath, 1)
