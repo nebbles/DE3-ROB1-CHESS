@@ -30,6 +30,7 @@ class Square:
 
         # ROI is the small circle within the square on which we will do the averaging
         self.roi = (cx, cy)
+
         self.radius = 5
 
     def draw(self, image, color=(0, 0, 255), thickness=2):
@@ -39,8 +40,17 @@ class Square:
         cv2.drawContours(image, [self.contours], 0, color, thickness)
         ## DEBUG
         cv2.circle(image, self.roi, self.radius, (0, 0, 255), 1)
-        
+
         print(image.shape)
+
+    def getDepth(self, depthImage):
+
+        depth = depthImage[self.roi[1], self.roi[0]]
+
+        coordinates = self.roi[0], self.roi[1], depth[0]
+
+        return coordinates
+
     def roiColor(self, image):
         """
         Finds the averaged color within the ROI within the square. The ROI is a circle with radius r from

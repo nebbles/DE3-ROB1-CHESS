@@ -65,8 +65,7 @@ class Perception:
         squareImage = image.copy()
 
         # Get list of Square class instances
-        squares = self.makeSquares(corners, depthImage)
-
+        squares, coordinates = self.makeSquares(corners, depthImage)
         # Make a Board class from all the squares to hold information
         self.board = Board(squares)
 
@@ -76,8 +75,10 @@ class Perception:
         ## DEBUG
         # Show the classified squares
         self.board.draw(squareImage)
-        #cv2.imshow("Classified Squares", squareImage)
+        self.board.draw(depthImage)
+        cv2.imshow("Classified Squares", squareImage)
 
+        cv2.imshow("Classified Squares", depthImage)
     def bwe(self, current, debug=False):
         """
         Takes care of taking the camera picture, comparing it to the previous one, updating the BWE and returning it
@@ -264,7 +265,6 @@ class Perception:
         #
         # horizontal = [(l.getCenter[1], l) for l in horizontal]
         # vertical = [(l.getCenter[0], l) for l in vertical]
-        # #todo change to get center function;
         # print(horizontal)
         # # horizontal.sort()
         # # vertical.sort()
@@ -351,6 +351,8 @@ class Perception:
 
                 intersections.append((x,y))
 
+                print(x,y)
+
         ### FILTER
 
         # Filtering intersection points
@@ -431,7 +433,7 @@ class Perception:
 
         # List of Square objects
         squares = []
-
+        coordinates = []
         # Lists containing positional and index information
         letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
         numbers = ['1', '2', '3', '4', '5', '6', '7', '8']
@@ -449,6 +451,8 @@ class Perception:
                 #print(c1, c2, c3, c4)
                 squares.append(square)
                 index += 1
+                xyz = square.getDepth(depthImage)
+                coordinates.append(xyz)
                 print(square.roi)
 
         # Get x,y,z coordinates from square centers & depth image
@@ -457,7 +461,7 @@ class Perception:
         if debug:
             print("Number of Squares found: " + str(len(squares)))
 
-        return squares
+        return squares, coordinates
 
     def detectSquareChange(self, previous, current, debug=False):
         """
@@ -506,13 +510,6 @@ class Perception:
 
         return centres
 
-    def getDepth(self, coordinates, depthImage):
-
-        for i in range(len(coordinates)):
-            depth = depthImage[coordinates[i]]
-            coordinates[i].append(depth)
-            print(coordinates[i])
-        return coordinates
 
     def showImage(self, image, name="image"):
         """
