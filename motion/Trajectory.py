@@ -1,4 +1,4 @@
-from numpy import linspace, sqrt, concatenate, exp
+from numpy import linspace, sqrt, concatenate, exp, ndarray
 from matplotlib import interactive
 from matplotlib.pyplot import *
 import matplotlib.pyplot as plt
@@ -7,7 +7,7 @@ from scipy import interpolate
 from franka.franka_control import FrankaControl
 import decimal
 
-def output(move, board_points, dead_zone, rest, hover, visual_flag=False):
+def continuous_trajectory(move, board_points, dead_zone, rest, hover, visual_flag=False):
     """ Calls the other functions, outputs list of coordinates to be followed by FRANKA
 
     Attributes:
@@ -49,26 +49,116 @@ def output(move, board_points, dead_zone, rest, hover, visual_flag=False):
     smooth_trajectory, x_sample, y_sample, z_sample, x_knots, y_knots, z_knots, x_smooth, y_smooth, z_smooth = smooth(trajectory)
 
     max_speed = 0.05  # m/s
-    speed = generate_speeds(max_speed, smooth_trajectory)
+    speeds = generate_speeds(max_speed, smooth_trajectory)
 
     # Plot the trajectory
     if visual_flag:
         fig = plt.figure()
 
-        ax3d = fig.add_subplot(211, projection='3d')
+        ax3d = fig.add_subplot(121, projection='3d')
 
         ax3d.plot(x_sample, y_sample, z_sample, 'r')  # plotting the angled points
         # ax3d.plot(x_knots, y_knots, z_knots, 'go')  # plotting the curve knots
         ax3d.plot(x_smooth, y_smooth, z_smooth, 'g')  # plotting the smoothed trajectory
 
         x_axis = [i for i in range(len(smooth_trajectory))]
-        ax = fig.add_subplot(212)
-        ax.plot(x_axis, speed)
+        ax = fig.add_subplot(122)
+        ax.plot(x_axis, speeds)
 
         plt.show()
 
     return smooth_trajectory
+    #return x_smooth, y_smooth, z_smooth, speeds
+
+
+def trajectory_and_gripping(move, board_points, dead_zone, rest, hover, visual_flag=False):
+    """ Calls the other functions, outputs list of coordinates to be followed by FRANKA
+
+    Attributes:
+        * ``move``: List of tuples outputted by the game engine
+        * ``board_points``, dead_zone, rest, hover: Key locations collected from FRANKA
+
+    Returns:
+        * A list of ``x,y,z`` coordinated
+    """
+
+    # resolution - distance between each point in m
+    n = 0.002
+
+    # Use logic to extract information from move
+    dead_status, start_AN, goal_AN = logic(move)
+
+    # Find the necessary coordinates
+    start = AN_to_coords(start_AN, board_points)
+    goal = AN_to_coords(goal_AN, board_points)
+
+    # create complete array of intermediary poses
+    rest_h, start_h, goal_h, deadzone_h = intermediate_coords(rest, start, goal, hover, dead_zone)
+
+    # generate vectors and coordinates making up the path
+    line_list_current = start_path(dead_status, rest, start_h, goal_h, n) # start path
+    if dead_status == "Died":
+        line_list_dead = dead_path(goal, goal_h, dead_zone, deadzone_h, start_h, n) # dead path
+        line_list_current = line_list_current + line_list_dead
+    line_list_move = move_path(rest, start, start_h, goal, goal_h, n) # move path
+    line_list = line_list_current + line_list_move
+
+    # Finding the separate trajectories that surround gripping and ungripping
+    if dead_status == 'None died':
+        trajectory, trajectory_1, trajectory_2, trajectory_3 = generate_trajectory(line_list, dead_status)
+        actions = [trajectory_1, 'grip', trajectory_2, 'ungrip', trajectory_3]
+    elif dead_status == "Died":
+        trajectory, trajectory_1, trajectory_2, trajectory_3, trajectory_4, trajectory_5 = generate_trajectory(line_list, dead_status)
+        actions = [trajectory_1, 'grip', trajectory_2, 'ungrip', trajectory_3, 'grip', trajectory_4, 'ungrip', trajectory_5]
+
+    #max_speed = 0.05
+    #speeds_list = []
+
+    # Finding the smooth  trajectory
+    smooth_actions = []
+    i = 0
+    for i in range(len(actions)):
+        action = actions[i]
+        if isinstance(action, ndarray): # Appending the coordinates
+            smooth_trajectory, x_sample, y_sample, z_sample, x_knots, y_knots, z_knots, x_smooth, y_smooth, z_smooth = smooth(action)
+            action = list(zip(x_smooth, y_smooth, z_smooth))
+            #speeds = generate_speeds(max_speed, action)
+            #speeds_list.append(speeds)
+            smooth_actions.append(action)
+        elif isinstance(action, str): # Appending the gripping command
+            smooth_actions.append(action)
+        i = i+1
+
+    print(len(smooth_actions))
+    print(len(actions))
+    print(smooth_actions)
+
+    # Plot the trajectory
+    if visual_flag:
+        fig = plt.figure()
+
+        ax3d = fig.add_subplot(121, projection='3d')
+
+        for i in range(len(smooth_actions)):
+            action = smooth_actions[i]
+            if isinstance(action, list):
+                x, y, z = data_split(action)
+                print(x)
+                ax3d.plot(x, y, z, 'r')  # plotting the angled points
+            else:
+                pass
+        # ax3d.plot(x_knots, y_knots, z_knots, 'go')  # plotting the curve knots
+        #ax3d.plot(x_smooth, y_smooth, z_smooth, 'g')  # plotting the smoothed trajectory
+
+        # x_axis = [i for i in range(len(smooth_trajectory))]
+        # ax = fig.add_subplot(122)
+        # ax.plot(x_axis, speed)
+
+        plt.show()
+
+    return smooth_actions
     #return x_fine, y_fine, z_fine, speeds
+
 
 def logic(move):
     """Extracts information from move given by game engine
@@ -320,7 +410,7 @@ def data_split(trajectory):
 def data_interpolation(trajectory, x_sample, y_sample, z_sample):
     """Performs interpolation to find smoothed trajectory"""
 
-    tck, u = interpolate.splprep([x_sample, y_sample, z_sample], s=0.005)  # s is amount of smoothness
+    tck, u = interpolate.splprep([x_sample, y_sample, z_sample], s=0.05)  # s is amount of smoothness
     x_knots, y_knots, z_knots = interpolate.splev(tck[0], tck)
     u_fine = np.linspace(0, 1, len(trajectory))
     x_fine, y_fine, z_fine = interpolate.splev(u_fine, tck)
@@ -353,6 +443,7 @@ def smooth(trajectory):
     smooth_trajectory = [list(elem) for elem in smooth_trajectory]
     x_smooth, y_smooth, z_smooth = data_split(smooth_trajectory)
 
+
     return smooth_trajectory, x_sample, y_sample, z_sample, x_knots, y_knots, z_knots, x_smooth, y_smooth, z_smooth
 
 
@@ -384,6 +475,7 @@ def plot(x_sample, y_sample, z_sample, x_knots, y_knots, z_knots, x_smooth, y_sm
 
 def gaussian(v, x, mu, sig):
     return v * (exp(-np.power(x - mu, 2.) / (2 * np.power(sig, 2.))))
+
 
 def generate_speeds(max_v, trajectory):
     """Generates the velocity profile as a bell curve"""

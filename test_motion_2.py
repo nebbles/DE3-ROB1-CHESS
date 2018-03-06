@@ -78,13 +78,29 @@ board_points, dead_zone, rest, hover = callib(arm)
 
 # Find trajectory
 #trajectory = Trajectory.output([("r", "b4"), ("r", "a1b4")], board_points, dead_zone, rest, hover, visual_flag=True)
-trajectory = Trajectory.output([("r", "a1a2")], board_points, dead_zone, rest, hover, visual_flag=True) # test for life
+#trajectory = Trajectory.continuous_trajectory([("r", "a1a6")], board_points, dead_zone, rest, hover, visual_flag=True) # test for life
+
+# test gripping
+trajectory = Trajectory.trajectory_and_gripping([("r", "a1a6")], board_points, dead_zone, rest, hover, visual_flag=True)
+#trajectory = Trajectory.trajectory_and_gripping([("r", "b4"), ("r", "a1b4")], board_points, dead_zone, rest, hover, visual_flag=True)
 
 
-# Execute trajectory
+
+# # Execute trajectory
+# for move in trajectory:
+#     try:
+#         print(move, '\n')
+#         #arm.move_absolute(move)
+#     except (KeyboardInterrupt, SystemExit):
+#         raise
+
 for move in trajectory:
     try:
-        print(move, '\n')
-        #arm.move_absolute(move)
+        if isinstance(move, list):
+            print('Coord:', move)
+        else:
+            print('\n\n', move, '\n\n')
+
+        # arm.move_absolute(move)
     except (KeyboardInterrupt, SystemExit):
         raise
