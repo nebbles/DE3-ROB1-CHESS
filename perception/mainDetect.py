@@ -28,7 +28,7 @@ class Perception:
         This function sets the previous variable to the initial populated board
         """
         # TODO: Sylvia: This function needs to get an image of the populated baord in starting position
-        previousPath = "chessboard2303test/1.jpeg"
+        previousPath = "perception/chessboard2303test/1.jpeg"
         depthImage = "Depth/depth_image1.jpeg"
         # Initialising previous variable with populated chessboard
         previous = cv2.imread(previousPath, 1)
