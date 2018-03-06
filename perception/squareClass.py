@@ -39,7 +39,8 @@ class Square:
         cv2.drawContours(image, [self.contours], 0, color, thickness)
         ## DEBUG
         cv2.circle(image, self.roi, self.radius, (0, 0, 255), 1)
-
+        
+        print(image.shape)
     def roiColor(self, image):
         """
         Finds the averaged color within the ROI within the square. The ROI is a circle with radius r from

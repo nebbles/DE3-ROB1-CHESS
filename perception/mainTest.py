@@ -11,9 +11,10 @@ from perception.mainDetect import Perception
 # TODO: Sylvia: Once you've implemented that function, get the image inside the makeBoard function and remove these lines
 
 imgPathEmpty = "chessboard2303test/0.jpeg"
+depthImagePath = "Depth/depth_image10.jpeg"
 # Read image of empty chessboard
 empty = cv2.imread(imgPathEmpty, 1)
-
+depth = cv2.imread(depthImagePath, 1)
 """
 2. Instantiate Perception object
 
@@ -26,7 +27,7 @@ percept = Perception()
 # TODO: Sylvia: makeBoard should now not take an argument anymore i.e. percept.makeBoard()
 
 # Make a Board instance within Perception. This assigns the grid and the initial BWE given an image of an empty board
-percept.makeBoard(empty)
+percept.makeBoard(empty, depth)
 
 """
 3. Populate board

@@ -29,12 +29,13 @@ class Perception:
         """
         # TODO: Sylvia: This function needs to get an image of the populated baord in starting position
         previousPath = "chessboard2303test/1.jpeg"
+        depthImage = "Depth/depth_image1.jpeg"
         # Initialising previous variable with populated chessboard
         previous = cv2.imread(previousPath, 1)
 
         self.previous = previous
 
-    def makeBoard(self, image):
+    def makeBoard(self, image, depthImage):
         """
         Takes an image of an empty board and takes care of image processing and subdividing it into 64 squares
         which are then stored in one Board object that is returned.
@@ -64,7 +65,7 @@ class Perception:
         squareImage = image.copy()
 
         # Get list of Square class instances
-        squares = self.makeSquares(corners)
+        squares = self.makeSquares(corners, depthImage)
 
         # Make a Board class from all the squares to hold information
         self.board = Board(squares)
@@ -75,7 +76,7 @@ class Perception:
         ## DEBUG
         # Show the classified squares
         self.board.draw(squareImage)
-        cv2.imshow("Classified Squares", squareImage)
+        #cv2.imshow("Classified Squares", squareImage)
 
     def bwe(self, current, debug=False):
         """
@@ -423,7 +424,7 @@ class Perception:
     SQUARE INSTANTIATION
     """
 
-    def makeSquares(self, corners, debug=False):
+    def makeSquares(self, corners, depthImage, debug=False):
         """
         Instantiates the 64 squares when given 81 corner points
         """
@@ -445,9 +446,13 @@ class Perception:
                 c3 = corners[i+1][j+1]
                 c4 = corners[i+1][j]
                 square = Square(position, c1, c2, c3, c4, index)
+                #print(c1, c2, c3, c4)
                 squares.append(square)
                 index += 1
+                print(square.roi)
 
+        # Get x,y,z coordinates from square centers & depth image
+        #coordinates = self.getDepth(square.roi, depthImage)
         ## DEBUG
         if debug:
             print("Number of Squares found: " + str(len(squares)))
@@ -500,6 +505,14 @@ class Perception:
             cv2.imshow("Detected Move", current)
 
         return centres
+
+    def getDepth(self, coordinates, depthImage):
+
+        for i in range(len(coordinates)):
+            depth = depthImage[coordinates[i]]
+            coordinates[i].append(depth)
+            print(coordinates[i])
+        return coordinates
 
     def showImage(self, image, name="image"):
         """
