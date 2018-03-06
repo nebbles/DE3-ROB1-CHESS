@@ -40,8 +40,12 @@ class Perception:
         Takes an image of an empty board and takes care of image processing and subdividing it into 64 squares
         which are then stored in one Board object that is returned.
         """
-        # Process Image: convert to B/w
-        image, processedImage = self.processFile(image)
+        try:
+            # Process Image: convert to B/w
+            image, processedImage = self.processFile(image)
+        except Exception as e:
+            print(e)
+            print("There is a problem with the image...")
 
         # Extract chessboard from image
         extractedImage = self.imageAnalysis(image, processedImage)
