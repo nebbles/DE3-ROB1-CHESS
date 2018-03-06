@@ -1,5 +1,8 @@
 #!/usr/bin/env python
-
+"""
+Make sure that you are running ``roscore`` and ``franka_controller_sub`` before attempting to
+move the robot using this class, as it publishes to ROS topics to interact with the Franka.
+"""
 import rospy
 from std_msgs.msg import Float64MultiArray
 from std_msgs.msg import MultiArrayDimension
@@ -7,7 +10,12 @@ import time
 
 
 class FrankaRos:
-    def __init__(self):
+    def __init__(self, log=True, ip='192.168.0.88', debug_flag=False):
+        self.log = log
+        self.ip_address = ip
+        self.debug = debug_flag
+        self.path = os.path.dirname(os.path.realpath(__file__))  # gets working dir of this file
+
         # arm movement
         self.target_coords = Float64MultiArray()  # the three absolute target coordinates
         self.target_coords.layout.dim.append(MultiArrayDimension())  # coordinates
@@ -26,28 +34,41 @@ class FrankaRos:
 
         # ros initiation
         rospy.init_node('franka_python_node', anonymous=True)
-        self.pub = rospy.Publisher('franka_move_to', Float64MultiArray, queue_size=1)
+        self.pub_move_to = rospy.Publisher('franka_move_to', Float64MultiArray, queue_size=1)
         self.pub_grasp = rospy.Publisher('franka_gripper_grasp', Float64MultiArray, queue_size=0)
-        self.pub_move = rospy.Publisher('franka_gripper_move', Float64MultiArray, queue_size=0)
+        self.pub_move_grip = rospy.Publisher('franka_gripper_move', Float64MultiArray, queue_size=0)
 
         time.sleep(0.5)
 
-    def franka_move_to(self, x, y, z, speed):
+    def move_to(self, x, y, z, speed):
         # rate = rospy.Rate(10) # 10hz
 
         self.target_coords.data = [x, y, z, speed]  # [0.1, 0.1, 0.1, 0.10]
-        rospy.loginfo("franka_move_to: " + str(self.target_coords.data))
-        self.pub.publish(self.target_coords)
+        if self.log:
+            rospy.loginfo("franka_move_to: " + str(self.target_coords.data))
+        self.pub_move_to.publish(self.target_coords)
         # rate.sleep()
 
-    def move_gripper(self):
+    def move_gripper(self, width, speed):
+        self.target_gripper.data = [width, speed]  # [0.1, 0.1, 0.1, 0.10]
+        if self.log:
+            rospy.loginfo("franka_gripper_move: " + str(self.target_gripper.data))
+        self.pub_move_grip.publish(self.target_gripper)
+
+    def grasp(self, object_width, speed, force):
+        self.target_gripper.data = [object_width, speed, force]
+        if self.log:
+            rospy.loginfo("franka_gripper_grasp: " + str(self.target_gripper.data))
+        self.pub_grasp.publish(self.target_gripper)
+
+    def move_gripper_example(self):
         width = 0.06  # 2.2 cm = 0 width
         speed = 0.1
         force = 1
 
         self.target_gripper.data = [width, speed]  # [0.1, 0.1, 0.1, 0.10]
         rospy.loginfo("franka_gripper_move: " + str(self.target_gripper.data))
-        self.pub_move.publish(self.target_gripper)
+        self.pub_move_grip.publish(self.target_gripper)
 
         time.sleep(5)
 
@@ -61,12 +82,12 @@ class FrankaRos:
         width = 0.06  # 2.2 cm = 0 width
         self.target_gripper.data = [width, speed, force]
         rospy.loginfo("franka_gripper_move: " + str(self.target_gripper.data))
-        self.pub_move.publish(self.target_gripper)
+        self.pub_move_grip.publish(self.target_gripper)
 
 
 def main():
     try:
-        franka_ros = FrankaRos()
+        franka = FrankaRos()
 
         motion_plan = []
         resolution = 100
@@ -75,10 +96,10 @@ def main():
 
         # print(motion_plan)
         for x, y, z, speed in motion_plan:
-            franka_ros.franka_move_to(x, y, z, speed)
+            franka.move_to(x, y, z, speed)
             time.sleep(0.1)  # 10 Hz control loop
 
-        franka_ros.move_gripper()
+        franka.move_gripper_example()
 
     except rospy.ROSInterruptException:
         pass
