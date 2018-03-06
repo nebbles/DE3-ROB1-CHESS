@@ -1,11 +1,11 @@
-from numpy import linspace, sqrt, concatenate
+from numpy import linspace, sqrt, concatenate, exp
 from matplotlib import interactive
 from matplotlib.pyplot import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # for: fig.gca(projection = '3d')
 from scipy import interpolate
 from franka.franka_control import FrankaControl
-
+import decimal
 
 def output(move, board_points, dead_zone, rest, hover, visual_flag=False):
     """ Calls the other functions, outputs list of coordinates to be followed by FRANKA
@@ -48,12 +48,27 @@ def output(move, board_points, dead_zone, rest, hover, visual_flag=False):
     # Finding the smooth trajectory
     smooth_trajectory, x_sample, y_sample, z_sample, x_knots, y_knots, z_knots, x_smooth, y_smooth, z_smooth = smooth(trajectory)
 
+    max_speed = 0.05  # m/s
+    speed = generate_speeds(max_speed, smooth_trajectory)
+
     # Plot the trajectory
     if visual_flag:
-        plot(x_sample, y_sample, z_sample, x_knots, y_knots, z_knots, x_smooth, y_smooth, z_smooth)
+        fig = plt.figure()
+
+        ax3d = fig.add_subplot(211, projection='3d')
+
+        ax3d.plot(x_sample, y_sample, z_sample, 'r')  # plotting the angled points
+        # ax3d.plot(x_knots, y_knots, z_knots, 'go')  # plotting the curve knots
+        ax3d.plot(x_smooth, y_smooth, z_smooth, 'g')  # plotting the smoothed trajectory
+
+        x_axis = [i for i in range(len(smooth_trajectory))]
+        ax = fig.add_subplot(212)
+        ax.plot(x_axis, speed)
+
+        plt.show()
 
     return smooth_trajectory
-
+    #return x_fine, y_fine, z_fine, speeds
 
 def logic(move):
     """Extracts information from move given by game engine
@@ -189,7 +204,6 @@ def create_line(a, b, n):
         line[j, 0] = line_x[j]
         line[j, 1] = line_y[j]
         line[j, 2] = line_z[j]
-    print(line)
     return line
 
 
@@ -325,6 +339,16 @@ def smooth(trajectory):
 
     x_sample, y_sample, z_sample = data_split(trajectory)
     x_fine, y_fine, z_fine, x_knots, y_knots, z_knots = data_interpolation(trajectory, x_sample, y_sample, z_sample)
+
+    x_fine = [decimal.Decimal(i) for i in x_fine]
+    x_fine = [float(round(i, 3)) for i in x_fine]
+
+    y_fine = [decimal.Decimal(i) for i in y_fine]
+    y_fine = [float(round(i,3)) for i in y_fine]
+
+    z_fine = [decimal.Decimal(i) for i in z_fine]
+    z_fine = [float(round(i, 3)) for i in z_fine]
+
     smooth_trajectory = zip(x_fine, y_fine, z_fine)
     smooth_trajectory = [list(elem) for elem in smooth_trajectory]
     x_smooth, y_smooth, z_smooth = data_split(smooth_trajectory)
@@ -335,16 +359,16 @@ def smooth(trajectory):
 def generate_vectors(trajectory):
     """ Creates motion vectors between every point on a given trajectory"""
 
-    smooth_vectors = []
+    vectors = []
     for i in range(1, len(trajectory)):
         previous = trajectory[i-1]
         current = trajectory[i]
 
-        smooth_vector = [previous[0] - current[0], previous[1] - current[1], previous[2] - current[2]]  # x, y, z
+        vector = [previous[0] - current[0], previous[1] - current[1], previous[2] - current[2]]  # x, y, z
 
-        smooth_vectors.append(smooth_vector)
+        vectors.append(vector)
 
-    return smooth_vectors
+    return vectors
 
 
 def plot(x_sample, y_sample, z_sample, x_knots, y_knots, z_knots, x_smooth, y_smooth, z_smooth):
@@ -357,6 +381,18 @@ def plot(x_sample, y_sample, z_sample, x_knots, y_knots, z_knots, x_smooth, y_sm
     ax3d.plot(x_smooth, y_smooth, z_smooth, 'g')  # plotting the smoothed trajectory
     plt.show()
 
+
+def gaussian(v, x, mu, sig):
+    return v * (exp(-np.power(x - mu, 2.) / (2 * np.power(sig, 2.))))
+
+def generate_speeds(max_v, trajectory):
+    """Generates the velocity profile as a bell curve"""
+
+    max_position = len(trajectory) / 2
+    spread = 500  # how wide the bell curve is
+    speeds = [max_v * exp(-((i - max_position) ** 2.) / (2. * (spread ** 2.))) for i in range(len(trajectory))]
+
+    return speeds
 
 if __name__ == '__main__':
     # output([("r", "b4"),("r", "a1a2")] ,visual_flag=True) # test for death
