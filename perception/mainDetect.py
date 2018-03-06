@@ -45,7 +45,11 @@ class Perception:
             image, processedImage = self.processFile(image)
         except Exception as e:
             print(e)
-            print("There is a problem with the image...")
+            print("There is a problem with the image...")^
+            print("")
+            print("The image print is:")
+            print(image)
+            print("")
 
         # Extract chessboard from image
         extractedImage = self.imageAnalysis(image, processedImage)
