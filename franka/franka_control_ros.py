@@ -78,6 +78,11 @@ class FrankaRos:
             rospy.loginfo("franka_gripper_grasp: " + str(self.target_gripper.data))
         self.pub_grasp.publish(self.target_gripper)
 
+    def get_position(self):  # todo docstring
+        joints = np.array(self.get_joint_positions())
+        position = [joints[7, 12], joints[7, 13], joints[7, 14]]
+        return position
+
     def get_joint_positions(self):  # todo convert
         """Gets current joint positions for Franka Arm.
 
