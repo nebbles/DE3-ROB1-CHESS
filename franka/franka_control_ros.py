@@ -72,6 +72,18 @@ class FrankaRos:
             rospy.loginfo("franka_gripper_move: " + str(self.target_gripper.data))
         self.pub_move_grip.publish(self.target_gripper)
 
+    def move_relative(self, vector):  # todo add docstring
+        dx = float(vector[0])
+        dy = float(vector[1])
+        dz = float(vector[2])
+        sp = float(vector[3])
+        x, y, z = self.get_position()
+
+        self.target_coords.data = [float(x+dx), float(y+dy), float(z+dz), sp]
+        if self.log:
+            rospy.loginfo("franka_move_relative: " + str(self.target_coords.data))
+        self.pub_move_to.publish(self.target_coords)
+
     def grasp(self, object_width, speed, force):  # todo add docstring
         self.target_gripper.data = [float(object_width), float(speed), float(force)]
         if self.log:
