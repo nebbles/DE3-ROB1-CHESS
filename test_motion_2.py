@@ -98,9 +98,10 @@ for move in trajectory:
     try:
         if isinstance(move, list):
             print('Coord:', move)
+            # execute motion
         else:
             print('\n\n', move, '\n\n')
-
+            # execute the gripping motion
         # arm.move_absolute(move)
     except (KeyboardInterrupt, SystemExit):
         raise
