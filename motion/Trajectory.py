@@ -198,14 +198,14 @@ def AN_to_coords(AN, board_points):
     A8 = board_points[1]
     H8 = board_points[2]
 
-    x = H8[0] - A1[0]  # square width in FRANKA units
-    y = A8[1] - A1[1]  # square length in FRANKA units
+    x = (H8[0] - A1[0])/8 # square width in FRANKA units
+    y = (A8[1] - A1[1])/8  # square length in FRANKA units
 
     # find coordinates of each AN
-    letters = dict([('a', x / 2), ('b', (x / 2) * 2), ('c', (x / 2) * 3), ('d', (x / 2) * 4), ('e', (x / 2) * 5),
-                    ('f', (x / 2) * 6), ('g', (x / 2) * 7), ('h', (x / 2) * 8)])
-    numbers = dict([('1', y / 2), ('2', (y / 2) * 2), ('3', (y / 2) * 3), ('4', (y / 2) * 4), ('5', (y / 2) * 5),
-                    ('6', (y / 2) * 6), ('7', (y / 2) * 7), ('8', (y / 2) * 8)])
+    letters = dict([('a', A1[0] + 0.5*x), ('b', A1[0] + 1.5*x), ('c', A1[0] + 2.5*x), ('d', A1[0]+ 3.5*x), ('e', A1[0] + 4.5*x),
+                    ('f', A1[0] + 5.5*x), ('g', A1[0] + 6.5*x), ('h', A1[0] + 7.5*x)])
+    numbers = dict([('1', A1[1] + 0.5*y), ('2', A1[1] + 1.5*y), ('3', A1[1] + 2.5*y), ('4', A1[1] + 3.5*y), ('5', A1[1] + 4.5*y),
+                    ('6', A1[1] + 5.5*y), ('7', A1[1] + 6.5*y), ('8', A1[1] + 7.5*y)])
 
     # selecting the location
     letter = AN[0]
@@ -410,7 +410,7 @@ def data_split(trajectory):
 def data_interpolation(trajectory, x_sample, y_sample, z_sample):
     """Performs interpolation to find smoothed trajectory"""
 
-    tck, u = interpolate.splprep([x_sample, y_sample, z_sample], s=0.05)  # s is amount of smoothness
+    tck, u = interpolate.splprep([x_sample, y_sample, z_sample], s=0.01)  # s is amount of smoothness
     x_knots, y_knots, z_knots = interpolate.splev(tck[0], tck)
     u_fine = np.linspace(0, 1, len(trajectory))
     x_fine, y_fine, z_fine = interpolate.splev(u_fine, tck)
