@@ -8,11 +8,12 @@ from matplotlib import pyplot as mp
 def gaussian(v, x, mu, sig):
     return v*(exp(-np.power(x - mu, 2.) / (2 * np.power(sig, 2.))))
 
-def generate_velocities(v, trajectory):
+def generate_velocities(max_v, trajectory):
     """function that generates the velocity profile  from the maximum velocity"""
-    position = len(trajectory)/2
-    spread = 68
-    velocities = [v*exp(-((i-position)**2.)/(2.*(spread**2.))) for i in range(len(trajectory))]
+
+    max_position = len(trajectory)/2
+    spread = 20 # how wide the bell curve is
+    velocities = [max_v*exp(-((i-max_position)**2.)/(2.*(spread**2.))) for i in range(len(trajectory))]
 
     #velocities = gaussian(v, np.linspace(0, 100, len(trajectory)), position, spread)
 
@@ -24,7 +25,7 @@ def generate_velocities(v, trajectory):
 
     return velocities
 
-trajectory = [i for i in range(100)]
+trajectory = [i for i in range(500)]
 #print(trajectory)
 v = generate_velocities(5, trajectory)
 #print(v)

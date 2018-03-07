@@ -9,6 +9,7 @@ import subprocess
 import os
 import sys
 import argparse
+import numpy as np
 
 if sys.version_info[:2] <= (2, 7):
     input = raw_input
@@ -253,6 +254,8 @@ def test_joints():
         print(
             "%8.6f   %8.6f   %1.0f   %1.0f   %8.6f   %8.6f   %1.0f   %1.0f   %1.0f   %1.0f   "
             "%1.0f   %1.0f   %1.0f   %1.0f   %5.3f   %1.0f" % tuple(matrix[0]))
+        data = np.array(matrix)
+        print(data)
 
 
 def test_position():

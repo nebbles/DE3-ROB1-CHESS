@@ -37,7 +37,6 @@ Contents
    franka
    workstation
    operating
-   franka_ros
 
 .. toctree::
    :maxdepth: 2

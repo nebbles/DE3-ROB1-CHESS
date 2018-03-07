@@ -1,11 +1,11 @@
-************
-FRANKA Panda
-************
+**********
+Franka Arm
+**********
 
-Starting up the Panda
-=====================
+Starting up
+===========
 
-The Panda arm should be connected to the workshop floor controller with the thick black cable and the controller box should be powered up. When booting, the arm LEDs will flash yellow. Once the arm is booted (solid yellow when completed) you can release the brakes via the web interface.
+The Arm should be connected to the workshop floor controller with the thick black cable and the controller box should be powered up. When booting, the arm LEDs will flash yellow. Once the arm is booted (solid yellow when completed) you can release the brakes via the web interface.
 
 .. figure:: _static/franka_wiring_guide_general.png
     :align: center
@@ -90,10 +90,10 @@ franka_ros               ??            Currently unused
 
 .. warning:: The lab only supports libfranka 0.1.0 which is currently unavailable from ``apt install``. **Do NOT uninstall ROS or libfranka on workstations which already have it installed**.
 
-Shutting down the Panda
-=======================
+Shutting down the Arm
+=====================
 
-Enter the web interface for the Panda. In the lower right menu, lock the brakes. Then in the top right menu, select shutdown, and confirm.
+Enter the web interface for the Arm. In the lower right menu, lock the brakes. Then in the top right menu, select shutdown, and confirm.
 
 .. important::
   Remember to shutdown the controller from the web interface. This device is a computer, and should not be switched off from mains.

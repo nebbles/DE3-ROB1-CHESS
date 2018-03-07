@@ -77,11 +77,31 @@ def callib(arm):#trajectory_chess):
 board_points, dead_zone, rest, hover = callib(arm)
 
 # Find trajectory
-trajectory = Trajectory.output([("r", "b4"), ("r", "a1a2")], board_points, dead_zone, rest, hover, visual_flag=False)
+#trajectory = Trajectory.continuous_trajectory([("r", "b4"), ("r", "a1b4")], board_points, dead_zone, rest, hover, visual_flag=True)
+trajectory = Trajectory.continuous_trajectory([("r", "a1a6")], board_points, dead_zone, rest, hover, visual_flag=True) # test for life
 
-# Execute trajectory
+# test gripping
+#trajectory = Trajectory.trajectory_and_gripping([("r", "a1a6")], board_points, dead_zone, rest, hover, visual_flag=True)
+#trajectory = Trajectory.trajectory_and_gripping([("r", "b4"), ("r", "a1b4")], board_points, dead_zone, rest, hover, visual_flag=True)
+
+
+
+# # Execute trajectory
+# for move in trajectory:
+#     try:
+#         print(move, '\n')
+#         #arm.move_absolute(move)
+#     except (KeyboardInterrupt, SystemExit):
+#         raise
+
 for move in trajectory:
     try:
-        arm.move_absolute(move)
-    except:
-        print(move, '\n')
+        if isinstance(move, list):
+            print('Coord:', move)
+            # execute motion
+        else:
+            print('\n\n', move, '\n\n')
+            # execute the gripping motion
+        # arm.move_absolute(move)
+    except (KeyboardInterrupt, SystemExit):
+        raise

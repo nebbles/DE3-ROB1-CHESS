@@ -8,6 +8,7 @@ GitHub and Git
 * https://guides.github.com
 * Git basics: https://git-scm.com/book/en/v2/Getting-Started-Git-Basics
 * The super simple beginners guide to Git: http://rogerdudler.github.io/git-guide/
+* Understanding the workflow of git version control: https://www.git-tower.com/learn/cheat-sheets/vcs-workflow
 * Guidance to git commands you may need in the command line: https://www.git-tower.com/blog/git-cheat-sheet/
 
 Python
@@ -57,3 +58,14 @@ The following resources were useful in the setting up of Sphinx and Read The Doc
 * Screencast: https://www.youtube.com/watch?v=oJsUvBQyHBs
 * RTD Guide: https://docs.readthedocs.io/en/latest/getting_started.html
 * Documenting a project with Sphinx (lecture): https://www.youtube.com/watch?v=QNHM7q2hLh8
+
+Getting Started with ROS
+========================
+
+To 'get started' with learning ros, you may find doing the following helps you to understand ROS better:
+
+#. In your home directory, ensure you have set up a `complete catkin workspace`_.
+#. Within that workspace, `create a catkin package`_.
+
+.. _`complete catkin workspace`: http://wiki.ros.org/catkin/Tutorials/create_a_workspace
+.. _`create a catkin package`: http://wiki.ros.org/ROS/Tutorials/CreatingPackage
