@@ -16,15 +16,12 @@ Project CHESS Team:
 
 ## Popular source code
 
-* Source code for controlling Franka without ROS
+* Source code for controlling Franka with Python (uses ROS)
 
 ```bash
+sudo rm -f franka/
 svn export https://github.com/nebbles/DE3-ROB1-CHESS/trunk/franka
 ```
-
-* Source code for controlling Franka with ROS
-
-todo
 
 * Source code for converting between reference frames
 
@@ -32,7 +29,7 @@ todo
 svn export https://github.com/nebbles/DE3-ROB1-CHESS/trunk/calibration.py
 ```
 
-## Downloading the repository
+## Clone the repository
 
 ```bash
 git clone http://github.com/nebbles/DE3-ROB1-CHESS
