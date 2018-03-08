@@ -11,6 +11,7 @@ import os
 import subprocess
 import argparse
 import numpy as np
+import ast
 import rospy
 from std_msgs.msg import Float64MultiArray
 from std_msgs.msg import MultiArrayDimension
@@ -58,50 +59,93 @@ class FrankaRos:
 
         time.sleep(0.5)
 
-    def move_to(self, x, y, z, speed):  # todo add docstring
+    def move_to(self, x, y, z, speed):
+        """Moves robot end effector to desired coordinates (in robot reference frame) given a
+        target velocity. The robot will not necessarily travel at this speed due to safety
+        controls in the subscriber.
+
+        :param x: float value position in robot reference axis
+        :param y: float value position in robot reference axis
+        :param z: float value position in robot reference axis
+        :param speed: float value desired speed to target position
+        """
         self.target_coords.data = [float(x), float(y), float(z), float(speed)]
         if self.log:
             rospy.loginfo("franka_move_to: " + str(self.target_coords.data))
         self.pub_move_to.publish(self.target_coords)
 
-    # TODO add move relative
+    def move_relative(self, dx, dy, dz, speed):
+        """Moves robot end effector in desired direction (in robot reference frame) given a
+        target displacement and speed to travel at. The robot will not necessarily travel at this
+        speed due to safety controls in the subscriber.
 
-    def move_gripper(self, width, speed):  # todo add docstring
-        self.target_gripper.data = [float(width), float(speed)]  # [0.1, 0.1, 0.1, 0.10]
-        if self.log:
-            rospy.loginfo("franka_gripper_move: " + str(self.target_gripper.data))
-        self.pub_move_grip.publish(self.target_gripper)
-
-    def move_relative(self, vector):  # todo add docstring
-        dx = float(vector[0])
-        dy = float(vector[1])
-        dz = float(vector[2])
-        sp = float(vector[3])
+        :param dx: float value displacement in robot reference axis
+        :param dy: float value displacement in robot reference axis
+        :param dz: float value displacement in robot reference axis
+        :param speed: float value desired speed to target displaced position
+        """
         x, y, z = self.get_position()
-
-        self.target_coords.data = [float(x+dx), float(y+dy), float(z+dz), sp]
+        self.target_coords.data = [float(x+dx), float(y+dy), float(z+dz), float(speed)]
         if self.log:
             rospy.loginfo("franka_move_relative: " + str(self.target_coords.data))
         self.pub_move_to.publish(self.target_coords)
 
-    def grasp(self, object_width, speed, force):  # todo add docstring
+    def move_gripper(self, width, speed):
+        """Set gripper width by assigning ``width`` with a desired speed to move at. Note this
+        must be called before grasping if gripper fingers are too close together ``grasp()`` call.
+
+        0 width defined == 2.2 cm difference real-world
+
+        :param width: desired distance between prongs on end-effector (in millimetres)
+        :param speed: desired speed with which to move the grippers
+        """
+        self.target_gripper.data = [float(width), float(speed)]
+        if self.log:
+            rospy.loginfo("franka_gripper_move: " + str(self.target_gripper.data))
+        self.pub_move_grip.publish(self.target_gripper)
+
+    def grasp(self, object_width, speed, force):
+        """Grasp an object in the grippers. Note that this can only be called if the object width is
+        smaller than the current distance between the grippers.
+
+        The grippers attempt to move to the width of the object defined with speed defined,
+        and then proceed to apply a defined force against the object. If no object is present it
+        evaluates as failed and moves to next task.
+
+        0 width defined == 2.2 cm difference real-world
+
+        :param object_width: width of target object to grab (float)
+        :param speed: with which to move the gripper to object width (float)
+        :param force: to apply to the object once the grippers are at object width (float)
+        """
         self.target_gripper.data = [float(object_width), float(speed), float(force)]
         if self.log:
             rospy.loginfo("franka_gripper_grasp: " + str(self.target_gripper.data))
         self.pub_grasp.publish(self.target_gripper)
 
-    def get_position(self):  # todo docstring
+    def get_position(self):
+        """Get x, y, z position of end-effector and returns it to caller.
+
+        :return: list as [x, y, z]
+        """
         joints = np.array(self.get_joint_positions())
         position = [joints[7, 12], joints[7, 13], joints[7, 14]]
         return position
 
-    def get_joint_positions(self):  # todo convert
-        """Gets current joint positions for Franka Arm.
+    def get_joint_positions(self):
+        """Gets full array of current joint data for the Franka Arm.
 
-        This will return a list of lists of joint position data. This data structure has not been
-        documented yet and is not recommended for use.
+        Array is 8x16 in size. Each row corresponds to the joint number, starting from base. This
+        means that the end effector information is in the last row. Within this row is the full
+        transformation data for the joint.
+
+        * Index 0-3: First column of transformation data (3x rotation data, and a 0)
+        * Index 4-7: Second column of transformation data (3x rotation data, and a 0)
+        * Index 8-11: Third column of transformation data (3x rotation data, and a 0)
+        * Index 12-15: Position data (x,y,z), followed by a 1.
+
+        :return: a list of lists containing floats of transformation data
         """
-
         program = './get_joint_positions'  # set executable to be used
         command = [program, self.ip_address]
         command_str = " ".join(command)
@@ -114,10 +158,8 @@ class FrankaRos:
             print("Running FRANKA code...")
 
         process = subprocess.Popen(command, cwd=self.path, stdout=subprocess.PIPE)
-        out, err = process.communicate()  # this will block until received
+        out, err = process.communicate()  # this blocks until received
         decoded_output = out.decode("utf-8")
-
-        import ast
         string_list = decoded_output.split("\n")
 
         converted_list = []
@@ -126,8 +168,7 @@ class FrankaRos:
             x = ast.literal_eval(x)
             converted_list.append(x)
             if idx == 7:
-                break  # We have parsed all 8 items from ./get_joint_positions
-
+                break  # we have parsed all 8 items from ./get_joint_positions
         return converted_list
 
 
@@ -167,30 +208,17 @@ def example_movement():
             franka.move_to(x, y, z, speed)
             time.sleep(0.1)  # 10 Hz control loop
 
-        # TODO install this example code for gripper movement
-
-        # """This is an example method for oper"""
-        # width = 0.06  # 2.2 cm = 0 width
-        # speed = 0.1
-        # force = 1
-        #
-        # self.target_gripper.data = [width, speed]  # [0.1, 0.1, 0.1, 0.10]
-        # rospy.loginfo("franka_gripper_move: " + str(self.target_gripper.data))
-        # self.pub_move_grip.publish(self.target_gripper)
-        #
-        # time.sleep(5)
-        #
-        # width = 0.037  # 2.2 cm = 0 width
-        # self.target_gripper.data = [width, speed, force]
-        # rospy.loginfo("franka_gripper_grasp: " + str(self.target_gripper.data))
-        # self.pub_grasp.publish(self.target_gripper)
-        #
-        # time.sleep(5)
-        #
-        # width = 0.06  # 2.2 cm = 0 width
-        # self.target_gripper.data = [width, speed, force]
-        # rospy.loginfo("franka_gripper_move: " + str(self.target_gripper.data))
-        # self.pub_move_grip.publish(self.target_gripper)
+        # now test the grippers are operational
+        width = 0.06  # 2.2 cm = 0 width
+        speed = 0.1
+        force = 1
+        franka.move_gripper(width, speed)
+        time.sleep(5)
+        width = 0.037  # 2.2 cm = 0 width
+        franka.grasp(width, speed, force)
+        time.sleep(5)
+        width = 0.06  # 2.2 cm = 0 width
+        franka.move_gripper(width, speed)
 
     except rospy.ROSInterruptException:
         pass
@@ -202,7 +230,7 @@ if __name__ == '__main__':
                         help='run example motion function')
     parser.add_argument('-p', '--position-example', action='store_true',
                         help='run example position reading function')
-    args = parser.parse_args()  # Get command line arguments
+    args = parser.parse_args()  # get command line arguments
 
     try:
         if args.motion_example:
