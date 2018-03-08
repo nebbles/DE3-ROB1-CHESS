@@ -15,16 +15,17 @@ Starting ROS to control Franka
 ..
 ..     Interfacing Python with FRANKA.
 
-Using a single workstation
---------------------------
+Using a single workstation for roscore
+--------------------------------------
 
-To use ROS to control the Franka arm from one workstation, you need to have the master node running for ROS. To do this, it can be done in a seperate terminal window (run ``roscore`` in the command line), or from Python with::
+To use ROS to control the Franka arm from one workstation, you need to have the master node running for ROS. To do this, open a new terminal window and run:
 
-  import subprocess
-  roscore = subprocess.Popen('roscore')
-  time.sleep(1)  # wait a bit to be sure the roscore is really launched
+.. code-block:: bash
 
-From this point, you can now run the subscriber node.
+  roscore
+
+
+From this point, you can now initialise the subscriber node.
 
 Networking with other workstations
 ----------------------------------
@@ -33,7 +34,9 @@ Instead of running the master node and subscriber nodes on your own workstation,
 
 To communicate over the lab network you need to change two main ROS variables. Firstly you need to find the IP address of your computer when connected to the lab network (via ethernet). To do this you can use ``ifconfig`` in a terminal window to give you your ``<ip_address_of_pc>``.
 
-You then need to run the following two commands in your terminal window (substitute in you IP address)::
+You then need to run the following two commands in your terminal window (substitute in you IP address):
+
+.. code-block:: bash
 
   export ROS_MASTER_URI=http://192.168.0.77:11311
   export ROS_IP=<ip_address_of_pc>
@@ -45,16 +48,21 @@ As you will see, this is connecting you to the static IP address of the main Fra
 Running the subscriber
 ======================
 
-Once roscore is running, the subsciber has to run in the background to convert the ros messages into Franka commands and execute. For this, execute the subscriber binary file.
+Once ``roscore`` is running, the subsciber has to run in the background to read the messages from our Python publisher and execute them with libfranka. To run the subscriber (from the project folder), run:
 
-.. warning:: This file is currently only compiled to run with libfranka 0.1.0 (you can check your current libfranka version with ``rosversion libfranka`` in the terminal).
+.. code-block:: bash
 
-.. tip:: Sometimes there is an '*error with no active exception*' thrown by this executable. This can sometimes be solved by simply manually moving the arm using the buttons.
+  cd franka/
+  ./franka_controller_sub 192.168.0.88
+
+Sometimes there is an "**error with no active exception**" thrown by this executable. This can sometimes be solved by simply manually moving the arm using the buttons a bit. Then rerun the command above again.
+
+.. warning:: This subscriber is compiled for ``libfranka 0.1.0``. You can check your current ``libfranka`` version with ``rosversion libfranka`` command.
 
 Using the publisher
 ===================
 
-.. todo:: Add the information on motion and gripper publishing.
+First, make sure you are running ``roscore`` and the subscriber, ``franka_controller_sub``.
 
 **Example**
 
