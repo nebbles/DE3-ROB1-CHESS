@@ -326,7 +326,7 @@ class Perception:
             self.drawLines(debugImg, hor)
             cv2.imshow("Hough Lines Found", debugImg)
             cv2.imwrite("HoughLinesFound.jpeg", debugImg)
-            
+
 
         return hor, ver
 
@@ -348,7 +348,7 @@ class Perception:
     INTERSECTIONS
     """
 
-    def findIntersections(self, horizontals,verticals, debug=False):
+    def findIntersections(self, horizontals,verticals, debug=True):
         """
         WARNING: This function is trashy af. IDK why it works but it does. Finds intersections between Hough lines
         """
@@ -371,6 +371,11 @@ class Perception:
                 intersections.append((x,y))
 
                 print(x,y)
+
+        if debug:
+            print("")
+            print("We have found: " + str(len(intersections)) + " intersections.")
+            print("")
 
         ### FILTER
 
@@ -399,9 +404,12 @@ class Perception:
                 seen.add(intersection)
 
         if debug:
-            print(len(filteredIntersections))
+            print("")
+            print("We have filtered: " + str(len(filteredIntersections)) + " intersections.")
+            print("")
 
-        return filteredIntersections
+
+        return intersections
 
     def assignIntersections(self, image, intersections, debug=True):
         """
