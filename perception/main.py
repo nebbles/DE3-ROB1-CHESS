@@ -1,56 +1,87 @@
+from __future__ import print_function
 import cv2
-from mainDetect import Perception
-from camera_sub import image_converter
+import time
+import camera_subscriber
+from perception.mainDetect import Perception
 
+def main():
+    """
+    Main program for testing
+    """
 
-# TODO: Sylvia: Write a function that gets an RGB image from the camera within the Perception class in mainDetect.py
+    '''
+    1. Start by getting picture of empty chessboard
+    '''
 
-'''
-1. Start by getting picture of empty chessboard
-'''
+    # Start camera feed
+    feed = camera_subscriber.CameraFeed()
+    feed.start_process()
 
-# TODO: Sylvia: Once you've implemented that function, get the image inside the makeBoard function and remove these lines
+    # Get picture of empty chessboard
+    empty, depthEmpty = feed.get_frames()
 
-imgPathEmpty = "chessboard2303test/0.jpeg"
-# Read image of empty chessboard
-empty = cv2.imread(imgPathEmpty, 1)
+    '''
+    2. Instantiate Perception object
 
-'''
-2. Instantiate Perception object
+    Generates Board class within the Perception object holding information about the 64 squares
+    '''
 
-Generates Board class within the Perception object holding information about the 64 squares
-'''
+    # Make Perception instance
+    percept = Perception()
 
-# Make Perception instance
-percept = Perception()
+    # Make a Board instance within Perception. This assigns the grid and the initial BWE given an image of an empty board
+    percept.makeBoard(empty, depthEmpty)
 
-# TODO: Sylvia: makeBoard should now not take an argument anymore i.e. percept.makeBoard()
+    # Wait for user input
+    print("Picture of empty board taken and Board instantiated. Please press any key after you have populated the board")
+    cv2.waitKey(0)
+    print("")
+    print("Continuing...")
+    print("")
 
-# Make a Board instance within Perception. This assigns the grid and the initial BWE given an image of an empty board
-percept.makeBoard(empty)
+    '''
+    3. Populate board
 
-'''
-3. Populate board
+    The board now needs to be populated in the normal setup. previous is initialised to the image with the populated
+    chessboard with pieces in the start positions. Current is the picture taken after a move has been made. This
+    needs to run in a loop so that the BWE is updated forever
+    '''
 
-The board now needs to be populated in the normal setup. previous is initialised to the image with the populated
-chessboard with pieces in the start positions. Current is the picture taken after a move has been made. This
-needs to run in a loop so that the BWE is updated forever
-'''
+    # Get picture of populated chessboard
+    populated, dummy = feed.get_frames()
 
-# TODO: Sylvia: There is something for you to do in that function
+    # Get frame of populated chessboard
+    percept.initialImage(populated)
 
-percept.initialImage()
+    print("Initial image of populated board assigned and BWE initialised")
+    print("")
 
-# TODO: The following code needs to be integrated into a single function that can be called from the main script.
+    '''
+    4. Main loop
+    '''
 
-currentPath = "chessboard2303test/2.jpeg"
-# Getting current image
-current = cv2.imread(currentPath, 1)
+    while True:
 
-# TODO: Sylvia: You need to get percept.bwe to work without passing in current but getting the image inside the function
+        # Wait until key pressed
+        print("When you have made a move, please press any key to update the BWE matrix.")
+        print("")
+        cv2.waitKey(0)
 
-# Update BWE
-bwe = percept.bwe(current, debug=True)
+        # Refresh rate of camera frames
+        time.sleep(0.05)
 
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+        # Get current image
+        current, dummy = feed.get_frames()
+
+        cv2.imshow("Current Image", current)
+
+        # Update BWE
+        bwe = percept.bwe(current, debug=True)
+
+        cv2.waitKey(1)
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        cv2.destroyAllWindows()

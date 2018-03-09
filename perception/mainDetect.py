@@ -23,15 +23,13 @@ class Perception:
     """
     HIGH-LEVEL FUNCTIONS
     """
-    def initialImage(self):
+    def initialImage(self, initial):
         """
         This function sets the previous variable to the initial populated board
         """
-        # TODO: Sylvia: This function needs to get an image of the populated baord in starting position
-        previousPath = "perception/chessboard2303test/1.jpeg"
-        depthImage = "Depth/depth_image1.jpeg"
+
         # Initialising previous variable with populated chessboard
-        previous = cv2.imread(previousPath, 1)
+        previous = cv2.imread(initial, 1)
 
         self.previous = previous
 
