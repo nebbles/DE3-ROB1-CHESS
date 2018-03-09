@@ -466,7 +466,7 @@ class Perception:
     SQUARE INSTANTIATION
     """
 
-    def makeSquares(self, corners, depthImage, debugImage, debug=True):
+    def makeSquares(self, corners, depthImage, image, debug=True):
         """
         Instantiates the 64 squares when given 81 corner points
         """
@@ -489,12 +489,12 @@ class Perception:
                     c2 = corners[i][j+1]
                     c3 = corners[i+1][j+1]
                     c4 = corners[i+1][j]
-                    square = Square(position, c1, c2, c3, c4, index)
+                    square = Square(position, c1, c2, c3, c4, index, image)
                     #print(c1, c2, c3, c4)
                     squares.append(square)
 
                     if debug:
-                        square.draw(debugImage)
+                        square.draw(image)
 
                     index += 1
                     print(index)
@@ -502,7 +502,7 @@ class Perception:
                     #coordinates.append(xyz)
         except:
             if debug:
-                cv2.imwrite("5SquaresIdentified.jpeg", debugImage)
+                cv2.imwrite("5SquaresIdentified.jpeg", image)
 
 
 

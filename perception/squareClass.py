@@ -6,7 +6,7 @@ class Square:
     """
     Class holding the position of a chess square
     """
-    def __init__(self, position, c1, c2, c3, c4, index, state=''):
+    def __init__(self, position, c1, c2, c3, c4, index, image, state=''):
         # ID
         self.position = position
         self.index = index
@@ -17,6 +17,9 @@ class Square:
         self.c4 = c4
         # State
         self.state = state
+
+        # Empty color
+        self.emptyColor = self.roiColor(image)
 
         # Actual polygon as a numpy array of corners
         self.contours = np.array([c1, c2, c3, c4], dtype=np.int32)
@@ -80,35 +83,20 @@ class Square:
         # Flag
         state = ''
 
-        # Ideal RGB for EMPTY
-        blackEmpty = (70,25,25)
-        whiteEmpty = (205,155,150)
-
-        # Distane to color in 3D color space
-        absDiffBE = 0
-        absDiffWE = 0
+        # Distance to empty color in 3D color space
+        summed = 0
 
         for i in range(len(rgb)):
-            absDiffBE += (blackEmpty[i] - rgb[i])**2
-            absDiffWE += (whiteEmpty[i] - rgb[i])**2
+            summed += (self.emptyColor[i] - rgb[i])**2
 
-        absDiffBE = np.sqrt(absDiffBE)
-        absDiffWE = np.sqrt(absDiffWE)
+        distance = np.sqrt(summed)
+        print(distance)
 
-
-        absDiff = [(absDiffBE, 'BlackEmpty'),(absDiffWE, 'WhiteEmpty')]
-        absDiff.sort(key=lambda x: x[0])
-
-
-        print(absDiff)
-
-        threshold = 50
-
-
+        threshold = 10
 
         # If distance is below threshold assign empty
-        if absDiff < threshold:
-            print(str(absDiff) + " vs. " + str(threshold))
+        if distance < threshold:
+            print("Square is empty again. Assigning State E to: " + str(self.position))
             state = 'E'
 
         if drawParam:
