@@ -28,10 +28,7 @@ class Perception:
         This function sets the previous variable to the initial populated board
         """
 
-        # Initialising previous variable with populated chessboard
-        previous = cv2.imread(initial, 1)
-
-        self.previous = previous
+        self.previous = initial
 
     def makeBoard(self, image, depthImage):
         """
