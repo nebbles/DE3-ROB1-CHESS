@@ -100,7 +100,11 @@ class Square:
         absDiff.sort(key=lambda x: x[0])
 
 
+        print(absDiff)
+
         threshold = 50
+
+
 
         # If distance is below threshold assign empty
         if absDiff < threshold:
