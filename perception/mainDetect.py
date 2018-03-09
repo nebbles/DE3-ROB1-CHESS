@@ -295,7 +295,7 @@ class Perception:
         """
 
         # Detect hough lines
-        lines = cv2.HoughLinesP(edges, rho=1, theta=1 * np.pi / 180, threshold=80, minLineLength=100, maxLineGap=50)
+        lines = cv2.HoughLinesP(edges, rho=1, theta=1 * np.pi / 180, threshold=40, minLineLength=100, maxLineGap=50)
         N = lines.shape[0]
 
         # Draw lines on image
