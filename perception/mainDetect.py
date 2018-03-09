@@ -231,7 +231,7 @@ class Perception:
         # Make mask green in order to facilitate removal of the red strip around chessboard
         extracted[np.where((extracted == [125, 125, 125]).all(axis=2))] = [0, 0, 20]
         # Adds same coloured line to remove red strip based on chessboard edge
-        cv2.polylines(extracted, [chessboardEdge], True, (0, 0, 20), thickness=5)
+        cv2.polylines(extracted, [chessboardEdge], True, (0, 255, 0), thickness=5)
 
         if debug:
             cv2.imshow("Masked", extracted)
@@ -370,7 +370,7 @@ class Perception:
 
                 intersections.append((x,y))
 
-                print(x,y)
+                #print(x,y)
 
         if debug:
             print("")
