@@ -442,7 +442,7 @@ class Perception:
             cv2.imwrite("ActualCorners.jpeg", debugImg)
 
             print("")
-            print("There are: " + len(corners) + " corners that were found.")
+            print("There are: " + str(len(corners)) + " corners that were found.")
             print("")
 
 
