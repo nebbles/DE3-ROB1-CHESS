@@ -33,7 +33,7 @@ class Square:
         self.radius = 5
 
         # Empty color
-        #self.emptyColor = self.roiColor(image)
+        self.emptyColor = self.roiColor(image)
 
 
     def draw(self, image, color=(0, 0, 255), thickness=2):
