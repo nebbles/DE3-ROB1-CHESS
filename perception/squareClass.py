@@ -20,6 +20,7 @@ class Square:
 
         # Empty color
         try:
+            self.image = image
             self.emptyColor = self.roiColor(image)
         except:
             print("error in emptyColor")
