@@ -498,7 +498,7 @@ class Perception:
                 #print(c1, c2, c3, c4)
                 squares.append(square)
                 index += 1
-                #print(index)
+                print(index)
                 #xyz = square.getDepth(depthImage)
                 #coordinates.append(xyz)
 
