@@ -484,6 +484,8 @@ class Perception:
         numbers = ['1', '2', '3', '4', '5', '6', '7', '8']
         index = 0
 
+        print(corners)
+
         for i in range(8):
             for j in range(8):
                 # Make the square - yay!
