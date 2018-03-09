@@ -74,7 +74,7 @@ class Perception:
         squareImage = image.copy()
 
         # Get list of Square class instances
-        squares, coordinates = self.makeSquares(corners, depthImage)
+        squares, coordinates = self.makeSquares(corners, depthImage, True)
         # Make a Board class from all the squares to hold information
         self.board = Board(squares)
 
@@ -466,9 +466,8 @@ class Perception:
                 #print(c1, c2, c3, c4)
                 squares.append(square)
                 index += 1
-                xyz = square.getDepth(depthImage)
-                coordinates.append(xyz)
-                print(square.roi)
+                #xyz = square.getDepth(depthImage)
+                #coordinates.append(xyz)
 
         # Get x,y,z coordinates from square centers & depth image
         #coordinates = self.getDepth(square.roi, depthImage)
@@ -476,7 +475,7 @@ class Perception:
         if debug:
             print("Number of Squares found: " + str(len(squares)))
 
-        return squares, coordinates
+        return squares
 
     def detectSquareChange(self, previous, current, debug=False):
         """
