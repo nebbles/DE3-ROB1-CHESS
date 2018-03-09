@@ -18,14 +18,6 @@ class Square:
         # State
         self.state = state
 
-        # Empty color
-        try:
-            self.image = image
-            temp = self.roiColor(image)
-            self.emptyColor = temp
-        except:
-            print("error in emptyColor")
-
         # Actual polygon as a numpy array of corners
         self.contours = np.array([c1, c2, c3, c4], dtype=np.int32)
 
@@ -38,8 +30,11 @@ class Square:
 
         # ROI is the small circle within the square on which we will do the averaging
         self.roi = (cx, cy)
-
         self.radius = 5
+
+        # Empty color
+        self.emptyColor = self.roiColor(image)
+
 
     def draw(self, image, color=(0, 0, 255), thickness=2):
         """
