@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import CameraFeed
+from perception.squareClass.py import getDepth
 
 
 def run_calibration(cam_feed):
@@ -27,7 +28,7 @@ def run_calibration(cam_feed):
         # current_marker_pos = find_cross(current_frame)
 
         marker_x, marker_y = find_cross(rgb) #not very robust
-        marker_z = find_depth(marker, current_frame)
+        marker_z = getDepth(current_frame)
         marker_coordinates[i, 0] = marker_x
         marker_coordinates[i, 1] = marker_y
         marker_coordinates[i, 2] = marker_z
@@ -206,13 +207,13 @@ def find_cross(frame):
     #     break
 
 
-def find_depth(marker, current_frame):
-
-    depth = current_frame[marker[1], marker[0]]
-
-    coordinates = marker[0], marker[1], depth[0]
-
-    return coordinates
+# def find_depth(marker, current_frame):
+#
+#     depth = current_frame[marker[1], marker[0]]
+#
+#     coordinates = marker[0], marker[1], depth[0]
+#
+#     return coordinates
 
 
 cv2.destroyAllWindows()
