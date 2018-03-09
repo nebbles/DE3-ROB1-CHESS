@@ -46,9 +46,29 @@ class Board:
         """
         Updates the BWE
         """
-        for match in matches:
-            state = match.classify(current, True)
-            self.BWEmatrix[match.index] = state
+
+        for i in range(len(matches)):
+            if matches[i].classify() =='E':
+                # First match is currently empty
+                if i == 0:
+                    # Store old state
+                    old = matches[i].state
+                    # Assign new state
+                    matches[i].state = 'E'
+                    self.BWEmatrix[matches[i].index] = matches[i].state
+                    # Replace state of other square with the previous one of the currently white one
+                    matches[i+1].state = old
+                    self.BWEmatrix[matches[i+1].index] = matches[i+1].state
+                # Second match is currently empty
+                if i == 1:
+                    # Store old state
+                    old = matches[i].state
+                    # Assign new state
+                    matches[i].state = 'E'
+                    self.BWEmatrix[matches[i].index] = matches[i].state
+                    # Replace state of other square with the previous one of the currently white one
+                    matches[i-1].state = old
+                    self.BWEmatrix[matches[i-1].index] = matches[i-1].state
 
     def getBWE(self):
         """

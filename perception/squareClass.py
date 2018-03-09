@@ -84,32 +84,29 @@ class Square:
         blackEmpty = (70,25,25)
         whiteEmpty = (205,155,150)
 
-        # Ideal RGB for WHITE
-        occupiedWhite = (222,146,96)
-        # IDEAL RGB for BLACK
-        occupiedBlack = (103,35,32)
-
+        # Distane to color in 3D color space
         absDiffBE = 0
         absDiffWE = 0
-        absDiffOW = 0
-        absDiffOB = 0
 
         for i in range(len(rgb)):
             absDiffBE += (blackEmpty[i] - rgb[i])**2
             absDiffWE += (whiteEmpty[i] - rgb[i])**2
-            absDiffOW += (occupiedWhite[i] - rgb[i])**2
-            absDiffOB += (occupiedBlack[i] - rgb[i])**2
 
         absDiffBE = np.sqrt(absDiffBE)
         absDiffWE = np.sqrt(absDiffWE)
-        absDiffOW = np.sqrt(absDiffOW)
-        absDiffOB = np.sqrt(absDiffOB)
 
-        absDiff = [(absDiffBE, 'E'),(absDiffWE, 'E'),(absDiffOW, 'W'),(absDiffOB, 'B')]
+
+        absDiff = [(absDiffBE, 'E'),(absDiffWE, 'E')]
         absDiff.sort(key=lambda x: x[0])
 
 
-        state = str(absDiff[0][1])
+        threshold = 50
+
+        # If distance is below threshold assign empty
+        if absDiff < threshold:
+            print(str(absDiff) + " vs. " + str(threshold))
+            state = str(absDiff[0][1])
+
         if drawParam:
             cv2.putText(image, state, self.roi, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
 
