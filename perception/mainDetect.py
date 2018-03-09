@@ -71,7 +71,7 @@ class Perception:
         squareImage = image.copy()
 
         # Get list of Square class instances
-        squares = self.makeSquares(corners, depthImage, True)
+        squares = self.makeSquares(corners, depthImage, squareImage, True)
         # Make a Board class from all the squares to hold information
         self.board = Board(squares)
 
@@ -471,7 +471,7 @@ class Perception:
     SQUARE INSTANTIATION
     """
 
-    def makeSquares(self, corners, depthImage, debug=False):
+    def makeSquares(self, corners, depthImage, debugImage, debug=True):
         """
         Instantiates the 64 squares when given 81 corner points
         """
@@ -485,22 +485,31 @@ class Perception:
         index = 0
 
         print(corners)
+        try:
+            for i in range(8):
+                for j in range(8):
+                    # Make the square - yay!
+                    position = letters[-i-1] + numbers[-j-1]
+                    c1 = corners[i][j]
+                    c2 = corners[i][j+1]
+                    c3 = corners[i+1][j+1]
+                    c4 = corners[i+1][j]
+                    square = Square(position, c1, c2, c3, c4, index)
+                    #print(c1, c2, c3, c4)
+                    squares.append(square)
 
-        for i in range(8):
-            for j in range(8):
-                # Make the square - yay!
-                position = letters[-i-1] + numbers[-j-1]
-                c1 = corners[i][j]
-                c2 = corners[i][j+1]
-                c3 = corners[i+1][j+1]
-                c4 = corners[i+1][j]
-                square = Square(position, c1, c2, c3, c4, index)
-                #print(c1, c2, c3, c4)
-                squares.append(square)
-                index += 1
-                print(index)
-                #xyz = square.getDepth(depthImage)
-                #coordinates.append(xyz)
+                    if debug:
+                        square.draw(debugImage)
+
+                    index += 1
+                    print(index)
+                    #xyz = square.getDepth(depthImage)
+                    #coordinates.append(xyz)
+        except:
+            if debug:
+                cv2.imwrite("Squares Identified", debugImage)
+
+
 
         # Get x,y,z coordinates from square centers & depth image
         #coordinates = self.getDepth(square.roi, depthImage)
