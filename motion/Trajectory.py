@@ -4,7 +4,7 @@ from matplotlib.pyplot import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # for: fig.gca(projection = '3d')
 from scipy import interpolate
-from franka.franka_control import FrankaControl
+#from franka.franka_control import FrankaControl
 import decimal
 
 def continuous_trajectory(move, board_points, dead_zone, rest, hover, visual_flag=False):
