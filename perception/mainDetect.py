@@ -439,7 +439,7 @@ class Perception:
                     cv2.circle(debugImg, corner, 3, 255, 1)
 
             cv2.imshow("Corners", debugImg)
-            cv2.imsave("ActualCorners.jpeg", debugImg)
+            cv2.imwrite("ActualCorners.jpeg", debugImg)
             print(len(corners))
 
         return corners, image
