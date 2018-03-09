@@ -399,7 +399,7 @@ class Perception:
 
         return filteredIntersections
 
-    def assignIntersections(self, image, intersections, debug=False):
+    def assignIntersections(self, image, intersections, debug=True):
         """
         Takes the filtered intersections and assigns them to a list containing nine sorted lists, each one representing
         one row of sorted corners. The first list for instance contains the nine corners of the first row sorted
@@ -433,6 +433,11 @@ class Perception:
 
         ## DEBUG
         if debug:
+            debugImg = image.copy()
+            for row in corners:
+                for corner in row:
+                    print(corner)
+            #cv2.circle(debugImg,)
             print(corners)
 
         return corners, image
