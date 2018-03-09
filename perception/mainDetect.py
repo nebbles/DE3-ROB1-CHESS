@@ -524,10 +524,7 @@ class Perception:
 
         # Convert the images to grayscale
         grayA = cv2.cvtColor(previous, cv2.COLOR_BGR2GRAY)
-        cv2.imshow("Previous", previous)
         grayB = cv2.cvtColor(current, cv2.COLOR_BGR2GRAY)
-        cv2.imshow("Current", current)
-        cv2.waitKey(0)
 
         # Computes the Structural Similarity Index (SSIM) between previous and current
         (score, diff) = compare_ssim(grayA, grayB, full=True)

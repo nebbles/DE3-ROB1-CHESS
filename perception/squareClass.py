@@ -77,9 +77,11 @@ class Square:
         """
         Classifies the square into empty ('E'), occupied by a black piece ('B') or occupied by a white piece ('W')
         """
+
+        print("The empty color of the square is: " + str(self.emptyColor))
         # Find Color of ROI
         rgb = self.roiColor(image)
-
+        print("The current color of the square is: " + str(rgb))
         # Flag
         state = ''
 
