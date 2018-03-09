@@ -312,8 +312,8 @@ class Perception:
         # Filter out close lines based to achieve 9
 
         # STANDARD THRESHOLD SHOULD BE 20
-        ver = filterClose(vertical, horizontal=False, threshold=40)
-        hor = filterClose(horizontal, horizontal=True, threshold=40)
+        ver = filterClose(vertical, horizontal=False, threshold=20)
+        hor = filterClose(horizontal, horizontal=True, threshold=20)
         #print(len(ver))
         #print(len(hor))
         # DEBUG TO SHOW LINES
@@ -389,13 +389,13 @@ class Perception:
 
         # Only works if you run it several times -- WHY? Very inefficient
         # Now also works if run only once so comment the loop out
-        #for i in range(3):
-        for intersection in intersections:
-            for neighbor in intersections:
-                distanceToNeighbour = np.sqrt((intersection[0] - neighbor[0]) ** 2 + (intersection[1] - neighbor[1]) ** 2)
-                # Check that it's not comparing the same ones
-                if distanceToNeighbour < minDistance and intersection != neighbor:
-                    intersections.remove(neighbor)
+        for i in range(3):
+            for intersection in intersections:
+                for neighbor in intersections:
+                    distanceToNeighbour = np.sqrt((intersection[0] - neighbor[0]) ** 2 + (intersection[1] - neighbor[1]) ** 2)
+                    # Check that it's not comparing the same ones
+                    if distanceToNeighbour < minDistance and intersection != neighbor:
+                        intersections.remove(neighbor)
 
         # We still have duplicates for some reason. We'll now remove these
         filteredIntersections = []
