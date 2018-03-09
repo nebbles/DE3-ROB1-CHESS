@@ -49,6 +49,7 @@ class Board:
 
         for i in range(len(matches)):
             if matches[i].classify(current) == 'E':
+                print("NEW EMPTY SQUARE DETECTED")
                 # First match is currently empty
                 if i == 0:
                     # Store old state
