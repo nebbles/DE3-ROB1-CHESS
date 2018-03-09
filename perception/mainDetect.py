@@ -376,8 +376,10 @@ class Perception:
             print("")
             print("We have found: " + str(len(intersections)) + " intersections.")
             print("")
+
+            debugImg = image.copy()
+
             for intersection in intersections:
-                debugImg = image.copy()
                 cv2.circle(debugImg, intersection, 10, 255, 1)
 
             cv2.imshow("Intersections Found", debugImg)
@@ -489,7 +491,7 @@ class Perception:
                 #print(c1, c2, c3, c4)
                 squares.append(square)
                 index += 1
-                print(index)
+                #print(index)
                 #xyz = square.getDepth(depthImage)
                 #coordinates.append(xyz)
 
