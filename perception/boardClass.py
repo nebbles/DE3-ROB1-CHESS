@@ -48,7 +48,7 @@ class Board:
         """
 
         for i in range(len(matches)):
-            if matches[i].classify() =='E':
+            if matches[i].classify(current) == 'E':
                 # First match is currently empty
                 if i == 0:
                     # Store old state
