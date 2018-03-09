@@ -379,8 +379,9 @@ class Perception:
             for intersection in intersections:
                 debugImg = image.copy()
                 cv2.circle(debugImg, intersection, 10, 255, 1)
-                cv2.imshow("Intersections Found", debugImg)
-                cv2.imwrite("IntersectionsFound.jpeg", debugImg)
+
+            cv2.imshow("Intersections Found", debugImg)
+            cv2.imwrite("IntersectionsFound.jpeg", debugImg)
 
         # ### FILTER
         #
