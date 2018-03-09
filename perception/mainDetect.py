@@ -77,8 +77,8 @@ class Perception:
 
         ## DEBUG
         # Show the classified squares
-        self.board.draw(squareImage)
-        self.board.draw(depthImage)
+        #self.board.draw(squareImage)
+        #self.board.draw(depthImage)
         #cv2.imshow("Classified Squares", squareImage)
 
         #cv2.imshow("Classified Squares", depthImage)
@@ -502,7 +502,7 @@ class Perception:
                 #coordinates.append(xyz)
         if debug:
             cv2.imwrite("5SquaresIdentified.jpeg", image)
-            
+
 
 
 
