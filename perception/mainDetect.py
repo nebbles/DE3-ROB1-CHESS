@@ -67,9 +67,6 @@ class Perception:
         # Assign intersections to a sorted list of lists
         corners, cornerImage = self.assignIntersections(extractedImage, intersections)
 
-
-        cv2.imwrite("Corners.jpeg", cornerImage)
-
         # Copy original image to display on
         squareImage = image.copy()
 
@@ -218,8 +215,8 @@ class Perception:
 
         #DEBUG
         if debug:
-            cv2.imshow("Filtered Contours", imgContours)
-            cv2.imwrite("FilteredContours.jpeg", imgContours)
+            cv2.imshow("0 Filtered Contours", imgContours)
+            cv2.imwrite("0FilteredContours.jpeg", imgContours)
 
         # Create new all black image
         mask = np.zeros((img.shape[0], img.shape[1]), 'uint8')*125
@@ -234,8 +231,8 @@ class Perception:
         cv2.polylines(extracted, [chessboardEdge], True, (0, 255, 0), thickness=5)
 
         if debug:
-            cv2.imshow("Masked", extracted)
-            cv2.imwrite("Extracted Mask.jpeg", extracted)
+            cv2.imshow("1 Masked", extracted)
+            cv2.imwrite("1ExtractedMask.jpeg", extracted)
 
         return extracted
 
@@ -324,8 +321,8 @@ class Perception:
             debugImg = image.copy()
             self.drawLines(debugImg, ver)
             self.drawLines(debugImg, hor)
-            cv2.imshow("Hough Lines Found", debugImg)
-            cv2.imwrite("HoughLinesFound.jpeg", debugImg)
+            cv2.imshow("2 Hough Lines Found", debugImg)
+            cv2.imwrite("2HoughLinesFound.jpeg", debugImg)
 
 
         return hor, ver
@@ -382,8 +379,8 @@ class Perception:
             for intersection in intersections:
                 cv2.circle(debugImg, intersection, 10, 255, 1)
 
-            cv2.imshow("Intersections Found", debugImg)
-            cv2.imwrite("IntersectionsFound.jpeg", debugImg)
+            cv2.imshow("3 Intersections Found", debugImg)
+            cv2.imwrite("3IntersectionsFound.jpeg", debugImg)
 
         ### FILTER
 
@@ -456,8 +453,8 @@ class Perception:
                 for corner in row:
                     cv2.circle(debugImg, corner, 10, 255, 1)
 
-            cv2.imshow("Corners", debugImg)
-            cv2.imwrite("ActualCorners.jpeg", debugImg)
+            cv2.imshow("4 Final Corners", debugImg)
+            cv2.imwrite("4FinalCorners.jpeg", debugImg)
 
             print("")
             print("There are: " + str(len(corners)) + " corners that were found.")
