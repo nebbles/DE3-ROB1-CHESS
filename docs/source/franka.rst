@@ -1,24 +1,26 @@
-************
-FRANKA Panda
-************
+**********
+Franka Arm
+**********
 
-Starting up the Panda
-=====================
+Starting up
+===========
 
-The Panda arm should be connected to the workshop floor controller and powered up. When booting, the arm LEDs will flash yellow. Once the arm is booted (solid yellow when completed) you should release the brakes by connecting a computer via ethernet to the base of the arm (see image).
+The Arm should be connected to the workshop floor controller with the thick black cable and the controller box should be powered up. When booting, the arm LEDs will flash yellow. Once the arm is booted (solid yellow when completed) you can release the brakes via the web interface.
 
-.. figure:: _static/franka_wiring_guide_robot_arm.png
+.. figure:: _static/franka_wiring_guide_general.png
     :align: center
     :figclass: align-center
 
-    Configuration of wiring for connecting to the FRANKA web interface.
+    Wiring configuration for using the Franka.
 
-Log into the controller web interface (http://robot.franka.de) with:
+Log into the controller web interface (http://192.168.0.88) with:
 
 * Username: ``robin``
 * Password: ``panda``
 
-To release the brakes:
+.. note:: Your browser may say the connection is not secure, or some other warning. If this is the case, click on the 'advanced' button, and then click 'proceed anyway'.
+
+To release the brakes on the web interface:
 
 #. Make sure the external activation device (EAD) is pressed down.
 #. On the web interface, bottom right, *open* the brakes.
@@ -28,33 +30,29 @@ To release the brakes:
 .. attention::
   The white light means the robot is in movement mode. The external activation device (EAD) / button is a software stop. It 'detaches' the arm from the controller which causes the arm to lock (yellow light on). It is **not** an emergency stop, as it does not cut power to the arm/controller.
 
-With the Arm in movement mode, it can be manually manipulated by squeezing the buttons at the end effector. The Arm will automatically go into gravity compensation mode when manually moving it.
+With the Arm in movement mode, it can be manually manipulated by squeezing the buttons at the end effector. The buttons have a two stage press, and if you press too hard on the buttons, the arm will lock again. The Arm will automatically go into gravity compensation mode when manually moving it.
+
+.. tip:: If the end-effector has recently been removed or readded, the gravity compensation may not be performing well. This is because the web interface settings have not been updated to account for the decrease/increase to expected weight. See the section on `Removing or adding the Franka's end-effector (hand)`_.
 
 .. note::
   When designing motion controllers, we are recommended to use impedance control, not high gain control. This will mean we can reduce the stiffness of the arm when moving making it safer for collaborative environments.
 
-Networking with Panda
-=====================
+Networking information
+======================
 
-If you now want to use a workstation computer to control the Arm via the FRANKA Control Interface (FCI) libraries, **first ensure you have completed the above steps to unlock the Arm brakes**. Then move the ethernet cable from the base of the Arm, and connect it to the shop floor controller (as seen in image).
-
-.. figure:: _static/franka_wiring_guide_shop_floor.png
-    :align: center
-    :figclass: align-center
-
-    Configuration of wiring for connecting to the FRANKA Control Interface (ROS libraries).
+If you now want to use a workstation computer to control the Arm via the FRANKA Control Interface (FCI) libraries, **first ensure you have completed the above steps to unlock the Arm brakes**. Also check the ethernet cable is attached either to a network switch or directly to the shop floor controller.
 
 .. attention::
   According to `FRANKA documentation <https://frankaemika.github.io/docs/getting_started.html#operating-the-robot>`_: "the workstation PC which commands your robot using the FCI must always be connected to the LAN port of Control (shop floor network) and **not** to the LAN port of the Arm (robot network)."
 
-With the workstation computer connected to the shop floor controller, you must set a static IPv4 address for the computer in the Ubuntu network settings. The recommended values are seen below:
+With the main workstation computer *should* have a static IPv4 address for the computer in the Ubuntu network settings. The recommended values are seen below:
 
 =======================  ============  ==============================
 Device                   IP Address    Notes
 =======================  ============  ==============================
 FRANKA Arm               192.168.1.0   This does not change
 Shop floor (controller)  192.168.0.88  This does not change
-Workstation              192.168.0.77  Should be static (in settings)
+Workstation (main)       192.168.0.77  Should be static (in settings)
 =======================  ============  ==============================
 
 .. important::
@@ -64,17 +62,54 @@ You can confirm that the workstation computer is able to communicate with the wo
 
   $ ping 192.168.0.88
 
-.. note:: Communicating with the Panda does not currently work over a network switch. The ethernet cable should be direct from shop floor controller to workstation computer. Unfortunately this means you computer will not be able to connect to the internet.
+.. note:: Communicating with the Franka over the switch with a static IP does allow you to have internet access, just note that the gateway and DNS settings should be provided in the Ubuntu settings accordingly to make it work.
 
-Panda Software
-==============
+Removing or adding the Franka's end-effector (hand)
+===================================================
 
-The FRANKA Panda currently has ``v1.0.9`` which supports versions ``libfranka < 0.2.0``. Updates for the Panda can be found at: http://support.franka.de/
+There are a number of steps that need to be done when removing or readding hte frnka hand ot the arm.
 
-Shutting down the Panda
-=======================
+.. todo:: add full guidance on how to add/remove hand and change settings for gravity compensation.
 
-Enter the web interface for the Panda. In the lower right menu, lock the brakes. Then in the top right menu, select shutdown.
+.. _franka-emika-software:
+
+Franka Emika Software
+=====================
+
+Software updates can be found at: http://support.franka.de/
+
+The software versions currently used in the robotics lab are:
+
+=======================  ============  ==============================
+Software                 Version       Notes
+=======================  ============  ==============================
+Franka Firmware          1.0.9         Supports ``libfranka < 0.2.0``
+ros-kinetic-libfranka    0.1.0         Current ROS version is 0.2.0
+franka_ros               ??            Currently unused
+=======================  ============  ==============================
+
+.. warning:: The lab only supports libfranka 0.1.0 which is currently unavailable from ``apt install``. **Do NOT uninstall ROS or libfranka on workstations which already have it installed**.
+
+Shutting down the Arm
+=====================
+
+Enter the web interface for the Arm. In the lower right menu, lock the brakes. Then in the top right menu, select shutdown, and confirm.
 
 .. important::
   Remember to shutdown the controller from the web interface. This device is a computer, and should not be switched off from mains.
+
+Appendix
+========
+
+In rare cases, you may need to access the Franka arm directly by connecting the ethernet cable as seen in the image below:
+
+.. figure:: _static/franka_wiring_guide_robot_arm.png
+    :align: center
+    :figclass: align-center
+
+    Wiring configuration fo accessing the Arm directly (through the web interface).
+
+Log into the controller web interface (http://robot.franka.de) with:
+
+* Username: ``robin``
+* Password: ``panda``

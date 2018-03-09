@@ -287,3 +287,9 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+# autodoc mock modules to ignore import statements
+# This is useful when some external dependencies are not met at build time and
+# break the building process. You may only specify the root package of the
+# dependencies themselves and ommit the sub-modules.
+autodoc_mock_imports = ["rospy", "std_msgs", "numpy"]

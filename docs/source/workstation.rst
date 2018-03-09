@@ -1,6 +1,6 @@
-****************************
-Workstation set-up for Panda
-****************************
+*****************************
+Workstation set-up for Franka
+*****************************
 
 Generally the set up procedure follows the guide provided on the `FRANKA documentation website <https://frankaemika.github.io/docs/installation.html>`_.
 
@@ -8,7 +8,6 @@ Requirements for FRANKA Workstation
 ===================================
 
 #. `Install Ubuntu`_ (you may need to partition hard drive)
-#. `Install the realtime kernel patch`_
 #. `Install the realtime kernel patch`_
 #. `Install ROS Kinetic`_
 #. `Install FRANKA Libraries`_
@@ -76,36 +75,132 @@ http://wiki.ros.org/kinetic/Installation/Ubuntu
 Install FRANKA Libraries
 ========================
 
-.. attention:: It is recommended that you **DO NOT** install from source. There are lots of problems with compiling versions which work with the current firmware version of the Panda.
+.. attention:: It is recommended that you **DO NOT** install from source. There are lots of problems with compiling versions which work with the current firmware version of the Franka Arm.
 
 Option 1: Install binaries via ``apt``
 --------------------------------------
 
-Binary packages for ``libfranka`` and ``franka_ros`` are available from the ROS repositories. After setting up `ROS Kinetic <wiki.ros.org/kinetic/Installation/Ubuntu>`_, execute::
+.. warning:: Franka Emika have updated the version of libfranka distributed by ROS from 0.1.0 to 0.2.0 which means it no longer supports the firmware version used in the lab. For more information on software versions, see :ref:`franka-emika-software`. Unless the Franka's firmware has been updated, you should now use `Option 2: Install and compile from source`_.
+
+Binary packages for ``libfranka`` and ``franka_ros`` are available from the ROS repositories. After setting up `ROS Kinetic <http://wiki.ros.org/kinetic/Installation/Ubuntu>`_, execute::
 
   sudo apt install ros-kinetic-libfranka
   sudo apt install ros-kinetic-franka-ros
 
 Note that if you use ``apt-get`` or ``apt`` to install a package on Ubuntu, you can use ``dpkg -L <packagename>`` to find where on the system the files for a particular package are installed.
 
-Option 2: Install and compile from source (**not recommended**)
----------------------------------------------------------------
+Option 2: Install and compile from source
+-----------------------------------------
 
-To install from source, you may need to use the following commands:
+*The following guide is based on a guide from Franka Emika* (`link <https://frankaemika.github.io/docs/installation.html>`__).
 
-* ``$ git clone`` will give you the whole repository.
-* ``$ git tag -l`` will list available tags.
-* ``$ git checkout tags/<tag_name>`` will allow you to change repo to a specific tag, ``<tag_name>``.
+Before building from source, please uninstall existing installations of ``libfranka`` and
+``franka_ros`` to avoid conflicts::
+
+    sudo apt remove "*libfranka*"
+
+To build ``libfranka``, install the following dependencies from Ubuntu's package manager::
+
+    sudo apt install build-essential cmake git libpoco-dev libeigen3-dev
+
+Then, download the source code by cloning ``libfranka`` from `GitHub <https://github.com/frankaemika/libfranka>`__:
+
+.. code-block:: shell
+
+    cd ~
+    git clone --recursive https://github.com/frankaemika/libfranka
+    cd libfranka
+
+By default, this will check out the newest release of ``libfranka``. If you want to build a particular version of ``libfranka`` instead, check out the corresponding Git tag. At the time of writing the firmware of the Franka means we need version ``0.1.0`` so we do::
+
+    git checkout tags/0.1.0
+    git submodule update
+
+.. tip:: Use ``git tag -l`` will list available tags.
+
+In the source directory, create a build directory and run CMake:
+
+.. code-block:: shell
+
+    mkdir build
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release ..
+    cmake --build .
+
+You now need to add the path of this library to you system path so that libfranka can be found at runtime. To do this, when in the ``build/`` directory:
+
+.. code-block:: shell
+
+    pwd
+
+This returns a path such as ``/home/<username>/libfranka/build``. We then add this to the **end** of our ``~/.bashrc`` file, such an example is:
+
+.. code-block:: shell
+
+    nano ~/.bashrc
+
+    # add the following line to the end of the file
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/<username>/libfranka/build"
+    # now save and exit the file
+
+    source ~/.bashrc
+
+.. warning:: Remember to put your own path to the build directory of ``libfranka`` instead of ``/home/<username>/libfranka/build``.
+
+Installing ``libfranka`` is now complete. If you now need to build the ros packages, you should use the guide `found here`_.
+
+.. _found here: https://frankaemika.github.io/docs/installation.html#building-the-ros-packages
+
+.. _setting-permissions:
+
+Using the franka_ros library
+============================
+
+*This is only applicable is you installed* ``franka_ros`` *with* ``apt``.
+
+The Franka ROS packages are intiated using the launch xml files. To do this you need to adjust the default IP address in these launch files::
+
+  roscd franka_visualization
+  cd launch/
+  nano franka_visualization.launch
+
+Now change the value for ``name=robot_ip`` from ``default=robot.franka.de`` to ``default=192.168.0.88``. You can then launch the package with::
+
+  roslaunch franka_visualization franka_visualization.launch
+
+You can swap out the 'visualization' term for any other franka_ros package.
+
+Setting Permissions
+===================
+
+You need to ensure you have set the correct permissions for libfranka. Run::
+
+  source /opt/ros/kinetic/setup.bash
+
+.. hint::
+  If this doesn't run, you may not have installed ROS Kinetic properly. Check `ROS Kinetic install here <http://wiki.ros.org/kinetic/Installation/Ubuntu>`_.
+
+We then need to source ros for the root user so that libfranka has permissions to use the realtime kernel::
+
+  sudo bash
+  source /opt/ros/kinetic/setup.bash
+
+You now press **Ctrl+D** to exit out of sudo bash (the hash sign will change back to a dollar sign). You must also check that you have the correct realtime permissions for your own user. To do this, run::
+
+  ulimit -r
+
+If the results is ``99`` then you have nothing more to do, is the result is ``0`` then go back and check you completed `the last section of the realtime kernel setup`_.
+
+.. tip:: Remember you can check if you are running your realtime kernel at any time by typing ``uname -r`` and looking for an ``rt`` after the kernal version.
+
+.. _`the last section of the realtime kernel setup`: https://frankaemika.github.io/docs/installation.html#allow-a-user-to-set-real-time-permissions-for-its-processes
 
 Test with examples
 ==================
 
-After installing ``ros-kinetic-libfranka``, you can run the examples located in ``~/git/libranka/build/examples`` such as::
+To start testing you should move to :doc:`operating` page to test out the workstation set up.
 
-  ./generate_cartesian_pose_motion <host-name>
-  ./generate_cartesian_velocity_motion <host-name>
-
-Remember, for this to work:
+Remember, for this to work, you need:
 
 * The FRANKA Arm must be in movement mode (white light).
 * The workstation PC must be connected to the shop floor controller by ethernet.
@@ -116,7 +211,7 @@ Remember, for this to work:
 Install other libraries
 =======================
 
-It is recommended that you install OMPL:
+You may want to install OMPL:
 
 http://ompl.kavrakilab.org/installation.html
 

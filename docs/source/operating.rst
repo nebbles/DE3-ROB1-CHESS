@@ -1,56 +1,111 @@
-*******************************
-Operating the Robot with Python
-*******************************
+************************
+Controlling Franka & ROS
+************************
 
-.. note::
-  This page is still incomplete and will continue to be actively updated.
+Starting ROS to control Franka
+==============================
 
-Starting up FRANKA & using provided workstations
-================================================
+.. TODO decide if we are using this commented section.
 
-To log into the workstation:
+.. The image below describes how we plan to control the Arm using Python. To be able to write a successful Python program, we must first understand how ROS works: how to publish and listen on topics.
+..
+.. .. figure:: _static/franka_programming_interface.png
+..     :align: center
+..     :figclass: align-center
+..
+..     Interfacing Python with FRANKA.
 
-* Username: ``robin``
-* Password: ``deniro``
+Using a single workstation for roscore
+--------------------------------------
 
-.. note::
-  If you do not use a provided workstation, ensure you have completed all the steps in the :doc:`workstation` page.
+To use ROS to control the Franka arm from one workstation, you need to have the master node running for ROS. To do this, open a new terminal window and run:
 
-Connect your workstation to the network via ethernet. Power up the FRANKA and when booted (solid yellow), type the following into the URL bar in a browser::
+.. code-block:: bash
 
-  http://192.168.0.88
+  roscore
 
-Now run through the unlocking procedure as described in the :doc:`./franka` doc.
 
-Understanding how to control the FRANKA
-=======================================
+From this point, you can now initialise the subscriber node.
+
+Networking with other workstations
+----------------------------------
+
+Instead of running the master node and subscriber nodes on your own workstation, these can be running on the main workstation in the lab instead. This means that libfranka won't need to be installed on your specific workstation.
+
+To communicate over the lab network you need to change two main ROS variables. Firstly you need to find the IP address of your computer when connected to the lab network (via ethernet). To do this you can use ``ifconfig`` in a terminal window to give you your ``<ip_address_of_pc>``.
+
+You then need to run the following two commands in your terminal window (substitute in you IP address):
+
+.. code-block:: bash
+
+  export ROS_MASTER_URI=http://192.168.0.77:11311
+  export ROS_IP=<ip_address_of_pc>
+
+As you will see, this is connecting you to the static IP address of the main Franka workstation, ``192.168.0.77``. In order for you to continue with running a Python publisher, you need to ensure that roscore and the subscriber is running on the main workstation.
+
+.. note:: That this configuration of assigning IP addresses to ROS_MASTER_URI and ROS_IP is non-permanent, and is only active for the terminal window you are working in. This has to be repeated for every window you use to run rospy. Alternatively you can add these commands to your bashrc.
+
+Running the subscriber
+======================
+
+Once ``roscore`` is running, the subsciber has to run in the background to read the messages from our Python publisher and execute them with libfranka. To run the subscriber (from the project folder), run:
+
+.. code-block:: bash
+
+  cd franka/
+  ./franka_controller_sub 192.168.0.88
+
+Sometimes there is an "**error with no active exception**" thrown by this executable. This can sometimes be solved by simply manually moving the arm using the buttons a bit. Then rerun the command above again.
+
+.. warning:: This subscriber is compiled for ``libfranka 0.1.0``. You can check your current ``libfranka`` version with ``rosversion libfranka`` command.
+
+Using the publisher
+===================
+
+First, make sure you are running ``roscore`` and the subscriber, ``franka_controller_sub``.
+
+**Example**
+
+Assuming you are writing a script (``script.py``) that wants to use control franka, the files should be stored as::
+
+    .
+    ├── README.md
+    ├── franka
+    │   ├── __init__.py
+    │   ├── franka_control_ros.py
+    │   ├── franka_controller_sub
+    │   ├── franka_controller_sub.cpp
+    │   ├── print_joint_positions
+    │   └── print_joint_positions.cpp
+    └── script.py
+
+To use the ``FrankaRos`` class in your own Python script would look something like this:
+
+.. code-block:: python
+
+   from franka.franka_control_ros import FrankaRos
+
+   franka = FrankaRos(debug_flag=True)
+   # we set the flag true to get prints to the console about what FrankaRos is doing
+
+   franka.move_to(x=0.26, y=-0.4, z=0.36, speed=0.1)
+   # we tell the arm to go to a specific point in robot space
+
+.. automodule:: franka.franka_control_ros
+  :members:
+  :undoc-members:
+
+Using Franka without ROS
+========================
+
+.. note:: **This method is deprecated**. It is now recommended you use ROS to control the Arm using a Python publisher. It is best you stick with the method detailed above.
 
 Setting Permissions
 -------------------
 
 To control the Franka Arm, Fabian and Petar have written a small collection of C++ files which can be compiled to run as executables and control the Franka Arm using libfranka.
 
-Firstly, you need to ensure you have set the correct permissions for libfranka.
-
-Ensure that you have run::
-
-  source /opt/ros/kinetic/setup.bash
-
-.. note::
-  If this doesn't run, you may not have installed ROS Kinetic properly.
-
-We then need to source ros for the root user so that libfranka has permissions to use the realtime kernel::
-
-  sudo bash
-  source /opt/ros/kinetic/setup.bash
-
-You now press **Ctrl+D** to exit out of sudo bash (the hash sign will change back to a dollar sign). You must also check that you have the correct realtime permissions for your own user. To do this, run::
-
-  ulimit -r
-
-If the results is ``99`` then you have nothing more to do, is the result is ``0`` then go back and check you completed `the last section of the realtime kernel setup`_.
-
-.. _`the last section of the realtime kernel setup`: https://frankaemika.github.io/docs/installation.html#allow-a-user-to-set-real-time-permissions-for-its-processes
+You need to ensure you have set the correct permissions for libfranka. You can check that in :ref:`setting-permissions`.
 
 Downloading the C++ Executables and Python Class
 ------------------------------------------------
@@ -81,12 +136,11 @@ Python-Franka API with ``franka_control.py``
 
 The Python-FRANKA module (``franka_control.py``) is designed to allow easy access to the C++ controller programs provided by Petar. The provided Python module is structured as follows.
 
-.. automodule:: franka.franka_control
+.. automodule:: franka.archive.franka_control
   :members:
   :undoc-members:
 
-Example
-~~~~~~~
+**Example**
 
 To use the ``FrankaControl`` class in your own Python script would look something like this:
 
@@ -133,32 +187,6 @@ The structure of the project is important to ensure that importing between modul
   │   ├── module3.py
   │   ├── __init__.py
   └── test_script.py
-
-
-.. Planned method
-.. --------------
-..
-.. The image below describes how we plan to control the Arm using Python. To be able to write a successful Python program, we must first understand how ROS works: how to publish and listen on topics.
-..
-.. .. figure:: _static/franka_programming_interface.png
-..     :align: center
-..     :figclass: align-center
-..
-..     Interfacing Python with FRANKA.
-
-
-Getting Started with ROS
-========================
-
-.. note::
-  Currently we are not using ROS to control the FRANKA Robot. So this section is only necessary to get practise in setting up a workspace. We will likely be using this in the future.
-
-#. In your home directory, ensure you have set up a `complete catkin workspace`_.
-#. Within that workspace, `create a catkin package`_.
-#. TBC...
-
-.. _`complete catkin workspace`: http://wiki.ros.org/catkin/Tutorials/create_a_workspace
-.. _`create a catkin package`: http://wiki.ros.org/ROS/Tutorials/CreatingPackage
 
 Additional Resources
 ====================
