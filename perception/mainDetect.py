@@ -50,7 +50,7 @@ class Perception:
             print("")
 
         # Extract chessboard from image
-        extractedImage = self.imageAnalysis(image, processedImage)
+        extractedImage = self.imageAnalysis(image, processedImage, debug=True)
 
         # Chessboard Corners
         cornersImage = extractedImage.copy()
