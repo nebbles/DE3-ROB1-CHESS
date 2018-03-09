@@ -96,7 +96,7 @@ class Square:
         absDiffWE = np.sqrt(absDiffWE)
 
 
-        absDiff = [(absDiffBE, 'E'),(absDiffWE, 'E')]
+        absDiff = [(absDiffBE, 'BlackEmpty'),(absDiffWE, 'WhiteEmpty')]
         absDiff.sort(key=lambda x: x[0])
 
 
@@ -109,7 +109,7 @@ class Square:
         # If distance is below threshold assign empty
         if absDiff < threshold:
             print(str(absDiff) + " vs. " + str(threshold))
-            state = str(absDiff[0][1])
+            state = 'E'
 
         if drawParam:
             cv2.putText(image, state, self.roi, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
