@@ -16,9 +16,11 @@ def main():
     # Start camera feed
     feed = camera_subscriber.CameraFeed()
     feed.start_process()
+    print("Camera Feed started")
 
     # Get picture of empty chessboard
     empty, depthEmpty = feed.get_frames()
+    print("Image fetched")
 
     '''
     2. Instantiate Perception object
