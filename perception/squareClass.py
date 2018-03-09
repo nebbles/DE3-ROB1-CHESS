@@ -19,7 +19,10 @@ class Square:
         self.state = state
 
         # Empty color
-        self.emptyColor = self.roiColor(image)
+        try:
+            self.emptyColor = self.roiColor(image)
+        except:
+            print("error in emptyColor")
 
         # Actual polygon as a numpy array of corners
         self.contours = np.array([c1, c2, c3, c4], dtype=np.int32)
