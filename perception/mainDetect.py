@@ -312,8 +312,8 @@ class Perception:
         # Filter out close lines based to achieve 9
 
         # STANDARD THRESHOLD SHOULD BE 20
-        ver = filterClose(vertical, horizontal=False, threshold=20)
-        hor = filterClose(horizontal, horizontal=True, threshold=20)
+        ver = filterClose(vertical, horizontal=False, threshold=40)
+        hor = filterClose(horizontal, horizontal=True, threshold=40)
         #print(len(ver))
         #print(len(hor))
         # DEBUG TO SHOW LINES
