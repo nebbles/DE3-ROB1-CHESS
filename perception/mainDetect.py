@@ -289,7 +289,7 @@ class Perception:
 
         return horizontal,vertical
 
-    def houghLines(self, edges, image, debug=False):
+    def houghLines(self, edges, image, debug=True):
         """
         Detects Hough lines
         """
@@ -321,8 +321,12 @@ class Perception:
         #print(len(hor))
         # DEBUG TO SHOW LINES
         if debug:
-            self.drawLines(image, ver)
-            self.drawLines(image, hor)
+            debugImg = image.copy()
+            self.drawLines(debugImg, ver)
+            self.drawLines(debugImg, hor)
+            cv2.imshow("Hough Lines Found", debugImg)
+            cv2.imwrite("HoughLinesFound.jpeg", debugImg)
+            
 
         return hor, ver
 
