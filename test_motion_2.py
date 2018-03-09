@@ -1,9 +1,9 @@
 from motion import Trajectory
-from franka.franka_control import FrankaControl
+#from franka.franka_control import FrankaControl
 
-arm = FrankaControl(debug_flag=False)  # debug=True)
+#arm = FrankaControl(debug_flag=False)  # debug=True)
 
-def callib(arm):#trajectory_chess):
+def callib():#trajectory_chess):
     """Function to gather the FRANKA frame coordinates of the key positions"""
 
     print("For the following commands, place the FRANKA end effector in the centre of the relevant square\n")
@@ -74,7 +74,7 @@ def callib(arm):#trajectory_chess):
     return board_points, dead_zone, rest, hover
 
 # collect data from 4 FRANKA frame points
-board_points, dead_zone, rest, hover = callib(arm)
+board_points, dead_zone, rest, hover = callib()
 
 # Find trajectory
 #trajectory = Trajectory.continuous_trajectory([("r", "b4"), ("r", "a1b4")], board_points, dead_zone, rest, hover, visual_flag=True)
