@@ -226,7 +226,7 @@ class Perception:
         # Copy the chessboard edges as a filled white polygon
         cv2.fillConvexPoly(mask, chessboardEdge, 255, 1)
         # Assign all pixels to out that are white (i.e the polygon, i.e. the chessboard)
-        extracted = np.zeros_like(img)*125
+        extracted = np.zeros_like(img)
         extracted[mask == 255] = img[mask == 255]
         # Make mask green in order to facilitate removal of the red strip around chessboard
         extracted[np.where((extracted == [125, 125, 125]).all(axis=2))] = [0, 0, 20]
