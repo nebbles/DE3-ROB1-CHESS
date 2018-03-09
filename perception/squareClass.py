@@ -61,16 +61,12 @@ class Square:
         """
         # Initialise mask
         maskImage = np.zeros((image.shape[0], image.shape[1]), np.uint8)
-        print("Mask made")
         # Draw the ROI circle on the mask
         cv2.circle(maskImage, self.roi, self.radius, (255, 255, 255), -1)
-        print("Circle drawn")
         # Find the average color
         average_raw = cv2.mean(image, mask=maskImage)[::-1]
-        print("average raw")
         # Need int format so reassign variable
         average = (int(average_raw[1]), int(average_raw[2]), int(average_raw[3]))
-        print("average")
 
         ## DEBUG
         # print(average)
