@@ -91,8 +91,6 @@ class Perception:
         Takes care of taking the camera picture, comparing it to the previous one, updating the BWE and returning it
         """
 
-        # TODO: Get current image
-
         ## DEBUG
         # Getting current image
         # currentPath = "chessboard2303test/2.jpeg"
