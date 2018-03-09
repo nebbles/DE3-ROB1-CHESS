@@ -520,6 +520,8 @@ class Perception:
         moved from or to.
         """
 
+        debugImg = current.copy()
+
         # Convert the images to grayscale
         grayA = cv2.cvtColor(previous, cv2.COLOR_BGR2GRAY)
         cv2.imshow("Previous", previous)
@@ -547,20 +549,17 @@ class Perception:
             try:
                 # Area
                 area = cv2.contourArea(c)
-                # Perimenter
-                perimeter = cv2.arcLength(c, True)
                 if area > 100:
                     (x, y, w, h) = cv2.boundingRect(c)
                     centre = (int(x + w / 2), int(y + h / 2))
                     centres.append(centre)
-                    cv2.circle(current, centre, 3, 255, 2)
-                    cv2.rectangle(current, (x, y), (x + w, y + h), (0, 0, 255), 2)
+                    cv2.circle(debugImg, centre, 3, 255, 2)
+                    cv2.rectangle(debugImg, (x, y), (x + w, y + h), (0, 0, 255), 2)
             except:
                 pass
 
         ## DEBUG
         if debug:
-            debugImg = current.copy()
             cv2.imshow("Detected Move", debugImg)
 
         return centres
