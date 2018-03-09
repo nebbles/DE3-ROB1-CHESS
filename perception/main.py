@@ -36,10 +36,11 @@ def main():
     percept = Perception()
 
     # Make a Board instance within Perception. This assigns the grid and the initial BWE given an image of an empty board
-    try:
-        percept.makeBoard(empty, depthEmpty)
-    except Exception as e:
-        print("Board could not be instatiated. Error message: " + str(e))
+
+    #try:
+    percept.makeBoard(empty, depthEmpty)
+    #except Exception as e:
+    #    print("Board could not be instantiated. Error message: " + str(e))
 
     # Wait for user input
     print("Picture of empty board taken and Board instantiated. Please press any key after you have populated the board")
