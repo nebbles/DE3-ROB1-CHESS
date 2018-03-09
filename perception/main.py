@@ -19,7 +19,11 @@ def main():
     print("Camera Feed started")
 
     # Get picture of empty chessboard
-    empty, depthEmpty = feed.get_frames()
+    try:
+        empty, depthEmpty = feed.get_frames()
+    except:
+        print("Image could not be fetched. ")
+
     print("Image fetched")
 
     '''
