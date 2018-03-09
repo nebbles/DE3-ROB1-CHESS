@@ -71,7 +71,7 @@ class Perception:
         squareImage = image.copy()
 
         # Get list of Square class instances
-        squares, coordinates = self.makeSquares(corners, depthImage, True)
+        squares = self.makeSquares(corners, depthImage, True)
         # Make a Board class from all the squares to hold information
         self.board = Board(squares)
 
@@ -82,9 +82,9 @@ class Perception:
         # Show the classified squares
         self.board.draw(squareImage)
         self.board.draw(depthImage)
-        cv2.imshow("Classified Squares", squareImage)
+        #cv2.imshow("Classified Squares", squareImage)
 
-        cv2.imshow("Classified Squares", depthImage)
+        #cv2.imshow("Classified Squares", depthImage)
 
         cv2.imwrite("ClassifiedSquares.jpeg", squareImage)
         cv2.imwrite("ClassifiedDepth.jpeg", depthImage)
@@ -215,7 +215,7 @@ class Perception:
 
         #DEBUG
         if debug:
-            cv2.imshow("0 Filtered Contours", imgContours)
+            #cv2.imshow("0 Filtered Contours", imgContours)
             cv2.imwrite("0FilteredContours.jpeg", imgContours)
 
         # Create new all black image
@@ -231,7 +231,7 @@ class Perception:
         cv2.polylines(extracted, [chessboardEdge], True, (0, 255, 0), thickness=5)
 
         if debug:
-            cv2.imshow("1 Masked", extracted)
+            #cv2.imshow("1 Masked", extracted)
             cv2.imwrite("1ExtractedMask.jpeg", extracted)
 
         return extracted
@@ -321,7 +321,7 @@ class Perception:
             debugImg = image.copy()
             self.drawLines(debugImg, ver)
             self.drawLines(debugImg, hor)
-            cv2.imshow("2 Hough Lines Found", debugImg)
+            #cv2.imshow("2 Hough Lines Found", debugImg)
             cv2.imwrite("2HoughLinesFound.jpeg", debugImg)
 
 
@@ -379,7 +379,7 @@ class Perception:
             for intersection in intersections:
                 cv2.circle(debugImg, intersection, 10, 255, 1)
 
-            cv2.imshow("3 Intersections Found", debugImg)
+            #cv2.imshow("3 Intersections Found", debugImg)
             cv2.imwrite("3IntersectionsFound.jpeg", debugImg)
 
         ### FILTER
@@ -453,7 +453,7 @@ class Perception:
                 for corner in row:
                     cv2.circle(debugImg, corner, 10, 255, 1)
 
-            cv2.imshow("4 Final Corners", debugImg)
+            #cv2.imshow("4 Final Corners", debugImg)
             cv2.imwrite("4FinalCorners.jpeg", debugImg)
 
             print("")
