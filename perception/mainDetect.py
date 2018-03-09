@@ -436,9 +436,11 @@ class Perception:
             debugImg = image.copy()
             for row in corners:
                 for corner in row:
-                    print(corner)
-            #cv2.circle(debugImg,)
-            print(corners)
+                    cv2.circle(debugImg, corner, 3, 255, 1)
+
+            cv2.imshow("Corners", debugImg)
+            cv2.imsave("ActualCorners.jpeg", debugImg)
+            print(len(corners))
 
         return corners, image
 
