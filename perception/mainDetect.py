@@ -219,7 +219,7 @@ class Perception:
         #DEBUG
         if debug:
             cv2.imshow("Filtered Contours", imgContours)
-            cv2.imsave("FilteredContours.jpeg", imgContours)
+            cv2.imwrite("FilteredContours.jpeg", imgContours)
 
         # Create new all black image
         mask = np.zeros((img.shape[0], img.shape[1]), 'uint8')
@@ -235,7 +235,7 @@ class Perception:
 
         if debug:
             cv2.imshow("Masked", extracted)
-            cv2.imsave("Extracted Mask.jpeg", extracted)
+            cv2.imwrite("Extracted Mask.jpeg", extracted)
 
         return extracted
 
