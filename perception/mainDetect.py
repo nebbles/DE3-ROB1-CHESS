@@ -385,33 +385,37 @@ class Perception:
             cv2.imshow("Intersections Found", debugImg)
             cv2.imwrite("IntersectionsFound.jpeg", debugImg)
 
-        # ### FILTER
-        #
-        # # Filtering intersection points
-        # minDistance = 15
-        #
-        # # Only works if you run it several times -- WHY? Very inefficient
-        # # Now also works if run only once so comment the loop out
-        # #for i in range(3):
-        # for intersection in intersections:
-        #     for neighbor in intersections:
-        #         distanceToNeighbour = np.sqrt((intersection[0] - neighbor[0]) ** 2 + (intersection[1] - neighbor[1]) ** 2)
-        #         # Check that it's not comparing the same ones
-        #         if distanceToNeighbour < minDistance and intersection != neighbor:
-        #             intersections.remove(neighbor)
-        #
-        # # We still have duplicates for some reason. We'll now remove these
-        # filteredIntersections = []
-        # # Duplicate removal
-        # seen = set()
-        # for intersection in intersections:
-        #     # If value has not been encountered yet,
-        #     # ... add it to both list and set.
-        #     if intersection not in seen:
-        #         filteredIntersections.append(intersection)
-        #         seen.add(intersection)
+        ### FILTER
 
-        return intersections
+        # Filtering intersection points
+        minDistance = 15
+
+        # Only works if you run it several times -- WHY? Very inefficient
+        # Now also works if run only once so comment the loop out
+        #for i in range(3):
+        for intersection in intersections:
+            for neighbor in intersections:
+                distanceToNeighbour = np.sqrt((intersection[0] - neighbor[0]) ** 2 + (intersection[1] - neighbor[1]) ** 2)
+                # Check that it's not comparing the same ones
+                if distanceToNeighbour < minDistance and intersection != neighbor:
+                    intersections.remove(neighbor)
+
+        # We still have duplicates for some reason. We'll now remove these
+        filteredIntersections = []
+        # Duplicate removal
+        seen = set()
+        for intersection in intersections:
+            # If value has not been encountered yet,
+            # ... add it to both list and set.
+            if intersection not in seen:
+                filteredIntersections.append(intersection)
+                seen.add(intersection)
+        if debug:
+            print("")
+            print("We have filtered: " + str(len(filteredIntersections)) + " intersections.")
+            print("")
+
+        return filteredIntersections
 
     def assignIntersections(self, image, intersections, debug=True):
         """
