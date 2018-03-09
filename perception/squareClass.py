@@ -90,7 +90,8 @@ class Square:
             summed += (self.emptyColor[i] - rgb[i])**2
 
         distance = np.sqrt(summed)
-        print(distance)
+
+        print("Distance of match to empty square color: " + str(distance))
 
         threshold = 10
 
