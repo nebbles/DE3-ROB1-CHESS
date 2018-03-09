@@ -67,6 +67,9 @@ class Perception:
         # Assign intersections to a sorted list of lists
         corners, cornerImage = self.assignIntersections(extractedImage, intersections)
 
+
+        cv2.imwrite("Corners.jpeg", cornerImage)
+
         # Copy original image to display on
         squareImage = image.copy()
 
