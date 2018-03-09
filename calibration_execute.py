@@ -1,11 +1,10 @@
 import cv2
-import numpy as np
 import imutils
-
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import CameraFeed
+
 
 def run_calibration(cam_feed):
     franka_pos = get_franka_pos
@@ -13,7 +12,7 @@ def run_calibration(cam_feed):
     marker_coordinates = np.zeros((9, 3))
     franka_coordinates = np.zeros((9, 3))
 
-    for i in len(moves): #not lengths number of rowes needs to be fixed
+    for i in range(len(moves)): # not lengths number of rowes needs to be fixed
 
         complete_trajectory = generate_trajectory(moves[i], moves[i+1])
 
@@ -25,7 +24,7 @@ def run_calibration(cam_feed):
         franka_coordinates[i, 2] = franka_z
 
         rgb, depth = cam_feed.get_frames()
-        #current_marker_pos = find_cross(current_frame)
+        # current_marker_pos = find_cross(current_frame)
 
         marker_x, marker_y = find_cross(rgb) #not very robust
         marker_z = find_depth(marker, current_frame)
@@ -35,9 +34,11 @@ def run_calibration(cam_feed):
 
     return marker_coordinates, franka_coordinates
 
+
 def get_franka_pos():
     """Function that interfaces with ROS code to retreive franka end effector position in franka's reference frame"""
     return franka_pos
+
 
 def generate_cube(centre_point):
     """function generates an array of 8 x,y,z coordinates for calibration based on an end-effector (1x3) input position"""
@@ -119,23 +120,25 @@ def generate_cube(centre_point):
 
     # print(cube_output)
 
-    return cube_output  #9x3 array
+    return cube_output  # 9x3 array
 
 # if __name__ == '__main__':
 #     c = calibrate_cube((1, 1, 1))
 #     print('output positions =', c)
 
-    return moves #List of moves to complete
+    # return moves # list of moves to complete
+
 
 def generate_trajectory(start, goal):
     """function that calls motion code on new start and goal positions"""
 
-    return #detailed trajectory
+    return # detailed trajectory
 
 
 def execute_trajectory(trajectory):
     """Function that interfaces with ROS code to feed franka target positions"""
-    return #update status: motion finished
+    return # update status: motion finished
+
 
 def detect(c):
     """Function used by find_cross function to detect the edges and vertices of possible polygons in an image"""
@@ -152,8 +155,8 @@ def find_cross(frame):
 
     markers = []
     while (1):
-        imgsized = frame #frame should be tring of file name
-        #imgsized = imutils.resize(img, width=640) try without resizing
+        imgsized = frame # frame should be tring of file name
+        # imgsized = imutils.resize(img, width=640) try without resizing
         imghsv = cv2.cvtColor(imgsized, cv2.COLOR_BGR2HSV)
 
         cv2.imshow('frameb', imgsized)
@@ -188,24 +191,29 @@ def find_cross(frame):
 
                 cv2.imshow("Image", imgsized)
 
-        print markers
+        print(markers)
         # pts = np.array(markers)
         # cv2.polylines(imgsized, [pts], True, (255, 0, 255), 3)
         # cv2.imshow("Image", imgsized)
 
         cv2.waitKey(0)
         break
-        return markers
 
-        # k = cv2.waitKey(5) & 0xFF
-        # if k == 27:
-        #     break
+    return markers
+
+    # k = cv2.waitKey(5) & 0xFF
+    # if k == 27:
+    #     break
+
 
 def find_depth(marker, current_frame):
 
-    depth = depthImage[marker[1], marker[0]]
+    depth = current_frame[marker[1], marker[0]]
 
-    return depth
+    coordinates = marker[0], marker[1], depth[0]
+
+    return coordinates
+
 
 cv2.destroyAllWindows()
 
