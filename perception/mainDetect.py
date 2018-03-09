@@ -514,7 +514,7 @@ class Perception:
 
         return squares
 
-    def detectSquareChange(self, previous, current, debug=False):
+    def detectSquareChange(self, previous, current, debug=True):
         """
         Take a previous and a current image and returns the squares where a change happened, i.e. a figure has been
         moved from or to.
@@ -557,7 +557,8 @@ class Perception:
 
         ## DEBUG
         if debug:
-            cv2.imshow("Detected Move", current)
+            debugImg = current.copy()
+            cv2.imshow("Detected Move", debugImg)
 
         return centres
 
