@@ -62,7 +62,7 @@ class Perception:
         h, v = self.houghLines(cannyImage, extractedImage)
 
         # Find intersection points from Hough lines and filter them
-        intersections = self.findIntersections(h, v)
+        intersections = self.findIntersections(h, v, extractedImage)
 
         # Assign intersections to a sorted list of lists
         corners, cornerImage = self.assignIntersections(extractedImage, intersections)
@@ -348,7 +348,7 @@ class Perception:
     INTERSECTIONS
     """
 
-    def findIntersections(self, horizontals,verticals, debug=True):
+    def findIntersections(self, horizontals,verticals, image, debug=True):
         """
         WARNING: This function is trashy af. IDK why it works but it does. Finds intersections between Hough lines
         """
@@ -376,38 +376,37 @@ class Perception:
             print("")
             print("We have found: " + str(len(intersections)) + " intersections.")
             print("")
+            for intersection in intersections:
+                debugImg = image.copy()
+                cv2.circle(debugImg, intersection, 10, 255, 1)
+                cv2.imshow("Intersections Found", debugImg)
+                cv2.imwrite("IntersectionsFound.jpeg", debugImg)
 
-        ### FILTER
-
-        # Filtering intersection points
-        minDistance = 15
-
-        # Only works if you run it several times -- WHY? Very inefficient
-        # Now also works if run only once so comment the loop out
-        #for i in range(3):
-        for intersection in intersections:
-            for neighbor in intersections:
-                distanceToNeighbour = np.sqrt((intersection[0] - neighbor[0]) ** 2 + (intersection[1] - neighbor[1]) ** 2)
-                # Check that it's not comparing the same ones
-                if distanceToNeighbour < minDistance and intersection != neighbor:
-                    intersections.remove(neighbor)
-
-        # We still have duplicates for some reason. We'll now remove these
-        filteredIntersections = []
-        # Duplicate removal
-        seen = set()
-        for intersection in intersections:
-            # If value has not been encountered yet,
-            # ... add it to both list and set.
-            if intersection not in seen:
-                filteredIntersections.append(intersection)
-                seen.add(intersection)
-
-        if debug:
-            print("")
-            print("We have filtered: " + str(len(filteredIntersections)) + " intersections.")
-            print("")
-
+        # ### FILTER
+        #
+        # # Filtering intersection points
+        # minDistance = 15
+        #
+        # # Only works if you run it several times -- WHY? Very inefficient
+        # # Now also works if run only once so comment the loop out
+        # #for i in range(3):
+        # for intersection in intersections:
+        #     for neighbor in intersections:
+        #         distanceToNeighbour = np.sqrt((intersection[0] - neighbor[0]) ** 2 + (intersection[1] - neighbor[1]) ** 2)
+        #         # Check that it's not comparing the same ones
+        #         if distanceToNeighbour < minDistance and intersection != neighbor:
+        #             intersections.remove(neighbor)
+        #
+        # # We still have duplicates for some reason. We'll now remove these
+        # filteredIntersections = []
+        # # Duplicate removal
+        # seen = set()
+        # for intersection in intersections:
+        #     # If value has not been encountered yet,
+        #     # ... add it to both list and set.
+        #     if intersection not in seen:
+        #         filteredIntersections.append(intersection)
+        #         seen.add(intersection)
 
         return intersections
 
