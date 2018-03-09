@@ -480,29 +480,29 @@ class Perception:
         index = 0
 
         print(corners)
-        try:
-            for i in range(8):
-                for j in range(8):
-                    # Make the square - yay!
-                    position = letters[-i-1] + numbers[-j-1]
-                    c1 = corners[i][j]
-                    c2 = corners[i][j+1]
-                    c3 = corners[i+1][j+1]
-                    c4 = corners[i+1][j]
-                    square = Square(position, c1, c2, c3, c4, index, image)
-                    #print(c1, c2, c3, c4)
-                    squares.append(square)
 
-                    if debug:
-                        square.draw(image)
+        for i in range(8):
+            for j in range(8):
+                # Make the square - yay!
+                position = letters[-i-1] + numbers[-j-1]
+                c1 = corners[i][j]
+                c2 = corners[i][j+1]
+                c3 = corners[i+1][j+1]
+                c4 = corners[i+1][j]
+                square = Square(position, c1, c2, c3, c4, index, image)
+                #print(c1, c2, c3, c4)
+                squares.append(square)
 
-                    index += 1
-                    print(index)
-                    #xyz = square.getDepth(depthImage)
-                    #coordinates.append(xyz)
-        except:
-            if debug:
-                cv2.imwrite("5SquaresIdentified.jpeg", image)
+                if debug:
+                    square.draw(image)
+
+                index += 1
+                print(index)
+                #xyz = square.getDepth(depthImage)
+                #coordinates.append(xyz)
+        if debug:
+            cv2.imwrite("5SquaresIdentified.jpeg", image)
+            
 
 
 
@@ -553,7 +553,7 @@ class Perception:
                     (x, y, w, h) = cv2.boundingRect(c)
                     centre = (int(x + w / 2), int(y + h / 2))
                     centres.append(centre)
-                    cv2.circle(current, centre, 10, 255, 2)
+                    cv2.circle(current, centre, 3, 255, 2)
                     cv2.rectangle(current, (x, y), (x + w, y + h), (0, 0, 255), 2)
             except:
                 pass
