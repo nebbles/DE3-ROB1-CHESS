@@ -85,6 +85,10 @@ class Perception:
         cv2.imshow("Classified Squares", squareImage)
 
         cv2.imshow("Classified Squares", depthImage)
+
+        cv2.imwrite("ClassifiedSquares.jpeg", squareImage)
+        cv2.imwrite("ClassifiedDepth.jpeg", depthImage)
+
     def bwe(self, current, debug=False):
         """
         Takes care of taking the camera picture, comparing it to the previous one, updating the BWE and returning it
