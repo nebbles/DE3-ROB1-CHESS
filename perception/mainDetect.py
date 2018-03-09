@@ -448,16 +448,20 @@ class Perception:
 
         ## DEBUG
         if debug:
+
+            cornerCounter = 0
+
             debugImg = image.copy()
             for row in corners:
                 for corner in row:
                     cv2.circle(debugImg, corner, 10, 255, 1)
+                    cornerCounter += 1
 
             #cv2.imshow("4 Final Corners", debugImg)
             cv2.imwrite("4FinalCorners.jpeg", debugImg)
 
             print("")
-            print("There are: " + str(len(corners)) + " corners that were found.")
+            print("There are: " + str(cornerCounter) + " corners that were found.")
             print("")
 
 
