@@ -507,7 +507,7 @@ class Perception:
                     #coordinates.append(xyz)
         except:
             if debug:
-                cv2.imwrite("Squares Identified", debugImage)
+                cv2.imwrite("5SquaresIdentified.jpeg", debugImage)
 
 
 
