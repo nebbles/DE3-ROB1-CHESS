@@ -553,7 +553,7 @@ class Perception:
                     (x, y, w, h) = cv2.boundingRect(c)
                     centre = (int(x + w / 2), int(y + h / 2))
                     centres.append(centre)
-                    cv2.circle(current, centre, 3, 255, 2)
+                    cv2.circle(current, centre, 10, 255, 2)
                     cv2.rectangle(current, (x, y), (x + w, y + h), (0, 0, 255), 2)
             except:
                 pass
