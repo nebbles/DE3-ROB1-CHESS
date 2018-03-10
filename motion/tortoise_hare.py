@@ -1,175 +1,137 @@
 from __future__ import print_function
-from numpy import arange, sqrt, linspace, zeros, concatenate
-#from builtins import input
-from numpy import arange
-from matplotlib.pyplot import *
+import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # for: fig.gca(projection = '3d')
-import decimal
 
-# Python 2/3 raw input correction
-try:
-   input = raw_input
+try:  # Python 2/3 raw input correction
+    input = raw_input
 except NameError:
-   pass
+    pass
 
 
-class MotionPlanning:
-    def __init__(self):
+class MotionPlanner:
+    def __init__(self, arm_object, visual=False):
         """Gets the location of each corner of the board and stores them"""
+        self.visual = visual
+        self.dx = 0.005
 
-        print("For the following commands, place the FRANKA end effector in the centre of the relevant square\n")
+        print("For the following commands, place the FRANKA end effector in the centre of the "
+              "relevant square\n")
 
-        valid = input("Move the arm to A1 corner")
-        if valid == "":
-            pass
+        input("Move the arm to A1 corner")
         try:
-            A1 = arm.get_position()
+            a1 = arm_object.get_position()
             print('We are using actual Franka coordinates')
         except:
-            A1 = [0.730, -0.269, 0.076]
+            a1 = [0.730, -0.269, 0.076]
 
-        valid = input("Move the arm to A8 corner")
-        if valid == "":
-            pass
+        input("Move the arm to A8 corner")
         try:
-            A8 = arm.get_position()
+            a8 = arm_object.get_position()
         except:
-            A8 = [0.265, -0.266, 0.069]
+            a8 = [0.265, -0.266, 0.069]
 
-        valid = input("Move the arm to H8 corner")
-        if valid == "":
-            pass
+        input("Move the arm to H8 corner")
         try:
-            H8 = arm.get_position()
+            h8 = arm_object.get_position()
         except:
-            H8 = [0.303, 0.197, 0.071]
+            h8 = [0.303, 0.197, 0.071]
 
-        valid = input("Move the arm to H1 corner")
-        if valid == "":
-            pass
+        input("Move the arm to H1 corner")
         try:
-            H1 = arm.get_position()
+            h1 = arm_object.get_position()
         except:
-            H1 = [0.741, 0.163, 0.077]
+            h1 = [0.741, 0.163, 0.077]
 
-        self.board_points = [A1, A8, H8, H1]
-        self.A1 = A1
-        self.A8 = A8
-        self.H8 = H8
-        self.H1 = H1
+        self.board = [a1, a8, h8, h1]
+        self.H8 = h8
 
         # Find the maximum z value of the board
-        max_z = max(A1[2], A8[2], H1[2], H8[2])
-        self.board_z_max = max_z
+        self.board_z_max = max(a1[2], a8[2], h1[2], h8[2])
 
         # Find x axis vector
-        x_vector_1 = [(A8[0] - H8[0]), (A8[1] - H8[1]), max_z]
-        x_vector_2 = [(A1[0] - H1[0]), (A1[1] - H1[1]), max_z]
+        x_vector_1 = [(a8[0] - h8[0]), (a8[1] - h8[1]), self.board_z_max]
+        x_vector_2 = [(a1[0] - h1[0]), (a1[1] - h1[1]), self.board_z_max]
         x_vector = [sum(x)/2 for x in zip(x_vector_1, x_vector_2)]
         self.x_unit_vector = [coord/8 for coord in x_vector]
 
         # Find y axis vector
-        y_vector_1 = [(H1[0] - H8[0]), (H1[1] - H8[1]), max_z]
-        y_vector_2 = [(A1[0] - A8[0]), (A1[1] - A8[1]), max_z]
+        y_vector_1 = [(h1[0] - h8[0]), (h1[1] - h8[1]), self.board_z_max]
+        y_vector_2 = [(a1[0] - a8[0]), (a1[1] - a8[1]), self.board_z_max]
         y_vector = [sum(x)/2 for x in zip(y_vector_1, y_vector_2)]
         self.y_unit_vector = [coord/8 for coord in y_vector]
 
         # Find hover height
-        self.hover_height = max_z + 0.2  # hard coded hover height
+        self.hover_height = self.board_z_max + 0.2  # hard coded hover height
 
-        # Find location of deadzone
-        deadzone_x_vector = [-(i * 4) for i in self.x_unit_vector]
-        deadzone_y_vector = [i * 4 for i in self.y_unit_vector]
-        deadzone_z = max_z + 0.1 # hardcoded z coordinate of deadzone
-        deadzone = [sum(i) for i in zip(self.H8, deadzone_x_vector, deadzone_y_vector)]
-        deadzone[2] = deadzone_z
-        self.deadzone = deadzone
+        # Find location of dead zone
+        dead_zone_x_vector = [-(i * 4) for i in self.x_unit_vector]
+        dead_zone_y_vector = [i * 4 for i in self.y_unit_vector]
+        dead_zone_z = self.board_z_max + 0.2  # hardcoded z coordinate of dead zone
+        dead_zone = [sum(i) for i in zip(self.H8, dead_zone_x_vector, dead_zone_y_vector)]
+        dead_zone[2] = dead_zone_z
+        self.dead_zone = dead_zone
 
         # Find the location of the rest position
         rest_x_vector = [i * 4 for i in self.x_unit_vector]
         rest_y_vector = [-(i * 3) for i in self.y_unit_vector]
-        rest_z = max_z + 0.9  # hardcoded z coordinate of the rest position
+        rest_z = self.board_z_max + 0.9  # hardcoded z coordinate of the rest position
         rest = [sum(i) for i in zip(self.H8, rest_x_vector, rest_y_vector)]
         rest[2] = rest_z
         self.rest = rest
 
         # Find coordinates of each square
-        self.letters = dict([('h', [i * 0.5 for i in self.x_unit_vector]),
-                        ('g', [i * 1.5 for i in self.x_unit_vector]),
-                        ('f', [i * 2.5 for i in self.x_unit_vector]),
-                        ('e', [i * 3.5 for i in self.x_unit_vector]),
-                        ('d', [i * 4.5 for i in self.x_unit_vector]),
-                        ('c', [i * 5.5 for i in self.x_unit_vector]),
-                        ('b', [i * 6.5 for i in self.x_unit_vector]),
-                        ('a', [i * 7.5 for i in self.x_unit_vector])
-                        ])
+        self.letter_dict = dict([('h', [i * 0.5 for i in self.x_unit_vector]),
+                                 ('g', [i * 1.5 for i in self.x_unit_vector]),
+                                 ('f', [i * 2.5 for i in self.x_unit_vector]),
+                                 ('e', [i * 3.5 for i in self.x_unit_vector]),
+                                 ('d', [i * 4.5 for i in self.x_unit_vector]),
+                                 ('c', [i * 5.5 for i in self.x_unit_vector]),
+                                 ('b', [i * 6.5 for i in self.x_unit_vector]),
+                                 ('a', [i * 7.5 for i in self.x_unit_vector])
+                                 ])
 
-        self.numbers = dict([('8', [i * 0.5 for i in self.y_unit_vector]),
-                        ('7', [i * 1.5 for i in self.y_unit_vector]),
-                        ('6', [i * 2.5 for i in self.y_unit_vector]),
-                        ('5', [i * 3.5 for i in self.y_unit_vector]),
-                        ('4', [i * 4.5 for i in self.y_unit_vector]),
-                        ('3', [i * 5.5 for i in self.y_unit_vector]),
-                        ('2', [i * 6.5 for i in self.y_unit_vector]),
-                        ('1', [i * 7.5 for i in self.y_unit_vector])
-                        ])
+        self.number_dict = dict([('8', [i * 0.5 for i in self.y_unit_vector]),
+                                 ('7', [i * 1.5 for i in self.y_unit_vector]),
+                                 ('6', [i * 2.5 for i in self.y_unit_vector]),
+                                 ('5', [i * 3.5 for i in self.y_unit_vector]),
+                                 ('4', [i * 4.5 for i in self.y_unit_vector]),
+                                 ('3', [i * 5.5 for i in self.y_unit_vector]),
+                                 ('2', [i * 6.5 for i in self.y_unit_vector]),
+                                 ('1', [i * 7.5 for i in self.y_unit_vector])
+                                 ])
 
-    def make_move(self, move, visual_flag=False):
-
+    def generate_chess_motion(self, move):
+        """Called after chess move has been determined"""
         # Extract information from output of game engine
-        if len(move) == 1:
-
-            start_AN = (move[0][1])[:2]
-            goal_AN = (move[0][1])[2:4]
-            dead_status = "None died"
-
-        elif len(move) == 2:
-
-            start_AN = (move[1][1])[:2]
-            goal_AN = (move[1][1])[2:4]
-            dead_status = "Died"
+        start_an = (move[0][1])[:2]
+        goal_an = (move[0][1])[2:4]
 
         # Convert ANs to coordinates
-        start = self.AN_to_coords(start_AN)
-        goal = self.AN_to_coords(goal_AN)
+        start = self.an_to_coords(start_an)
+        goal = self.an_to_coords(goal_an)
 
         # Generate the intermediate positions of the path
-        start_h = [start[0], start[1], self.hover_height]
-        goal_h = [goal[0], goal[1], self.hover_height]
-        deadzone_h = [self.deadzone[0], self.deadzone[1], self.hover_height]
+        start_hover = [start[0], start[1], self.hover_height]
+        goal_hover = [goal[0], goal[1], self.hover_height]
+        dead_zone_hover = [self.dead_zone[0], self.dead_zone[1], self.hover_height]
 
-        # Join up these positions to create a path
-        dx = 0.005  # distance between points
+        if len(move) == 1:  # NO PIECE DIED
+            dead_status = False
+            path = [self.rest, start_hover, start, start_hover, goal_hover, goal, goal_hover,
+                    self.rest]
 
-        if dead_status == 'None died':
-            path = [self.rest, start_h, start, start_h, goal_h, goal, goal_h, self.rest]
+        elif len(move) == 2:  # A PIECE HAS DIED
+            dead_status = True
+            path = [self.rest, goal_hover, goal, goal_hover, dead_zone_hover, self.dead_zone,
+                    dead_zone_hover, start_hover, start, start_hover, goal_hover, goal,
+                    goal_hover, self.rest]
 
-            line_1 = discretise(self.rest, start_h, dx)
-            line_2 = discretise(start_h, start, dx)
-            line_3 = discretise(start, start_h, dx)
-            line_4 = discretise(start_h, goal_h, dx)
-            line_5 = discretise(goal_h, goal, dx)
-            line_6= discretise(goal, goal_h, dx)
-            line_7= discretise(goal_h, self.rest, dx)
-
-            line_list = [line_1, line_2, line_3, line_4, line_5, line_6, line_7]
-
-        elif dead_status == 'Died':
-            path = [self.rest, goal_h, goal, goal_h, deadzone_h, self.deadzone, deadzone_h, start_h, start, start_h, goal_h, goal, goal_h, self.rest]
-
-            line_1 = discretise(self.rest, goal_h, dx)
-            line_2 = discretise(goal_h, deadzone_h, dx)
-            line_3 = discretise(self.deadzone, deadzone_h, dx)
-            line_4 = discretise(deadzone_h, start_h, dx)
-            line_5 = discretise(start_h, start, dx)
-            line_6 = discretise(start, start_h, dx)
-            line_7 = discretise(start_h, goal_h, dx)
-            line_8 = discretise(goal_h, goal, dx)
-            line_9 = discretise(goal, goal_h, dx)
-            line_10 = discretise(goal_h, self.rest, dx)
-
-            line_list = [line_1, line_2, line_3, line_4, line_5, line_6, line_7, line_8, line_9, line_10]
+        line_list = []
+        for i in range(len(path) - 1):
+            line_list.append(self.discretise(path[i], path[i + 1], self.dx))
 
         lines = []
         for i in range(len(line_list)-1):
@@ -181,20 +143,20 @@ class MotionPlanning:
                 lines.append(line_list[i])
         lines.append(line_list[-1])
 
-        if dead_status == 'None died':
+        if not dead_status:
 
             # Forming the 3 movements that surround the gripping and ungripping
             line_list_1 = (lines[0], lines[1])
             line_list_2 = (lines[2], lines[3], lines[4])
             line_list_3 = (lines[5], lines[6])
 
-            trajectory_1 = concatenate(line_list_1, axis=0)
-            trajectory_2 = concatenate(line_list_2, axis=0)
-            trajectory_3 = concatenate(line_list_3, axis=0)
+            trajectory_1 = np.concatenate(line_list_1, axis=0)
+            trajectory_2 = np.concatenate(line_list_2, axis=0)
+            trajectory_3 = np.concatenate(line_list_3, axis=0)
             trajectories = [trajectory_1, trajectory_2, trajectory_3]
 
 
-        elif dead_status == 'Died':
+        elif dead_status:
 
             # Forming the 2 movements that surround the gripping and ungripping to remove a dead piece
             line_list_1 = (lines[0], lines[1])
@@ -203,17 +165,16 @@ class MotionPlanning:
             line_list_4 = (lines[8], lines[9], lines[10])
             line_list_5 = (lines[11], lines[12])
 
-            trajectory_1 = concatenate(line_list_1, axis=0)
-            trajectory_2 = concatenate(line_list_2, axis=0)
-            trajectory_3 = concatenate(line_list_3, axis=0)
-            trajectory_4 = concatenate(line_list_4, axis=0)
-            trajectory_5 = concatenate(line_list_5, axis=0)
+            trajectory_1 = np.concatenate(line_list_1, axis=0)
+            trajectory_2 = np.concatenate(line_list_2, axis=0)
+            trajectory_3 = np.concatenate(line_list_3, axis=0)
+            trajectory_4 = np.concatenate(line_list_4, axis=0)
+            trajectory_5 = np.concatenate(line_list_5, axis=0)
             trajectories = [trajectory_1, trajectory_2, trajectory_3, trajectory_4, trajectory_5]
 
         # Smooth corners
         steps = 12  # must be an even number
 
-        trajectory_prev = trajectory_1
 
         for i in range(5):
             trajectory_1_x = [item[0] for item in trajectory_1]
@@ -258,7 +219,7 @@ class MotionPlanning:
         # z = [decimal.Decimal(i) for i in z_raw]
         # z = [float(round(i, 3)) for i in z]
 
-        if visual_flag:
+        if self.visual:
 
             # Separate into xyz
             x = [coord[0] for coord in path]
@@ -278,14 +239,14 @@ class MotionPlanning:
 
 
             # getting board points
-            board_x = [coord[0] for coord in self.board_points]
-            board_y = [coord[1] for coord in self.board_points]
-            board_z = [coord[2] for coord in self.board_points]
+            board_x = [coord[0] for coord in self.board]
+            board_y = [coord[1] for coord in self.board]
+            board_z = [coord[2] for coord in self.board]
 
 
-            board_x.append(self.board_points[0][0])
-            board_y.append(self.board_points[0][1])
-            board_z.append(self.board_points[0][2])
+            board_x.append(self.board[0][0])
+            board_y.append(self.board[0][1])
+            board_z.append(self.board[0][2])
 
             # plotting the board
             fig = plt.figure()
@@ -294,7 +255,7 @@ class MotionPlanning:
             ax3d.plot(board_x, board_y, board_z, 'b')  # plot the board
             ax3d.plot(x, y, z, 'r')  # plot path
             ax3d.plot([self.rest[0]], [self.rest[1]], [self.rest[2]], 'g*')
-            ax3d.plot([self.deadzone[0]], [self.deadzone[1]], [self.deadzone[2]], 'g*')
+            ax3d.plot([self.dead_zone[0]], [self.dead_zone[1]], [self.dead_zone[2]], 'g*')
             ax3d.plot(smooth_path[:,0], smooth_path[:,1], smooth_path[:,2], 'b*')
 
             plt.show()
@@ -302,80 +263,46 @@ class MotionPlanning:
         print(path)
         return path
 
-    def AN_to_coords(self, AN):
+    def an_to_coords(self, AN):
         """Converts algebraic notation into real world ``x, y, z`` coordinates"""
 
         # selecting the location
+
+        # split AN location
         letter = AN[0]
         number = AN[1]
-        x = self.numbers[number]
-        y = self.letters[letter]
-        xy_coord = [sum(i) for i in zip(self.H8, x, y)]
-        xy_coord[2] = self.board_z_max
-        coord = xy_coord
 
+        # lookup in dictionary
+        x_in_chess = self.number_dict[number]
+        y_in_chess = self.letter_dict[letter]
+
+        # move by dims_in_chess from the H8 coordinate
+        coord = [sum(i) for i in zip(self.H8, x_in_chess, y_in_chess)]
+        # overwrite z coordinate with predetermined z height
+        coord[2] = self.board_z_max
         return coord
 
+    @staticmethod
+    def discretise(point_1, point_2, dx):
+        """Generates a list of coordinates ``n`` metres apart between 2 points ``a`` and ``b`` in
+        space."""
+
+        # create vector from point_1 to point_2
+        vector = [point_2[0] - point_1[0], point_2[1] - point_1[1], point_2[2] - point_1[2]]
+        distance = np.sqrt(sum(i ** 2 for i in vector))
+
+        # number of points on line
+        i = int(distance / dx)
+
+        # discretise by creating new 1d array
+        line_x = np.linspace(point_1[0], point_2[0], i)
+        line_y = np.linspace(point_1[1], point_2[1], i)
+        line_z = np.linspace(point_1[2], point_2[2], i)
+        line = np.transpose(np.vstack((line_x, line_y, line_z)))
+        return line
 
 
-# def discretised():
-#     """Discretises a path"""
-#
-#     discretised_path = []
-#
-#     resolution = 0.001
-#
-#     for path_n in paths:
-#         d_path_x = arange(path_n[0][0], path_n[-1][0], resolution)
-#         print('dpath', len(d_path_x))
-#         d_path_y = arange(path_n[0][1], path_n[-1][1], resolution)
-#         d_path_z = arange(path_n[0][2], path_n[-1][2], resolution)
-#         d_path = [d_path_x, d_path_y, d_path_z]
-#
-#         discretised_paths.append(d_path)
-#
-#     # Smooth corners
-#     roundness = 5
-#     smooth_paths = []
-#     for path_n in discretised_paths:
-#         print(len(path_n))
-#         tortoise = path_n[:-roundness]  # remove last few coords
-#         print(tortoise)
-#         hare = path_n[roundness:]  # remove last few coords
-#         smooth_path = [sum(x) / 2 for x in zip(tortoise, hare)]
-#         smooth_paths.append(smooth_path)
-#
-#     print(smooth_paths)
-#     print(len(discretised_paths))
-
-
-
-
-
-def discretise(a, b, n):
-    """Generates a list of coordinates ``n`` metres apart between 2 points ``a`` and ``b`` in space."""
-
-    vector = [b[0] - a[0], b[1] - a[1], b[2] - a[2]]  # vector from b to a
-    distance = sqrt(sum(i ** 2 for i in vector))
-
-    # number of points on line
-    i = int(distance/n)
-
-    # pre-allocate space
-    line = zeros((i, 3))
-
-    # generate array of poses
-    line_x = linspace(a[0], b[0], i)
-    line_y = linspace(a[1], b[1], i)
-    line_z = linspace(a[2], b[2], i)
-
-    # append coordinates
-    for j in range(i):
-        line[j, 0] = line_x[j]
-        line[j, 1] = line_y[j]
-        line[j, 2] = line_z[j]
-    return line
-
-
-FRANKA = MotionPlanning()
-FRANKA.make_move([("r", "a1a6")], visual_flag=True)
+if __name__ == '__main__':
+    arm = None
+    FRANKA = MotionPlanner(arm, visual=True)
+    FRANKA.generate_chess_motion([("r", "a1a6")])
