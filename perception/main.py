@@ -2,9 +2,10 @@ from __future__ import print_function
 import cv2
 import time
 import camera_subscriber
+import argparse
 from perception.mainDetect import Perception
 
-def main():
+def main(static):
     """
     Main program for testing
     """
@@ -19,10 +20,14 @@ def main():
     print("Camera Feed started")
 
     # Get picture of empty chessboard
-    try:
-        empty, depthEmpty = feed.get_frames()
-    except:
-        print("Image could not be fetched. ")
+
+    if not static:
+        try:
+            empty, depthEmpty = feed.get_frames()
+        except:
+            print("Image could not be fetched. ")
+    else:
+        empty = cv2.imread('empty.jpg', 1)
 
     print("Image fetched")
 
@@ -94,7 +99,11 @@ def main():
         cv2.waitKey(1)
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Perception Testing")
+    parser.add_argument('-s', '--static', action='store_true', help='Initialising board from a saved and static image')
+    args = parser.parse_args()
+
     try:
-        main()
+        main(args.static)
     except KeyboardInterrupt:
         cv2.destroyAllWindows()
