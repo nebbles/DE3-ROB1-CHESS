@@ -102,6 +102,6 @@ In MATLab, the function for solving this equation is simply ``X = a\b``, or less
 Implementation
 --------------
 
-.. automodule:: calibration
+.. automodule:: transform
   :members:
   :undoc-members:
