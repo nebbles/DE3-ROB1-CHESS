@@ -99,13 +99,13 @@ class MotionPlanner:
                                  ])
 
     def generate_chess_motion(self, chess_move):
-        """Called after chess move has been determined"""
-        # Extract information from output of game engine
+        """Called after chess move has been determined
 
         # Chess move is formatted as either of the below
         # chess_move = [("r", "a1a6")]
-        chess_move = [("r", "a6"), ("r", "a1a6")]
-
+        # chess_move = [("r", "a6"), ("r", "a1a6")]
+        """
+        # Extract information from output of game engine
         if len(chess_move) == 1:
             start_an = chess_move[0][1][:2]
             goal_an = chess_move[0][1][2:4]
@@ -126,8 +126,6 @@ class MotionPlanner:
         move_from_hover = [move_from[0], move_from[1], self.hover_height]
         move_to_hover = [move_to[0], move_to[1], self.hover_height]
         dead_zone_hover = [self.dead_zone[0], self.dead_zone[1], self.hover_height]
-
-        # TODO: CLEAN THE REST OF THIS FUNCTION
 
         if len(chess_move) == 1:  # NO PIECE DIED
             path = [self.rest, move_from_hover, move_from, move_from_hover, move_to_hover,
@@ -166,9 +164,6 @@ class MotionPlanner:
         # TODO add velocity profiling and sampling
 
         if self.visual:
-            # select which smooth path to plot
-            smooth_path = smooth_paths[2]
-
             # Separate into xyz
             x = [coord[0] for coord in path]
             y = [coord[1] for coord in path]
@@ -266,7 +261,7 @@ class MotionPlanner:
         return move_discrete
 
     @staticmethod
-    def smooth_corners(path, size_of_corner, passes):  # TODO clean this function
+    def smooth_corners(path, size_of_corner, passes):  # TODO: FIX this function
         """Takes a discretised path and and rounds the corners using parameters passed into
         function call. Minimum number of passes is 1, which results in a chamfer."""
         if not size_of_corner % 2 == 0:  # number of steps must be an even number
@@ -317,7 +312,7 @@ class MotionPlanner:
                               + (point_b[2] - point_a[2]) ** 2)
         return length
 
-    def apply_trapezoid_vel_profile(self, path):
+    def apply_trapezoid_vel_profile(self, path):  # todo docstring and finish the function
         # set rate of message sending:  0.001 sec == dt == 1kHz  NOTE THIS IS GLOBALLY SET
         dt = 0.05
         # set acceleration, start with 0.1 (may need to reduce)  NOTE THIS IS GLOBALLY SET
