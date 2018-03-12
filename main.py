@@ -4,11 +4,18 @@ import time
 import camera_subscriber
 import argparse
 from perception.mainDetect import Perception
+from chess.engine import ChessEngine
 
 def main(static):
     """
     Main program for testing
     """
+
+    '''
+    0. Start up chess engine
+    '''
+
+    engine = ChessEngine(debug=True, suppress_sunfish=False)
 
     '''
     1. Start by getting picture of empty chessboard
@@ -96,6 +103,27 @@ def main(static):
 
         # Update BWE
         bwe = percept.bwe(current, debug=True)
+
+        bwe_converted = []
+        for i in bwe:
+            for j in i:
+                if j == 2:
+                    bwe_converted.append('B')
+                elif j == 1:
+                    bwe_converted.append('W')
+                elif j == 0:
+                    bwe_converted.append('E')
+                else:
+                    raise ValueError
+
+        status, msg = engine.input_bwe(bwe_converted)
+
+        print("")
+        print("Chess Engine Return:")
+        print("The status is: ", status)
+        print("The message is: ", msg)
+        print("")
+
 
         cv2.waitKey(1)
 
