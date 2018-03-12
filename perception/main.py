@@ -28,7 +28,7 @@ def main(static):
             print("Image could not be fetched. ")
     else:
         empty = cv2.imread('empty.jpg', 1)
-        depthImage = empty
+        depthEmpty = None
 
     print("Image fetched")
 
