@@ -12,37 +12,32 @@ except NameError:
 
 
 class MotionPlanner:
-    def __init__(self, arm_object, visual=False):
+    def __init__(self, arm_object, visual=False, manual_calibration=False, debug=False):
         """Gets the location of each corner of the board and stores them"""
         self.visual = visual
         self.dx = 0.005
+        self.debug = debug
 
-        print("For the following commands, place the FRANKA end effector in the centre of the "
-              "relevant square\n")
+        if manual_calibration:
+            print("For the following commands, place the FRANKA end effector in the centre of the "
+                  "relevant square\n")
 
-        input("Move the arm to A1 corner")
-        try:
+            input("Move the arm to A1 corner")
             a1 = arm_object.get_position()
-            print('We are using actual Franka coordinates')
-        except:
-            a1 = [0.730, -0.269, 0.076]
 
-        input("Move the arm to A8 corner")
-        try:
+            input("Move the arm to A8 corner")
             a8 = arm_object.get_position()
-        except:
-            a8 = [0.265, -0.266, 0.069]
 
-        input("Move the arm to H8 corner")
-        try:
+            input("Move the arm to H8 corner")
             h8 = arm_object.get_position()
-        except:
-            h8 = [0.303, 0.197, 0.071]
 
-        input("Move the arm to H1 corner")
-        try:
+            input("Move the arm to H1 corner")
             h1 = arm_object.get_position()
-        except:
+
+        else:
+            a1 = [0.730, -0.269, 0.076]
+            a8 = [0.265, -0.266, 0.069]
+            h8 = [0.303, 0.197, 0.071]
             h1 = [0.741, 0.163, 0.077]
 
         self.board = [a1, a8, h8, h1]
@@ -69,7 +64,7 @@ class MotionPlanner:
         # Find location of dead zone
         dead_zone_x_vector = [-(i * 4) for i in self.x_unit_vector]
         dead_zone_y_vector = [i * 4 for i in self.y_unit_vector]
-        dead_zone_z = self.board_z_max + 0.2  # hardcoded z coordinate of dead zone
+        dead_zone_z = self.board_z_max + 0.15  # hardcoded z coordinate of dead zone
         dead_zone = [sum(i) for i in zip(self.H8, dead_zone_x_vector, dead_zone_y_vector)]
         dead_zone[2] = dead_zone_z
         self.dead_zone = dead_zone
@@ -103,83 +98,187 @@ class MotionPlanner:
                                  ('1', [i * 7.5 for i in self.y_unit_vector])
                                  ])
 
-    def generate_chess_motion(self, move):
+    def generate_chess_motion(self, chess_move):
         """Called after chess move has been determined"""
         # Extract information from output of game engine
-        start_an = (move[0][1])[:2]
-        goal_an = (move[0][1])[2:4]
+
+        # Chess move is formatted as either of the below
+        # chess_move = [("r", "a1a6")]
+        chess_move = [("r", "a6"), ("r", "a1a6")]
+
+        if len(chess_move) == 1:
+            start_an = chess_move[0][1][:2]
+            goal_an = chess_move[0][1][2:4]
+        elif len(chess_move) == 2:
+            start_an = chess_move[1][1][:2]
+            goal_an = chess_move[1][1][2:4]
+        else:
+            raise ValueError("Chess move was not understood; not 1 or 2 items")
+
+        print("start an", start_an)
+        print("goal_an", goal_an)
 
         # Convert ANs to coordinates
-        start = self.an_to_coords(start_an)
-        goal = self.an_to_coords(goal_an)
+        move_from = self.an_to_coordinates(start_an)
+        move_to = self.an_to_coordinates(goal_an)
 
         # Generate the intermediate positions of the path
-        start_hover = [start[0], start[1], self.hover_height]
-        goal_hover = [goal[0], goal[1], self.hover_height]
+        move_from_hover = [move_from[0], move_from[1], self.hover_height]
+        move_to_hover = [move_to[0], move_to[1], self.hover_height]
         dead_zone_hover = [self.dead_zone[0], self.dead_zone[1], self.hover_height]
 
-        if len(move) == 1:  # NO PIECE DIED
-            dead_status = False
-            path = [self.rest, start_hover, start, start_hover, goal_hover, goal, goal_hover,
-                    self.rest]
+        # TODO: CLEAN THE REST OF THIS FUNCTION
 
-        elif len(move) == 2:  # A PIECE HAS DIED
-            dead_status = True
-            path = [self.rest, goal_hover, goal, goal_hover, dead_zone_hover, self.dead_zone,
-                    dead_zone_hover, start_hover, start, start_hover, goal_hover, goal,
-                    goal_hover, self.rest]
+        if len(chess_move) == 1:  # NO PIECE DIED
+            path = [self.rest, move_from_hover, move_from, move_from_hover, move_to_hover,
+                    move_to, move_to_hover, self.rest]
 
-        line_list = []
-        for i in range(len(path) - 1):
-            line_list.append(self.discretise(path[i], path[i + 1], self.dx))
+            # TAKE CARE WHEN DESIGNING THESE PLAYS, THERE CANNOT BE TWO CONSECUTIVE IDENTICAL POINTS
+            play = [[self.rest, move_from_hover, move_from],
+                    [move_from, move_from_hover, move_to_hover, move_to],
+                    [move_to, move_to_hover, self.rest]]
 
-        lines = []
-        for i in range(len(line_list)-1):
-            if line_list[i][-1][0] == line_list[i+1][0][0]:
-                print('Dingity dangit theyre the same')
-                # line = old line with the last number removed
-                lines.append(line_list[i][:-1])
-            else:
-                lines.append(line_list[i])
-        lines.append(line_list[-1])
+        elif len(chess_move) == 2:  # A PIECE HAS DIED
+            path = [self.rest, move_to_hover, move_to, move_to_hover, dead_zone_hover,
+                    dead_zone_hover, move_from_hover, move_from, move_from_hover,
+                    move_to_hover, move_to, move_to_hover, self.rest]
 
-        if not dead_status:
+            # TAKE CARE WHEN DESIGNING THESE PLAYS, THERE CANNOT BE TWO CONSECUTIVE IDENTICAL POINTS
+            play = [[self.rest, move_to_hover, move_to],
+                    [move_to, move_to_hover, dead_zone_hover],
+                    [dead_zone_hover, move_from_hover, move_from],
+                    [move_from, move_from_hover, move_to_hover, move_to],
+                    [move_to, move_to_hover, self.rest]]
+        else:
+            raise ValueError("The length of chess move tuple is invalid")
 
-            # Forming the 3 movements that surround the gripping and ungripping
-            line_list_1 = (lines[0], lines[1])
-            line_list_2 = (lines[2], lines[3], lines[4])
-            line_list_3 = (lines[5], lines[6])
+        # for each move in play list we want to discretise it and remove any overlapping points
+        # between segments
+        for index, move in enumerate(play):
+            move_discrete = self.discretise_path(move, self.dx)
+            play[index] = move_discrete  # overwrite in the play list
 
-            trajectory_1 = np.concatenate(line_list_1, axis=0)
-            trajectory_2 = np.concatenate(line_list_2, axis=0)
-            trajectory_3 = np.concatenate(line_list_3, axis=0)
-            trajectories = [trajectory_1, trajectory_2, trajectory_3]
+        # smooth the corners using chaser-leader
+        smooth_paths = []
+        for move in play:
+            smooth_paths.append(self.smooth_corners(move, size_of_corner=10, passes=6))  # 12, 5
 
+        # TODO add velocity profiling and sampling
 
-        elif dead_status:
+        if self.visual:
+            # select which smooth path to plot
+            smooth_path = smooth_paths[2]
 
-            # Forming the 2 movements that surround the gripping and ungripping to remove a dead piece
-            line_list_1 = (lines[0], lines[1])
-            line_list_2 = (lines[2], lines[3], lines[4])
-            line_list_3 = (lines[5], lines[6], lines[7])
-            line_list_4 = (lines[8], lines[9], lines[10])
-            line_list_5 = (lines[11], lines[12])
+            # Separate into xyz
+            x = [coord[0] for coord in path]
+            y = [coord[1] for coord in path]
+            z = [coord[2] for coord in path]
 
-            trajectory_1 = np.concatenate(line_list_1, axis=0)
-            trajectory_2 = np.concatenate(line_list_2, axis=0)
-            trajectory_3 = np.concatenate(line_list_3, axis=0)
-            trajectory_4 = np.concatenate(line_list_4, axis=0)
-            trajectory_5 = np.concatenate(line_list_5, axis=0)
-            trajectories = [trajectory_1, trajectory_2, trajectory_3, trajectory_4, trajectory_5]
+            # getting board points
+            board_x = [coord[0] for coord in self.board]
+            board_y = [coord[1] for coord in self.board]
+            board_z = [coord[2] for coord in self.board]
+            # add the first point to the end of the list to create polygon
+            board_x.append(self.board[0][0])
+            board_y.append(self.board[0][1])
+            board_z.append(self.board[0][2])
 
-        # Smooth corners
-        steps = 12  # must be an even number
+            # plotting
+            fig = plt.figure()
+            ax3d = fig.add_subplot(111, projection='3d')
 
+            # plot the board
+            ax3d.plot(board_x, board_y, board_z, 'y')
+            # plot important points
+            ax3d.plot([self.rest[0]], [self.rest[1]], [self.rest[2]], 'g*')
+            ax3d.plot([self.dead_zone[0]], [self.dead_zone[1]], [self.dead_zone[2]], 'g*')
+            # plot the untouched path
+            ax3d.plot(x, y, z, 'r')
+            # plot the smooth paths
+            for i in range(len(smooth_paths)):
+                ax3d.plot(smooth_paths[i][:, 0], smooth_paths[i][:, 1], smooth_paths[i][:, 2], 'b*')
 
-        for i in range(5):
-            trajectory_1_x = [item[0] for item in trajectory_1]
-            trajectory_1_y = [item[1] for item in trajectory_1]
-            trajectory_1_z = [item[2] for item in trajectory_1]
+            plt.show()
+
+    def an_to_coordinates(self, an):  # todo fix this function for kill move
+        """Converts algebraic notation into real world ``x, y, z`` coordinates"""
+        # split AN location
+        letter = an[0]
+        number = an[1]
+
+        # lookup in dictionary
+        x_in_chess = self.number_dict[number]
+        y_in_chess = self.letter_dict[letter]
+
+        # move by dims_in_chess from the H8 coordinate
+        coord = [sum(i) for i in zip(self.H8, x_in_chess, y_in_chess)]
+        # overwrite z coordinate with predetermined z height
+        coord[2] = self.board_z_max
+        return coord
+
+    @staticmethod
+    def discretise(point_1, point_2, dx):  # todo clean up function
+        """Generates a list of coordinates ``n`` metres apart between 2 points ``a`` and ``b`` in
+        space."""
+
+        # create vector from point_1 to point_2
+        vector = [point_2[0] - point_1[0], point_2[1] - point_1[1], point_2[2] - point_1[2]]
+        # noinspection PyUnresolvedReferences
+        distance = np.sqrt(sum(i ** 2 for i in vector))
+
+        # number of points on line
+        i = int(distance / dx)
+
+        # discretise by creating new 1d array
+        line_x = np.linspace(point_1[0], point_2[0], i)
+        line_y = np.linspace(point_1[1], point_2[1], i)
+        line_z = np.linspace(point_1[2], point_2[2], i)
+        # noinspection PyUnresolvedReferences
+        line = np.array(np.transpose(np.vstack((line_x, line_y, line_z))))
+        return line
+
+    def discretise_path(self, move, dx):
+        """
+        Discretise a moves path using object defined dx for unit.
+        :param move: list of points path goes through
+        :param dx: displacement between two points on the target discretised path
+        :return: discretised path
+        """
+        move_discrete = []
+        # iterate through move segments, discretise and join them
+        for seg_idx in range(len(move) - 1):
+            current_segment = self.discretise(move[seg_idx], move[seg_idx + 1], dx)
+
+            # print(current_segment)
+            # we add our discretised segment to our move
+            if seg_idx > 0:
+                # if the end of our current move is the same position as the start of our new
+                # segment then we only want to add the list from the second point onwards
+                if move_discrete[-1][0] == current_segment[0][0]:
+                    # noinspection PyUnresolvedReferences
+                    move_discrete = np.concatenate((move_discrete, current_segment[1:]))
+                else:
+                    # noinspection PyUnresolvedReferences
+                    move_discrete = np.concatenate((move_discrete, current_segment))
+
+            else:  # on first iteration, we store our segment directly
+                move_discrete = current_segment
+        return move_discrete
+
+    @staticmethod
+    def smooth_corners(path, size_of_corner, passes):  # TODO clean this function
+        """Takes a discretised path and and rounds the corners using parameters passed into
+        function call. Minimum number of passes is 1, which results in a chamfer."""
+        if not size_of_corner % 2 == 0:  # number of steps must be an even number
+            size_of_corner += 1
+        steps = size_of_corner
+        if passes < 1:
+            raise ValueError("Number of passes must be >= 1")
+
+        for i in range(passes):
+            trajectory_1_x = [item[0] for item in path]
+            trajectory_1_y = [item[1] for item in path]
+            trajectory_1_z = [item[2] for item in path]
 
             x_tortoise = trajectory_1_x[:-steps]  # remove last few coords
             x_hare = trajectory_1_x[steps:]  # first last few coords
@@ -193,116 +292,164 @@ class MotionPlanner:
             z_hare = trajectory_1_z[steps:]  # remove first few coords
             z_smooth_path = [(sum(i) / 2) for i in zip(z_tortoise, z_hare)]
 
-            smooth_path = np.array([list(i) for i in zip(x_smooth_path, y_smooth_path, z_smooth_path)])
+            # noinspection PyUnresolvedReferences
+            smooth_path = np.array(
+                [list(i) for i in zip(x_smooth_path, y_smooth_path, z_smooth_path)])
             # append first 6 coords in trajectory_1 to the smooth_path
-            print(trajectory_1[:(steps/2)])
-            print(smooth_path)
 
-            smooth_path = np.concatenate((trajectory_1[:(steps/2)], smooth_path, trajectory_1[-(steps/2):]), axis=0)
-            trajectory_1 = smooth_path
+            # print(path[:(steps / 2)])
+            # print(smooth_path)
 
+            # noinspection PyUnresolvedReferences
+            smooth_path = np.concatenate(
+                (path[:(steps / 2)], smooth_path, path[-(steps / 2):]), axis=0)
+            path = smooth_path
+        return path
 
+    @staticmethod
+    def length_of_path(path):  # todo docstring
+        """Takes the a path array of (n x 3) and returns the length of path."""
+        length = 0
+        for i in range(len(path) - 1):
+            point_a = path[i]
+            point_b = path[i + 1]
+            length += np.sqrt((point_b[0] - point_a[0]) ** 2 + (point_b[1] - point_a[1]) ** 2
+                              + (point_b[2] - point_a[2]) ** 2)
+        return length
 
+    def apply_trapezoid_vel_profile(self, path):
+        # set rate of message sending:  0.001 sec == dt == 1kHz  NOTE THIS IS GLOBALLY SET
+        dt = 0.05
+        # set acceleration, start with 0.1 (may need to reduce)  NOTE THIS IS GLOBALLY SET
+        acc = 0.05
+        # set target travel speed for motion
+        target_speed = 0.2
 
+        # discretise using a max unit of:  targV * dt # TODO link this to class
+        # this unit should be 1/(acc * dt**2) to ensure there is one distance sample
+        # dx = target_speed * dt  # this is the maximum delta displacement
+        dx = acc * dt ** 2  # this is the ideal delta value
+        if self.debug:
+            print("delta displacement (mm): ", dx * 1000)
 
-        # for i in range(40):
-        #     print(trajectory_prev[i], "    ", trajectory_1[i])
+        dis_path = planner.discretise_path(path, dx)
 
+        # TODO: if smoothing is going to happen it MUST keep consistent delta displacement
+        # run chaser/leader over path to generate a new one with same resolution
+        # corner = 0.05  # in meters
+        # steps = int(corner * 2 / dx)
+        # print("Steps: ", steps)
+        # smooth_path = planner.smooth_corners(dis_path, size_of_corner=steps, passes=6)
+        smooth_path = dis_path
 
-        # # Removing excess precision
-        # x = [decimal.Decimal(i) for i in x_raw]
-        # x = [float(round(i, 3)) for i in x]
-        #
-        # y = [decimal.Decimal(i) for i in y_raw]
-        # y = [float(round(i, 3)) for i in y]
-        #
-        # z = [decimal.Decimal(i) for i in z_raw]
-        # z = [float(round(i, 3)) for i in z]
+        # find the length of the new path
+        lop = self.length_of_path(smooth_path)
+        if self.debug:
+            print("LOP: ", lop)
+
+        # check if the length of path is < ( speed**2/acc )
+        minimum_path_length = target_speed ** 2 / acc
+        if self.debug:
+            print("Minimum path length: ", minimum_path_length)
+        if lop < minimum_path_length:
+            # if the length is less we need to reduce target_speed
+            if self.debug:
+                print("Path length is too short.")
+            old_speed = target_speed
+            target_speed = np.sqrt(lop * acc)
+            if self.debug:
+                print("Target speed changed from: ", old_speed, ", to: ", target_speed)
+
+            # assert new target_speed is less than old for safety reasons
+            assert(target_speed <= old_speed)
+
+        else:
+            # we have confirmed the length of the path is long enough for our target speed
+            if self.debug:
+                print("Path length ok")
+
+        # we now need to create the speed profile graph and define its parameters
+
+        # find t for acceleration and deceleration
+        end_stage_t = target_speed / acc
+        # find path distance for acc and dec
+        end_stage_displacement = end_stage_t * target_speed / 2
+
+        # find displacement for constant speed section of motion
+        mid_stage_displacement = lop - 2 * end_stage_displacement
+        # find t for const speed section
+        mid_stage_t = mid_stage_displacement / target_speed
+
+        # find total time
+        total_time = end_stage_t * 2 + mid_stage_t
+
+        # create a time list using 0->T in steps of dt
+        time_list = np.arange(start=0, stop=total_time, step=dt)
+        np.reshape(time_list, (np.shape(time_list)[0], 1))
+
+        # sample speed graph to create list to go with time list
+        speed_values = []
+        c = (0 - (-acc) * time_list[-1])
+        for t in time_list:
+            if t <= end_stage_t:
+                # acceleration period
+                speed_values.append(acc * t)
+
+            elif t >= end_stage_t + mid_stage_t:
+                # deceleration stage
+                speed_values.append(-acc * t + c)
+
+            elif t > end_stage_t:
+                # constant speed at target speed
+                speed_values.append(target_speed)
+
+        # sample path using speed list
+        trajectory = smooth_path[0, :]
+        smooth_path_idx = 0
+
+        for i in range(1, len(speed_values) - 1):
+            samples = int(np.around(speed_values[i] * dt / dx))
+            smooth_path_idx += samples
+            if smooth_path_idx > len(smooth_path) - 1:
+                smooth_path_idx = len(smooth_path) - 1
+            trajectory = np.vstack((trajectory, smooth_path[smooth_path_idx]))
 
         if self.visual:
-
-            # Separate into xyz
-            x = [coord[0] for coord in path]
-            y = [coord[1] for coord in path]
-            z = [coord[2] for coord in path]
-
-            # x_smooths = []
-            # y_smooths = []
-            # z_smooths = []
-            # for path in smooth_paths:
-            #     x_smooth = [coord[0] for coord in path]
-            #     y_smooth = [coord[1] for coord in path]
-            #     z_smooth = [coord[2] for coord in path]
-            #     x_smooths = x_smooths + x_smooth
-            #     y_smooths = y_smooths + y_smooth
-            #     z_smooths = z_smooths + z_smooth
-
-
-            # getting board points
-            board_x = [coord[0] for coord in self.board]
-            board_y = [coord[1] for coord in self.board]
-            board_z = [coord[2] for coord in self.board]
-
-
-            board_x.append(self.board[0][0])
-            board_y.append(self.board[0][1])
-            board_z.append(self.board[0][2])
-
             # plotting the board
             fig = plt.figure()
             ax3d = fig.add_subplot(111, projection='3d')
+            ax3d.plot(path[:, 0], path[:, 1], path[:, 2], 'r')
+            ax3d.plot(smooth_path[:, 0], smooth_path[:, 1], smooth_path[:, 2], 'b*')
 
-            ax3d.plot(board_x, board_y, board_z, 'b')  # plot the board
-            ax3d.plot(x, y, z, 'r')  # plot path
-            ax3d.plot([self.rest[0]], [self.rest[1]], [self.rest[2]], 'g*')
-            ax3d.plot([self.dead_zone[0]], [self.dead_zone[1]], [self.dead_zone[2]], 'g*')
-            ax3d.plot(smooth_path[:,0], smooth_path[:,1], smooth_path[:,2], 'b*')
+            fig = plt.figure()
+            ax3d = fig.add_subplot(111)
+            plt.plot(time_list[:len(speed_values)], speed_values, 'r*')
+            plt.ylabel("speed (m/s)")
+            plt.xlabel("time (s)")
+
+            fig = plt.figure()
+            ax3d = fig.add_subplot(111)
+            plt.plot(time_list[:len(trajectory[:, 0])], trajectory[:, 0], 'r*')
+            plt.plot(time_list[:len(trajectory[:, 1])], trajectory[:, 1], 'b*')
+            plt.ylabel("x/y displacement (m)")
+            plt.xlabel("time (s)")
+
+            fig = plt.figure()
+            ax3d = fig.add_subplot(111, projection='3d')
+            ax3d.plot(path_1[:, 0], path_1[:, 1], path_1[:, 2], 'r')
+            ax3d.plot(trajectory[:, 0], trajectory[:, 1], trajectory[:, 2], 'g*')
 
             plt.show()
-
-        print(path)
-        return path
-
-    def an_to_coords(self, AN):
-        """Converts algebraic notation into real world ``x, y, z`` coordinates"""
-
-        # selecting the location
-
-        # split AN location
-        letter = AN[0]
-        number = AN[1]
-
-        # lookup in dictionary
-        x_in_chess = self.number_dict[number]
-        y_in_chess = self.letter_dict[letter]
-
-        # move by dims_in_chess from the H8 coordinate
-        coord = [sum(i) for i in zip(self.H8, x_in_chess, y_in_chess)]
-        # overwrite z coordinate with predetermined z height
-        coord[2] = self.board_z_max
-        return coord
-
-    @staticmethod
-    def discretise(point_1, point_2, dx):
-        """Generates a list of coordinates ``n`` metres apart between 2 points ``a`` and ``b`` in
-        space."""
-
-        # create vector from point_1 to point_2
-        vector = [point_2[0] - point_1[0], point_2[1] - point_1[1], point_2[2] - point_1[2]]
-        distance = np.sqrt(sum(i ** 2 for i in vector))
-
-        # number of points on line
-        i = int(distance / dx)
-
-        # discretise by creating new 1d array
-        line_x = np.linspace(point_1[0], point_2[0], i)
-        line_y = np.linspace(point_1[1], point_2[1], i)
-        line_z = np.linspace(point_1[2], point_2[2], i)
-        line = np.transpose(np.vstack((line_x, line_y, line_z)))
-        return line
 
 
 if __name__ == '__main__':
     arm = None
-    FRANKA = MotionPlanner(arm, visual=True)
-    FRANKA.generate_chess_motion([("r", "a1a6")])
+    planner = MotionPlanner(arm, visual=True, manual_calibration=False, debug=True)
+    # planner.generate_chess_motion([("r", "a1a6")])  # example of simple move
+    # TODO fix for dead piece generation
+    # FRANKA.generate_chess_motion([("r", "b4"), ("r", "a1b4")])  # example of move with kill
+
+    path_1 = np.array([[0, 0, 0], [0, 1, 0], [1, 1, 0]])  # right angle turn
+    path_2 = np.array([[1, 2, 0], [2, 0.5, 0], [4, 4, 0]])  # tight angle turn
+    path_3 = np.array([[0, 0, 0], [1, 0, 0]])  # straight line example
+    planner.apply_trapezoid_vel_profile(path_1)
