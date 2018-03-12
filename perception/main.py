@@ -27,8 +27,8 @@ def main(static):
         except:
             print("Image could not be fetched. ")
     else:
+        empty, depthEmpty = feed.get_frames()
         empty = cv2.imread('empty.jpg', 1)
-        depthEmpty = None
 
     print("Image fetched")
 
