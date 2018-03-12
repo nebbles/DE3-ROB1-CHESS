@@ -91,7 +91,7 @@ class Board:
                 counter += 1
 
         # Rotation in return statement
-        return np.rot90(bwe)
+        return np.rot90(bwe,k=3)
 
     def whichSquares(self, points):
         """
