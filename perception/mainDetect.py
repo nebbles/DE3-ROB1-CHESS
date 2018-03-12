@@ -104,6 +104,11 @@ class Perception:
         # Now we want to check in which square the change has happened
         matches = self.board.whichSquares(centres)
 
+        if len(matches) > 2:
+            print("")
+            print("Error: More than two squares have changed!")
+            print("")
+
         # Update the BWE by looking at which squares have changed
         self.board.updateBWE(matches, currentCopy)
 
