@@ -75,7 +75,10 @@ def main():
         # Wait until key pressed
         print("When you have made a move, please press any key to update the BWE matrix.")
         print("")
-        cv2.waitKey(0)
+        try:
+            cv2.waitKey(0)
+        except KeyboardInterrupt:
+            cv2.destroyAllWindows()
 
         # Refresh rate of camera frames
         time.sleep(0.05)
