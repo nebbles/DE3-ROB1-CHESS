@@ -4,6 +4,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # for: fig.gca(projection = '3d')
+import time
 
 try:  # Python 2/3 raw input correction
     input = raw_input
@@ -316,9 +317,9 @@ class MotionPlanner:
         # set rate of message sending:  0.001 sec == dt == 1kHz  NOTE THIS IS GLOBALLY SET
         dt = 0.05
         # set acceleration, start with 0.1 (may need to reduce)  NOTE THIS IS GLOBALLY SET
-        acc = 0.05
+        acc = 0.1
         # set target travel speed for motion
-        target_speed = 0.2
+        target_speed = 0.1
 
         # discretise using a max unit of:  targV * dt # TODO link this to class
         # this unit should be 1/(acc * dt**2) to ensure there is one distance sample
@@ -399,7 +400,7 @@ class MotionPlanner:
                 speed_values.append(target_speed)
 
         # sample path using speed list
-        trajectory = smooth_path[0, :]
+        trajectory = np.hstack((smooth_path[0, :], speed_values[0]))
         smooth_path_idx = 0
 
         for i in range(1, len(speed_values) - 1):
@@ -407,7 +408,8 @@ class MotionPlanner:
             smooth_path_idx += samples
             if smooth_path_idx > len(smooth_path) - 1:
                 smooth_path_idx = len(smooth_path) - 1
-            trajectory = np.vstack((trajectory, smooth_path[smooth_path_idx]))
+            new_marker = np.hstack((smooth_path[smooth_path_idx], speed_values[i]))
+            trajectory = np.vstack((trajectory, new_marker))
 
         if self.visual:
             # plotting the board
@@ -431,20 +433,52 @@ class MotionPlanner:
 
             fig = plt.figure()
             ax3d = fig.add_subplot(111, projection='3d')
-            ax3d.plot(path_1[:, 0], path_1[:, 1], path_1[:, 2], 'r')
+            ax3d.plot(path[:, 0], path[:, 1], path[:, 2], 'r')
             ax3d.plot(trajectory[:, 0], trajectory[:, 1], trajectory[:, 2], 'g*')
 
             plt.show()
 
+        return trajectory
+
 
 if __name__ == '__main__':
     arm = None
-    planner = MotionPlanner(arm, visual=True, manual_calibration=False, debug=True)
+    from franka.franka_control_ros import FrankaRos
+    arm = FrankaRos(debug=True)
+    planner = MotionPlanner(arm, visual=False, manual_calibration=False, debug=True)
     # planner.generate_chess_motion([("r", "a1a6")])  # example of simple move
     # TODO fix for dead piece generation
     # FRANKA.generate_chess_motion([("r", "b4"), ("r", "a1b4")])  # example of move with kill
 
     path_1 = np.array([[0, 0, 0], [0, 1, 0], [1, 1, 0]])  # right angle turn
     path_2 = np.array([[1, 2, 0], [2, 0.5, 0], [4, 4, 0]])  # tight angle turn
-    path_3 = np.array([[0, 0, 0], [1, 0, 0]])  # straight line example
-    planner.apply_trapezoid_vel_profile(path_1)
+    path_3 = np.array([[0, 0, 0], [0, 0.5, 0]])  # straight line example
+    
+    x, y, z = arm.get_position()
+    path_4 = np.array([[x, y, z], [x, y+0.5, z]])  # move +y
+
+    motion_plan = planner.apply_trapezoid_vel_profile(path_4)
+
+    if True:
+        import rospy
+        try:
+            # print(motion_plan)
+            for x, y, z, speed in motion_plan:
+                # print(x,y,z,speed)
+                arm.move_to(x, y, z, speed)
+                time.sleep(0.05)  # control loop
+
+            # now test the grippers are operational
+            # width = 0.06  # 2.2 cm = 0 width
+            # speed = 0.1
+            # force = 1
+            # franka.move_gripper(width, speed)
+            # time.sleep(5)
+            # width = 0.037  # 2.2 cm = 0 width
+            # franka.grasp(width, speed, force)
+            # time.sleep(5)
+            # width = 0.06  # 2.2 cm = 0 width
+            # franka.move_gripper(width, speed)
+
+        except rospy.ROSInterruptException:
+            pass
