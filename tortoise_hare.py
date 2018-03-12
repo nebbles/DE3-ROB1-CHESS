@@ -5,6 +5,13 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # for: fig.gca(projection = '3d')
 import time
+import rospy
+from std_msgs.msg import Float64MultiArray
+import thread
+
+glob_curr_pos_x = None
+glob_curr_pos_y = None
+glob_curr_pos_z = None
 
 try:  # Python 2/3 raw input correction
     input = raw_input
@@ -378,6 +385,8 @@ class MotionPlanner:
 
         # find total time
         total_time = end_stage_t * 2 + mid_stage_t
+        if self.debug:
+            print("total time: ", total_time)
 
         # create a time list using 0->T in steps of dt
         time_list = np.arange(start=0, stop=total_time, step=dt)
@@ -400,7 +409,9 @@ class MotionPlanner:
                 speed_values.append(target_speed)
 
         # sample path using speed list
-        trajectory = np.hstack((smooth_path[0, :], speed_values[0]))
+        # trajectory = np.hstack((smooth_path[0, :], speed_values[0]))  # main technique
+        # trajectory = np.hstack((smooth_path[0, :], 0.1))
+        trajectory = np.hstack((path[-1, :], speed_values[0]))  # only send the goal position
         smooth_path_idx = 0
 
         for i in range(1, len(speed_values) - 1):
@@ -408,8 +419,13 @@ class MotionPlanner:
             smooth_path_idx += samples
             if smooth_path_idx > len(smooth_path) - 1:
                 smooth_path_idx = len(smooth_path) - 1
-            new_marker = np.hstack((smooth_path[smooth_path_idx], speed_values[i]))
+            # new_marker = np.hstack((smooth_path[smooth_path_idx], speed_values[i]))  #main technique
+            new_marker = np.hstack((path[-1, :], speed_values[i]*0.98))  # only send the goal position
+
+            # new_marker = np.hstack((smooth_path[smooth_path_idx], 0.1))
             trajectory = np.vstack((trajectory, new_marker))
+
+        trajectory[-1, -1] = 0
 
         if self.visual:
             # plotting the board
@@ -440,12 +456,38 @@ class MotionPlanner:
 
         return trajectory
 
+def cur_pos_callback(data):
+        global glob_curr_pos_x, glob_curr_pos_y, glob_curr_pos_z
+        #rospy.loginfo(data.data)
+        glob_curr_pos_x = data.data[0]
+        glob_curr_pos_y = data.data[1]
+        glob_curr_pos_z = data.data[2]
+    #    print("x", glob_curr_pos_x)
+        
+def spinner():
+    # spin() simply keeps python from exiting until this node is stopped
+    rospy.spin()
+    
 
 if __name__ == '__main__':
     arm = None
     from franka.franka_control_ros import FrankaRos
-    arm = FrankaRos(debug=True)
-    planner = MotionPlanner(arm, visual=False, manual_calibration=False, debug=True)
+    arm = FrankaRos()
+    
+    # rospy.init_node('listener', anonymous=True)
+
+    rospy.Subscriber("franka_current_position", Float64MultiArray, cur_pos_callback, queue_size=1)
+    spinthread = thread.start_new_thread( spinner , ())
+    print("Waiting for current position")
+    while glob_curr_pos_z is None:
+        time.sleep(0.1)
+    print("current position changed")
+    
+    planner = MotionPlanner(arm, visual=True, manual_calibration=False, debug=True)
+    # x, y, z = arm.get_position()
+    # path_4 = np.array([[x, y, z], [x, y+0.5, z]])  # move +y
+
+
     # planner.generate_chess_motion([("r", "a1a6")])  # example of simple move
     # TODO fix for dead piece generation
     # FRANKA.generate_chess_motion([("r", "b4"), ("r", "a1b4")])  # example of move with kill
@@ -453,11 +495,16 @@ if __name__ == '__main__':
     path_1 = np.array([[0, 0, 0], [0, 1, 0], [1, 1, 0]])  # right angle turn
     path_2 = np.array([[1, 2, 0], [2, 0.5, 0], [4, 4, 0]])  # tight angle turn
     path_3 = np.array([[0, 0, 0], [0, 0.5, 0]])  # straight line example
-    
-    x, y, z = arm.get_position()
-    path_4 = np.array([[x, y, z], [x, y+0.5, z]])  # move +y
+    path_4 = np.array([[0.5, -0.25, 0.2], [0.5, 0.25, 0.2]])  # move +y
 
-    motion_plan = planner.apply_trapezoid_vel_profile(path_4)
+
+    x = glob_curr_pos_x
+    y = glob_curr_pos_y
+    z = glob_curr_pos_z
+    path_5 = np.array([[x, y, z], [x, y+0.7, z+0.2]])  # move +y
+    
+
+    motion_plan = planner.apply_trapezoid_vel_profile(path_5)
 
     if True:
         import rospy
@@ -467,6 +514,12 @@ if __name__ == '__main__':
                 # print(x,y,z,speed)
                 arm.move_to(x, y, z, speed)
                 time.sleep(0.05)  # control loop
+
+            time.sleep(2)
+            print("finished motion.")
+            print("final x: ", glob_curr_pos_x)
+            print("final y: ", glob_curr_pos_y)
+            print("final z: ", glob_curr_pos_z)
 
             # now test the grippers are operational
             # width = 0.06  # 2.2 cm = 0 width
@@ -480,5 +533,7 @@ if __name__ == '__main__':
             # width = 0.06  # 2.2 cm = 0 width
             # franka.move_gripper(width, speed)
 
-        except rospy.ROSInterruptException:
-            pass
+        except rospy.ROSInterruptException as e:
+            print(e)
+
+
