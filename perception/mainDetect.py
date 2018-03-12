@@ -75,6 +75,11 @@ class Perception:
         # Assign the initial BWE Matrix to the squares
         self.board.assignBWE()
 
+        print("")
+        print("The initial BWE has been assigned as: ")
+        self.printBwe(self.board.getBWE())
+        print("")
+
         ## DEBUG
         # Show the classified squares
         #self.board.draw(squareImage)
