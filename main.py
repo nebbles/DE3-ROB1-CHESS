@@ -83,6 +83,9 @@ def main(static):
     4. Main loop
     '''
 
+    # Counter to determine if it's Opponents (False) or Robots (True) turn
+    move = False
+
     while True:
 
         # Wait until key pressed
@@ -116,13 +119,21 @@ def main(static):
                 else:
                     raise ValueError
 
-        status, msg = engine.input_bwe(bwe_converted)
+        if move == False:
+            status, msg = engine.input_bwe(bwe_converted)
+            moveCounter += 1
 
-        print("")
-        print("Chess Engine Return:")
-        print("The status is: ", status)
-        print("The message is: ", msg)
-        print("")
+            print("")
+            print("Chess Engine Return:")
+            print("The status is: ", status)
+            print("The message is: ", msg)
+            print("")
+        else:
+            moveCounter -= 1
+
+
+
+
 
 
         cv2.waitKey(1)

@@ -47,7 +47,7 @@ class Perception:
             print("")
 
         # Extract chessboard from image
-        extractedImage = self.imageAnalysis(image, processedImage, debug=True)
+        extractedImage = self.imageAnalysis(image, processedImage, debug=False)
 
         # Chessboard Corners
         cornersImage = extractedImage.copy()
@@ -68,7 +68,7 @@ class Perception:
         squareImage = image.copy()
 
         # Get list of Square class instances
-        squares = self.makeSquares(corners, depthImage, squareImage, True)
+        squares = self.makeSquares(corners, depthImage, squareImage, debug=False)
         # Make a Board class from all the squares to hold information
         self.board = Board(squares)
 
