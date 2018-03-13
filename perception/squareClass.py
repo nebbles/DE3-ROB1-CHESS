@@ -94,7 +94,6 @@ class Square:
         distance = np.sqrt(summed)
 
         print("Distance of match to empty square color: " + str(distance))
-        print("")
 
         threshold = 20
 

@@ -31,7 +31,7 @@ def main(static):
     0. Start up chess engine
     '''
 
-    engine = ChessEngine(debug=True, suppress_sunfish=False)
+    engine = ChessEngine(debug=False, suppress_sunfish=False)
 
     '''
     1. Start by getting picture of empty chessboard
