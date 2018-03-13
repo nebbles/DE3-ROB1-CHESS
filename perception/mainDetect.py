@@ -134,10 +134,10 @@ class Perception:
 
         # No change has been detected
         else:
-            print("WARNING: No change has been detected")
+            print("WARNING: No change has been detected. The BWE has not been updated.")
             success = False
 
-        if debug:
+        if debug and success:
             self.printBwe(bwe)
 
         return bwe, success
