@@ -136,7 +136,7 @@ class Perception:
         Prints the BWE
         """
         print("")
-        print("This is the BWE matrix: ")
+        print("BWE matrix: ")
         print("")
         print(bwe)
 

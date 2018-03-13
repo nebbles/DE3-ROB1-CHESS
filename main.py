@@ -6,6 +6,22 @@ import argparse
 from perception.mainDetect import Perception
 from chess.engine import ChessEngine
 
+def bwe_converter(bwe):
+
+    bwe_converted = []
+    for i in bwe:
+        for j in i:
+            if j == 2:
+                bwe_converted.append('B')
+            elif j == 1:
+                bwe_converted.append('W')
+            elif j == 0:
+                bwe_converted.append('E')
+            else:
+                raise ValueError
+
+    return bwe_converted
+
 def main(static):
     """
     Main program for testing
@@ -79,6 +95,13 @@ def main(static):
     print("Initial image of populated board assigned and BWE initialised")
     print("")
 
+    # Close 'Board Identified' Window
+    cv2.destroyAllWindows()
+
+    # Populated Board
+    populated, dummy = feed.get_frames()
+    cv2.imshow("Populated Board", populated)
+
     '''
     4. Main loop
     '''
@@ -106,21 +129,12 @@ def main(static):
 
         # Update BWE
         bwe = percept.bwe(current, debug=True)
-
-        bwe_converted = []
-        for i in bwe:
-            for j in i:
-                if j == 2:
-                    bwe_converted.append('B')
-                elif j == 1:
-                    bwe_converted.append('W')
-                elif j == 0:
-                    bwe_converted.append('E')
-                else:
-                    raise ValueError
+        bwe_converted = bwe_converter(bwe)
 
         if move == False:
             status, msg = engine.input_bwe(bwe_converted)
+
+            # Now it's the robots turn
             move = True
 
             print("")
@@ -129,13 +143,11 @@ def main(static):
             print("The message is: ", msg)
             print("")
         else:
+
+            # Now it's the opponents turn
             move = False
 
-
-
-
-
-
+        # Don't know exactly why this is needed
         cv2.waitKey(1)
 
 if __name__ == '__main__':
