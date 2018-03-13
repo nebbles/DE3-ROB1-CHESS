@@ -93,7 +93,7 @@ class Square:
 
         print("Distance of match to empty square color: " + str(distance))
 
-        threshold = 30
+        threshold = 20
 
         # If distance is below threshold assign empty
         if distance < threshold:
