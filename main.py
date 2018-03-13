@@ -128,23 +128,35 @@ def main(static):
         cv2.imshow("Current Image", current)
 
         # Update BWE
-        bwe = percept.bwe(current, debug=True)
+        bwe, success = percept.bwe(current, debug=True)
         bwe_converted = bwe_converter(bwe)
 
-        if move == False:
-            status, msg = engine.input_bwe(bwe_converted)
+        if move == False: # The opponent's turn
 
-            # Now it's the robots turn
-            move = True
+            if success: # If the BWE has been updated
+                try:
+                    status, msg = engine.input_bwe(bwe_converted)
+                except:
+                    print("ERROR: Chess engine failed!")
 
-            print("")
-            print("Chess Engine Return:")
-            print("The status is: ", status)
-            print("The message is: ", msg)
-            print("")
+                # Now it's the robots turn
+                move = True
+
+                # Print chess engine return
+                print("")
+                print("Chess Engine Return:")
+                print("The status is: ", status)
+                print("The message is: ", msg)
+                print("")
+
+            # If success is False, the whole thing just runs again :)
+            else:
+                print("")
+                print("ERROR: Move has not been recognised")
+                print("Please try the move again!")
+                print("")
         else:
 
-            # Now it's the opponents turn
             move = False
 
         # Don't know exactly why this is needed

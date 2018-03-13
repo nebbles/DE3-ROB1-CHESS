@@ -114,22 +114,33 @@ class Perception:
             print("Error: More than two squares have changed!")
             print("")
 
+        # Get the old BWE to handle errors
+        old_bwe = self.board.getBWE()
+
         # Update the BWE by looking at which squares have changed
         self.board.updateBWE(matches, currentCopy)
 
         # Print second
         bwe = self.board.getBWE()
 
-        # Show BWE Update
-        cv2.imshow("Updating BWE", currentCopy)
+        # A change has been detected
+        if old_bwe != bwe:
+            # Show BWE Update
+            cv2.imshow("Updating BWE", currentCopy)
 
-        # Make current image the previous one
-        self.previous = current
+            # Make current image the previous one
+            self.previous = current
+            success = True
+
+        # No change has been detected
+        else:
+            print("WARNING: No change has been detected")
+            success = False
 
         if debug:
             self.printBwe(bwe)
 
-        return bwe
+        return bwe, success
 
     def printBwe(self, bwe):
         """
