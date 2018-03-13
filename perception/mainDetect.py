@@ -107,7 +107,7 @@ class Perception:
         centres = self.detectSquareChange(self.previous, current)
 
         # Now we want to check in which square the change has happened
-        matches = self.board.whichSquares(centres, current)
+        matches = self.board.whichSquares(centres)
 
         if len(matches) > 2:
             print("")
@@ -573,9 +573,9 @@ class Perception:
                 if area > 100:
                     (x, y, w, h) = cv2.boundingRect(c)
                     centre = (int(x + w / 2), int(y + h / 2))
-                    centres.append((centre, (x, y, w, h)))
-                    #cv2.circle(debugImg, centre, 3, 255, 2)
-                    #cv2.rectangle(debugImg, (x, y), (x + w, y + h), (0, 0, 255), 2)
+                    centres.append(centre)
+                    cv2.circle(debugImg, centre, 3, 255, 2)
+                    cv2.rectangle(debugImg, (x, y), (x + w, y + h), (0, 0, 255), 2)
             except:
                 pass
 
