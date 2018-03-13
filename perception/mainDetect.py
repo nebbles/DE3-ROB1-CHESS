@@ -85,8 +85,7 @@ class Perception:
         #self.board.draw(squareImage)
         #self.board.draw(depthImage)
 
-        cv2.imshow("Classified Squares", squareImage)
-
+        #cv2.imshow("Classified Squares", squareImage)
         #cv2.imshow("Classified Squares", depthImage)
 
         cv2.imwrite("ClassifiedSquares.jpeg", squareImage)
@@ -511,8 +510,12 @@ class Perception:
                 #print(index)
                 #xyz = square.getDepth(depthImage)
                 #coordinates.append(xyz)
+
+        cv2.imshow("Board Identified", image)
+
         if debug:
             cv2.imwrite("5SquaresIdentified.jpeg", image)
+
 
 
 
