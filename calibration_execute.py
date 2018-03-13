@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import CameraFeed
-from perception.squareClass.py import getDepth
 
 
 def run_calibration(cam_feed):
@@ -13,7 +12,7 @@ def run_calibration(cam_feed):
     marker_coordinates = np.zeros((9, 3))
     franka_coordinates = np.zeros((9, 3))
 
-    for i in range(len(moves)): # not lengths number of rowes needs to be fixed
+    for i in range(len(moves)):  # not lengths number of rows needs to be fixed
 
         complete_trajectory = generate_trajectory(moves[i], moves[i+1])
 
@@ -25,10 +24,10 @@ def run_calibration(cam_feed):
         franka_coordinates[i, 2] = franka_z
 
         rgb, depth = cam_feed.get_frames()
-        # current_marker_pos = find_cross(current_frame)
+        current_marker_pos = find_cross(rgb)
 
-        marker_x, marker_y = find_cross(rgb) #not very robust
-        marker_z = getDepth(current_frame)
+        # marker_x, marker_y = find_cross(rgb)  # not very robust
+        marker_z = find_depth(current_marker_pos, depth)
         marker_coordinates[i, 0] = marker_x
         marker_coordinates[i, 1] = marker_y
         marker_coordinates[i, 2] = marker_z
@@ -37,7 +36,7 @@ def run_calibration(cam_feed):
 
 
 def get_franka_pos():
-    """Function that interfaces with ROS code to retreive franka end effector position in franka's reference frame"""
+    """function that interfaces with ROS code to retrieve franka end effector position in franka's reference frame"""
     return franka_pos
 
 
@@ -156,7 +155,7 @@ def find_cross(frame):
 
     markers = []
     while (1):
-        imgsized = frame # frame should be tring of file name
+        imgsized = frame  # frame should be tring of file name
         # imgsized = imutils.resize(img, width=640) try without resizing
         imghsv = cv2.cvtColor(imgsized, cv2.COLOR_BGR2HSV)
 
@@ -207,13 +206,12 @@ def find_cross(frame):
     #     break
 
 
-# def find_depth(marker, current_frame):
-#
-#     depth = current_frame[marker[1], marker[0]]
-#
-#     coordinates = marker[0], marker[1], depth[0]
-#
-#     return coordinates
+def find_depth(coordinate, depth_image):
+
+    depth = depth_image[coordinate[1], coordinate[0]]
+    coordinates = coordinate[0], coordinate[1], depth
+
+    return coordinates
 
 
 cv2.destroyAllWindows()
