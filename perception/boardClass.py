@@ -93,15 +93,25 @@ class Board:
         # Rotation in return statement
         return np.rot90(bwe,k=3)
 
-    def whichSquares(self, points):
+    def whichSquares(self, finds, debugImg):
         """
         Returns the squares which a list of points lie within
         """
+
         matches = []
         for square in self.squares:
-            for point in points:
-                dist = cv2.pointPolygonTest(square.contours,point,False)
+            for find in finds:
+
+                centre = find[0]
+
+                dist = cv2.pointPolygonTest(square.contours,centre,False)
                 if dist >= 0:
                     matches.append(square)
+
+                    x,y,w,h = find[1]
+                    cv2.circle(debugImg, find[0], 3, 255, 2)
+                    cv2.rectangle(debugImg, (x, y), (x + w, y + h), (0, 0, 255), 2)
+
+        cv2.imshow("Detected Move", debugImg)
 
         return matches
