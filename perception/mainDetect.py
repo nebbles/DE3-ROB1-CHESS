@@ -503,8 +503,7 @@ class Perception:
                 #print(c1, c2, c3, c4)
                 squares.append(square)
 
-                if debug:
-                    square.draw(image)
+                square.draw(image)
 
                 index += 1
                 #print(index)
