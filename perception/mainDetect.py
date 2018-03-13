@@ -59,10 +59,10 @@ class Perception:
         h, v = self.houghLines(cannyImage, extractedImage)
 
         # Find intersection points from Hough lines and filter them
-        intersections = self.findIntersections(h, v, extractedImage)
+        intersections = self.findIntersections(h, v, extractedImage, debug=False)
 
         # Assign intersections to a sorted list of lists
-        corners, cornerImage = self.assignIntersections(extractedImage, intersections)
+        corners, cornerImage = self.assignIntersections(extractedImage, intersections, debug=False)
 
         # Copy original image to display on
         squareImage = image.copy()
