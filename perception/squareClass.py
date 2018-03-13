@@ -44,8 +44,6 @@ class Square:
         ## DEBUG
         cv2.circle(image, self.roi, self.radius, (0, 0, 255), 1)
 
-        print(image.shape)
-
     def getDepth(self, depthImage):
 
         depth = depthImage[self.roi[1], self.roi[0]]
