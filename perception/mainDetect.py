@@ -489,7 +489,7 @@ class Perception:
         numbers = ['1', '2', '3', '4', '5', '6', '7', '8']
         index = 0
 
-        print(corners)
+        #print(corners)
 
         for i in range(8):
             for j in range(8):
@@ -507,7 +507,7 @@ class Perception:
                     square.draw(image)
 
                 index += 1
-                print(index)
+                #print(index)
                 #xyz = square.getDepth(depthImage)
                 #coordinates.append(xyz)
         if debug:
