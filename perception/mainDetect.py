@@ -124,7 +124,7 @@ class Perception:
         bwe = self.board.getBWE()
 
         # A change has been detected
-        if old_bwe.sum() != bwe.sum():
+        if not (old_bwe==bwe).all():
             # Show BWE Update
             cv2.imshow("Updating BWE", currentCopy)
 
