@@ -56,7 +56,7 @@ class Perception:
         cannyImage = self.cannyEdgeDetection(extractedImage)
 
         # Hough line detection to find rho & theta of any lines
-        h, v = self.houghLines(cannyImage, extractedImage)
+        h, v = self.houghLines(cannyImage, extractedImage, debug=False)
 
         # Find intersection points from Hough lines and filter them
         intersections = self.findIntersections(h, v, extractedImage, debug=False)
@@ -84,7 +84,8 @@ class Perception:
         # Show the classified squares
         #self.board.draw(squareImage)
         #self.board.draw(depthImage)
-        #cv2.imshow("Classified Squares", squareImage)
+
+        cv2.imshow("Classified Squares", squareImage)
 
         #cv2.imshow("Classified Squares", depthImage)
 

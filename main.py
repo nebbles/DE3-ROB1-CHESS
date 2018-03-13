@@ -121,7 +121,7 @@ def main(static):
 
         if move == False:
             status, msg = engine.input_bwe(bwe_converted)
-            moveCounter += 1
+            move = True
 
             print("")
             print("Chess Engine Return:")
@@ -129,7 +129,7 @@ def main(static):
             print("The message is: ", msg)
             print("")
         else:
-            moveCounter -= 1
+            move = False
 
 
 
