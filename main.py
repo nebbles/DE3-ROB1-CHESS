@@ -151,6 +151,8 @@ def main(static):
                 print("The status is: ", status)
                 print("The message is: ", msg)
                 print("")
+                print("Please execute the Chess Engine's move!")
+                print("")
 
             # If success is False, the whole thing just runs again :)
             else:
@@ -161,6 +163,9 @@ def main(static):
         else:
 
             move = False
+            print("")
+            print("Please make your move!")
+            print("")
 
         # Don't know exactly why this is needed
         cv2.waitKey(1)
