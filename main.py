@@ -112,7 +112,7 @@ def main(static):
     while True:
 
         # Wait until key pressed
-        print("When you have made a move, please press any key to update the BWE matrix.")
+        print("When you have made the move, please press any key to update the BWE matrix.")
         print("")
         try:
             cv2.waitKey(0)
@@ -151,7 +151,7 @@ def main(static):
                 print("The status is: ", status)
                 print("The message is: ", msg)
                 print("")
-                print("Please execute the Chess Engine's move!")
+                print("!!!Please execute the Chess Engine's move!!!")
                 print("")
 
             # If success is False, the whole thing just runs again :)
@@ -164,7 +164,7 @@ def main(static):
 
             move = False
             print("")
-            print("Please make your move!")
+            print("!!!Please make your move!!!")
             print("")
 
         # Don't know exactly why this is needed
