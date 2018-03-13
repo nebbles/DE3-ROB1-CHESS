@@ -142,6 +142,9 @@ def main(static):
                 # Now it's the robots turn
                 move = True
 
+                # Let Chess Engine finish
+                time.sleep(0.05)
+
                 # Print chess engine return
                 print("")
                 print("Chess Engine Return:")
