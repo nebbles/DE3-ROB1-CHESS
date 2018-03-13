@@ -79,8 +79,8 @@ class MotionPlanner:
 
         # Find the location of the rest position
         rest_x_vector = [i * 4 for i in self.x_unit_vector]
-        rest_y_vector = [-(i * 3) for i in self.y_unit_vector]
-        rest_z = self.board_z_max + 0.9  # hardcoded z coordinate of the rest position
+        rest_y_vector = [(i * 4) for i in self.y_unit_vector]
+        rest_z = self.board_z_max + 0.4  # hardcoded z coordinate of the rest position
         rest = [sum(i) for i in zip(self.H8, rest_x_vector, rest_y_vector)]
         rest[2] = rest_z
         self.rest = rest
@@ -322,11 +322,11 @@ class MotionPlanner:
 
     def apply_trapezoid_vel_profile(self, path):  # todo docstring and finish the function
         # set rate of message sending:  0.001 sec == dt == 1kHz  NOTE THIS IS GLOBALLY SET
-        dt = 0.05
+        dt = 0.005
         # set acceleration, start with 0.1 (may need to reduce)  NOTE THIS IS GLOBALLY SET
-        acc = 0.1
+        acc = 0.5  #max 1.0
         # set target travel speed for motion
-        target_speed = 0.1
+        target_speed = 0.8  # max 1.0
 
         # discretise using a max unit of:  targV * dt # TODO link this to class
         # this unit should be 1/(acc * dt**2) to ensure there is one distance sample
@@ -409,52 +409,122 @@ class MotionPlanner:
                 speed_values.append(target_speed)
 
         # sample path using speed list
-        # trajectory = np.hstack((smooth_path[0, :], speed_values[0]))  # main technique
+        trajectory = np.hstack((smooth_path[0, :], speed_values[0]))  # send intermediate points
         # trajectory = np.hstack((smooth_path[0, :], 0.1))
-        trajectory = np.hstack((path[-1, :], speed_values[0]))  # only send the goal position
+        # trajectory = np.hstack((path[-1, :], speed_values[0]))  # only send the goal position
         smooth_path_idx = 0
 
-        for i in range(1, len(speed_values) - 1):
-            samples = int(np.around(speed_values[i] * dt / dx))
+        for i in range(1, len(speed_values)):
+            samples = int(np.rint(speed_values[i] * dt / dx))
             smooth_path_idx += samples
-            if smooth_path_idx > len(smooth_path) - 1:
-                smooth_path_idx = len(smooth_path) - 1
-            # new_marker = np.hstack((smooth_path[smooth_path_idx], speed_values[i]))  #main technique
-            new_marker = np.hstack((path[-1, :], speed_values[i]*0.98))  # only send the goal position
+            if smooth_path_idx > len(smooth_path)-1:
+                smooth_path_idx = len(smooth_path)-1
+            new_marker = np.hstack((smooth_path[smooth_path_idx], speed_values[i]))  # send intermediate points
+            # new_marker = np.hstack((path[-1, :], speed_values[i]*0.97))  # only send the goal position
 
             # new_marker = np.hstack((smooth_path[smooth_path_idx], 0.1))
             trajectory = np.vstack((trajectory, new_marker))
 
-        trajectory[-1, -1] = 0
+
+        # for i in range(3):
+        #     new_marker = np.hstack((smooth_path[-1], speed_values[-1]))
+        #     trajectory = np.vstack((trajectory, new_marker))
+
+        # trajectory[-1, -1] = 0
 
         if self.visual:
             # plotting the board
-            fig = plt.figure()
-            ax3d = fig.add_subplot(111, projection='3d')
-            ax3d.plot(path[:, 0], path[:, 1], path[:, 2], 'r')
-            ax3d.plot(smooth_path[:, 0], smooth_path[:, 1], smooth_path[:, 2], 'b*')
+            # plot discretised path
+            # fig = plt.figure()
+            # ax3d = fig.add_subplot(111, projection='3d')
+            # ax3d.plot(path[:, 0], path[:, 1], path[:, 2], 'r')
+            # ax3d.plot(smooth_path[:, 0], smooth_path[:, 1], smooth_path[:, 2], 'b*')
 
+            # plot speed profile
             fig = plt.figure()
             ax3d = fig.add_subplot(111)
             plt.plot(time_list[:len(speed_values)], speed_values, 'r*')
             plt.ylabel("speed (m/s)")
             plt.xlabel("time (s)")
 
+            # plot trajectory axes against time
             fig = plt.figure()
             ax3d = fig.add_subplot(111)
             plt.plot(time_list[:len(trajectory[:, 0])], trajectory[:, 0], 'r*')
             plt.plot(time_list[:len(trajectory[:, 1])], trajectory[:, 1], 'b*')
-            plt.ylabel("x/y displacement (m)")
+            plt.plot(time_list[:len(trajectory[:, 2])], trajectory[:, 2], 'g*')
+            plt.ylabel("x(r) / y(b) / z(g) displacement (m)")
             plt.xlabel("time (s)")
 
-            fig = plt.figure()
-            ax3d = fig.add_subplot(111, projection='3d')
-            ax3d.plot(path[:, 0], path[:, 1], path[:, 2], 'r')
-            ax3d.plot(trajectory[:, 0], trajectory[:, 1], trajectory[:, 2], 'g*')
+            # plot trajectory in 3d
+            # fig = plt.figure()
+            # ax3d = fig.add_subplot(111, projection='3d')
+            # ax3d.plot(path[:, 0], path[:, 1], path[:, 2], 'r')
+            # ax3d.plot(trajectory[:, 0], trajectory[:, 1], trajectory[:, 2], 'g*')
 
             plt.show()
 
         return trajectory
+
+    def anna(self, chess_move):
+        global glob_curr_pos_x, glob_curr_pos_y, glob_curr_pos_z
+        """Creates a list of lists that depict the full start to goal trajectory [start to hover][hover to etc]"""
+
+        # Extract information from output of game engine
+        if len(chess_move) == 1:
+            start_an = chess_move[0][1][:2]
+            goal_an = chess_move[0][1][2:4]
+        elif len(chess_move) == 2:
+            start_an = chess_move[1][1][:2]
+            goal_an = chess_move[1][1][2:4]
+        else:
+            raise ValueError("Chess move was not understood; not 1 or 2 items")
+
+        # Convert ANs to coordinates
+        move_from = self.an_to_coordinates(start_an)
+        move_to = self.an_to_coordinates(goal_an)
+
+        # Generate the intermediate positions of the path
+        move_from_hover = [move_from[0], move_from[1], self.hover_height]
+        move_to_hover = [move_to[0], move_to[1], self.hover_height]
+        dead_zone_hover = [self.dead_zone[0], self.dead_zone[1], self.hover_height]
+
+
+        #current_position = # TODO get position
+        current_position = [1,1,1]
+        current_position = [glob_curr_pos_x, glob_curr_pos_y, glob_curr_pos_z]
+
+        # create numpy array of tuples to move from and to
+        if len(chess_move) == 1:  # NO PIECE DIED
+
+            moves = np.array([[[current_position, self.rest], [current_position, move_from_hover], [current_position, move_from]],
+                    [[current_position, move_from_hover], [current_position, move_to_hover], [current_position, move_to]],
+                    [[current_position, move_to_hover], [current_position, self.rest]]])
+
+        elif len(chess_move) == 2:  # A PIECE HAS DIED
+
+            moves = np.array([[[current_position, self.rest], [current_position, move_to_hover], [current_position, move_to]],
+                              [[current_position, move_to_hover], [current_position, dead_zone_hover]],
+                              [[current_position, move_from_hover], [current_position, move_from]],
+                              [[current_position, move_from_hover], [current_position,  move_to_hover], [current_position, move_to]],
+                               [[current_position, move_to_hover],[current_position, self.rest]]])
+
+        else:
+            raise ValueError("The length of chess move tuple is invalid")
+
+        # # plot the trajectory
+        # if self.visual:
+        #     fig = plt.figure()
+        #     ax3d = fig.add_subplot(111, projection='3d')
+
+        return moves
+
+       
+
+
+
+
+
 
 def cur_pos_callback(data):
         global glob_curr_pos_x, glob_curr_pos_y, glob_curr_pos_z
@@ -467,12 +537,13 @@ def cur_pos_callback(data):
 def spinner():
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
-    
+
+
 
 if __name__ == '__main__':
     arm = None
     from franka.franka_control_ros import FrankaRos
-    arm = FrankaRos()
+    arm = FrankaRos(log=True)
     
     # rospy.init_node('listener', anonymous=True)
 
@@ -483,7 +554,7 @@ if __name__ == '__main__':
         time.sleep(0.1)
     print("current position changed")
     
-    planner = MotionPlanner(arm, visual=True, manual_calibration=False, debug=True)
+    planner = MotionPlanner(arm, visual=False, manual_calibration=False, debug=True)
     # x, y, z = arm.get_position()
     # path_4 = np.array([[x, y, z], [x, y+0.5, z]])  # move +y
 
@@ -492,34 +563,93 @@ if __name__ == '__main__':
     # TODO fix for dead piece generation
     # FRANKA.generate_chess_motion([("r", "b4"), ("r", "a1b4")])  # example of move with kill
 
-    path_1 = np.array([[0, 0, 0], [0, 1, 0], [1, 1, 0]])  # right angle turn
-    path_2 = np.array([[1, 2, 0], [2, 0.5, 0], [4, 4, 0]])  # tight angle turn
-    path_3 = np.array([[0, 0, 0], [0, 0.5, 0]])  # straight line example
-    path_4 = np.array([[0.5, -0.25, 0.2], [0.5, 0.25, 0.2]])  # move +y
+    # path_1 = np.array([[0, 0, 0], [0, 1, 0], [1, 1, 0]])  # right angle turn
+    # path_2 = np.array([[1, 2, 0], [2, 0.5, 0], [4, 4, 0]])  # tight angle turn
+    # path_3 = np.array([[0, 0, 0], [0, 0.5, 0]])  # straight line example
+    # path_4 = np.array([[0.5, -0.25, 0.2], [0.5, 0.25, 0.2]])  # move +y
 
 
     x = glob_curr_pos_x
     y = glob_curr_pos_y
     z = glob_curr_pos_z
-    path_5 = np.array([[x, y, z], [x, y+0.7, z+0.2]])  # move +y
+    path_5 = np.array([[x, y, z], [x, y, z-0.2]])  # move +y
     
 
-    motion_plan = planner.apply_trapezoid_vel_profile(path_5)
+    # motion_plan = planner.apply_trapezoid_vel_profile(path_5)
+
+
+
+    ## ANNA TEST STUFF
+    # 
+
+
 
     if True:
         import rospy
         try:
             # print(motion_plan)
-            for x, y, z, speed in motion_plan:
-                # print(x,y,z,speed)
-                arm.move_to(x, y, z, speed)
-                time.sleep(0.05)  # control loop
+            # for x, y, z, speed in motion_plan:
+            #     # print(x,y,z,speed)
+            #     arm.move_to(x, y, z, speed)
+            #     time.sleep(0.005)  # control loop
+
+
+            # moves = planner.anna([("r", "a1a6")])
+            moves = planner.anna([("r", "h8"), ("r", "a1h8")])
+            current_position = [glob_curr_pos_x, glob_curr_pos_y, glob_curr_pos_z]
+
+            for series in moves:
+                series = np.array(series)
+
+                for path in series:
+                    path = np.array(path)
+                    path[0] = current_position
+                    # # plot 2 points
+                    # if self.visual:
+                    #     ax3d.plot(path[:, 0], path[:, 1], path[:, 2], 'r*')
+                    #     ax3d.plot(path[:, 0], path[:, 1], path[:, 2], 'r')
+
+                    motion_plan = planner.apply_trapezoid_vel_profile(path)
+
+
+                    for x, y, z, speed in motion_plan:
+                        # print(x,y,z,speed)
+                        arm.move_to(x, y, z, speed)
+                        time.sleep(0.005)  # control loop
+                    # print("Finished motion, waiting 0.5 seconds")
+                    # time.sleep(0.5)
+
+                    # update current position
+                    # current_position = getcurretnposition #TODO
+                    current_position = [glob_curr_pos_x, glob_curr_pos_y, glob_curr_pos_z]
+
+                # put gripper here
+                time.sleep(1)
+                arm.move_gripper(0.05,0.1)
+                time.sleep(1)
+                arm.move_gripper(0.01,0.1)
+                time.sleep(1)
+                arm.move_gripper(0.05,0.1)
+                time.sleep(1)
+
+
+            
+
 
             time.sleep(2)
             print("finished motion.")
             print("final x: ", glob_curr_pos_x)
             print("final y: ", glob_curr_pos_y)
             print("final z: ", glob_curr_pos_z)
+            print("offset x (mm): ", (glob_curr_pos_x-motion_plan[-1, 0])/1000 )
+            print("offset y (mm): ", (glob_curr_pos_y-motion_plan[-1, 1])/1000 )
+            print("offset z (mm): ", (glob_curr_pos_z-motion_plan[-1, 2])/1000 )
+
+            arm.move_gripper(0.05,0.1)
+            time.sleep(1)
+            arm.move_gripper(0.01,0.1)
+            time.sleep(1)
+            arm.move_gripper(0.05,0.1)
 
             # now test the grippers are operational
             # width = 0.06  # 2.2 cm = 0 width
