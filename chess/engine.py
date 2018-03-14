@@ -7,10 +7,7 @@ and the chess logic underneath.
 import multiprocessing as mp
 import time
 import sys
-try:
-    import chess.sunfish_custom as sunfish
-except ImportError:
-    import sunfish_custom as sunfish
+import chess.sunfish_custom as sunfish
 
 
 class HiddenPrints:
@@ -263,10 +260,10 @@ class ChessEngine:
                 * ``2``, Move that computer is playing to win as tuple
                 * ``3``, Move that computer is playing as tuple
 
-        Computer move tuple is in forms:
+        Computer move is a list of tuples in the form:
 
-        * ``( (piece_to_move, move) )``, or
-        * ``( (piece_to_kill, location), (piece_to_move, move) )``
+        * ``[ (piece_to_move, move) ]``, or
+        * ``[ (piece_to_kill, location), (piece_to_move, move) ]``
 
         where,
 
