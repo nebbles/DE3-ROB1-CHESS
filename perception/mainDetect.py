@@ -343,10 +343,6 @@ class Perception:
 
         return hor, ver
 
-    # def showImage(image, lines):
-    #     cv2.line(image, (Line.p1), (Line.p2), (255, 0, 0), 2, cv2.LINE_AA)
-    #     cv2.imshow('Hough lines', image)
-
     def drawLines(self, image, lines, color=(0,0,255), thickness=2):
         """
         What you think it does
