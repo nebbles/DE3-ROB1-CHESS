@@ -1,6 +1,11 @@
-# MAKE SURE TO RUN: 
-# roscore
-# roslaunch openni2_launch openni2.launch
+#!/usr/bin/env python
+# Benedict Greenberg, March 2018
+# http://github.com/nebbles
+#
+# Make sure that you are running:
+#   roscore
+#   franka_controller_sub
+#   roslaunch openni2_launch openni2.launch
 from __future__ import print_function
 import roslib
 import rospy
@@ -12,7 +17,6 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 import time
 import numpy as np
-import multiprocessing as mp
 
 
 class CameraFeed:

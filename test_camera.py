@@ -1,28 +1,34 @@
+#!/usr/bin/env python
+# Benedict Greenberg, March 2018
+# http://github.com/nebbles
+#
+# Make sure that you are running:
+#   roscore
+#   franka_controller_sub
+#   roslaunch openni2_launch openni2.launch
 from __future__ import print_function
 import cv2
-import time
-import camera_subscriber3
-from franka.franka_control_ros import FrankaRos
 import rospy
+import time
+import camera_subscriber
+from franka.franka_control_ros import FrankaRos
 
 
 def main():
     rospy.init_node('franka_python_node', anonymous=True)
-    feed = camera_subscriber3.CameraFeed(debug=True)
+    feed = camera_subscriber.CameraFeed()
     arm = FrankaRos()
 
     # Main loop - temporary
     while True:
         time.sleep(0.05)  # refresh rate of camera frames
 
-        # rgbFrame, depthFrame = feed.get_frames()
-
         print("X pos: ", arm.x)
 
-        rgb, depth = feed.get_frames()
+        rgb_frame, depth_frame = feed.get_frames()
 
-        cv2.imshow("FETCHED RGB", rgb)
-        cv2.imshow("FETCHED Depth", depth)
+        cv2.imshow("FETCHED RGB", rgb_frame)
+        cv2.imshow("FETCHED Depth", depth_frame)
         cv2.waitKey(1)
 
 
