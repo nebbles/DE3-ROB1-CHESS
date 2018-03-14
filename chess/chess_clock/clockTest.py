@@ -19,7 +19,7 @@ class ClockFeed:
     def start_process(self):
 
         # Create process object
-        self.clock_feed = mp.Process(target=main, args=(self.sig_q))
+        self.clock_feed = mp.Process(target=main, args=(self.sig_q,))
         # Set the daemon to True - causes process to shutdown if parent process shuts
         self.clock_feed.daemon = True
         # Start the process
