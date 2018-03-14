@@ -466,8 +466,7 @@ class MotionPlanner:
 
         return trajectory
 
-    def anna(self, chess_move):
-        global glob_curr_pos_x, glob_curr_pos_y, glob_curr_pos_z
+    def anna(self, chess_move, franka):
         """Creates a list of lists that depict the full start to goal trajectory [start to hover][hover to etc]"""
 
         # Extract information from output of game engine
@@ -492,7 +491,7 @@ class MotionPlanner:
 
         #current_position = # TODO get position
         current_position = [1,1,1]
-        current_position = [glob_curr_pos_x, glob_curr_pos_y, glob_curr_pos_z]
+        current_position = [franka.x, franka.y, franka.z]
 
         # create numpy array of tuples to move from and to
         if len(chess_move) == 1:  # NO PIECE DIED
@@ -531,15 +530,15 @@ if __name__ == '__main__':
     from franka.franka_control_ros import FrankaRos
     arm = FrankaRos(log=True)
 
-    print("entering true loop")
-    while True:
-        while arm.z is None:
-            print("waiting for chage in z")
-            time.sleep(1)
-        print("x: ", arm.x)
-        print("y: ", arm.y)
-        print("z: ", arm.z)
-        time.sleep(1)
+    # print("entering true loop")
+    # while True:
+    #     while arm.z is None:
+    #         print("waiting for chage in z")
+    #         time.sleep(1)
+    #     print("x: ", arm.x)
+    #     print("y: ", arm.y)
+    #     print("z: ", arm.z)
+    #     time.sleep(1)
 
     
 
@@ -565,10 +564,7 @@ if __name__ == '__main__':
     # path_4 = np.array([[0.5, -0.25, 0.2], [0.5, 0.25, 0.2]])  # move +y
 
 
-    x = glob_curr_pos_x
-    y = glob_curr_pos_y
-    z = glob_curr_pos_z
-    path_5 = np.array([[x, y, z], [x, y, z-0.2]])  # move +y
+    path_5 = np.array([[arm.x, arm.y, arm.z], [arm.x, arm.y, arm.z-0.2]])  # move +y
     
 
     # motion_plan = planner.apply_trapezoid_vel_profile(path_5)
@@ -590,9 +586,9 @@ if __name__ == '__main__':
             #     time.sleep(0.005)  # control loop
 
 
-            # moves = planner.anna([("r", "a1a6")])
-            moves = planner.anna([("r", "h8"), ("r", "a1h8")])
-            current_position = [glob_curr_pos_x, glob_curr_pos_y, glob_curr_pos_z]
+            moves = planner.anna([("r", "a1a6")], arm)
+            # moves = planner.anna([("r", "h8"), ("r", "a1h8")], arm)
+            current_position = [arm.x, arm.y, arm.z]
 
             for series in moves:
                 series = np.array(series)
@@ -617,15 +613,15 @@ if __name__ == '__main__':
 
                     # update current position
                     # current_position = getcurretnposition #TODO
-                    current_position = [glob_curr_pos_x, glob_curr_pos_y, glob_curr_pos_z]
+                    current_position = [arm.x, arm.y, arm.z]
 
                 # put gripper here
                 time.sleep(1)
-                arm.move_gripper(0.05,0.1)
-                time.sleep(1)
-                arm.move_gripper(0.01,0.1)
+                arm.move_gripper(0.07,0.1)
                 time.sleep(1)
                 arm.move_gripper(0.05,0.1)
+                time.sleep(1)
+                arm.move_gripper(0.07,0.1)
                 time.sleep(1)
 
 
@@ -634,18 +630,18 @@ if __name__ == '__main__':
 
             time.sleep(2)
             print("finished motion.")
-            print("final x: ", glob_curr_pos_x)
-            print("final y: ", glob_curr_pos_y)
-            print("final z: ", glob_curr_pos_z)
-            print("offset x (mm): ", (glob_curr_pos_x-motion_plan[-1, 0])/1000 )
-            print("offset y (mm): ", (glob_curr_pos_y-motion_plan[-1, 1])/1000 )
-            print("offset z (mm): ", (glob_curr_pos_z-motion_plan[-1, 2])/1000 )
+            print("final x: ", arm.x)
+            print("final y: ", arm.y)
+            print("final z: ", arm.z)
+            print("offset x (mm): ", (arm.x-motion_plan[-1, 0])/1000 )
+            print("offset y (mm): ", (arm.y-motion_plan[-1, 1])/1000 )
+            print("offset z (mm): ", (arm.z-motion_plan[-1, 2])/1000 )
 
-            arm.move_gripper(0.05,0.1)
-            time.sleep(1)
-            arm.move_gripper(0.01,0.1)
-            time.sleep(1)
-            arm.move_gripper(0.05,0.1)
+            # arm.move_gripper(0.05,0.1)
+            # time.sleep(1)
+            # arm.move_gripper(0.01,0.1)
+            # time.sleep(1)
+            # arm.move_gripper(0.05,0.1)
 
             # now test the grippers are operational
             # width = 0.06  # 2.2 cm = 0 width
