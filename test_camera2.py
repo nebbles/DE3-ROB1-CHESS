@@ -1,12 +1,15 @@
 from __future__ import print_function
 import cv2
 import time
-import camera_subscriber2
+import camera_subscriber3
+from franka.franka_control_ros import FrankaRos
+import rospy
 
 
 def main():
-    feed = camera_subscriber.CameraFeed()
-    feed.start_process()
+    rospy.init_node('franka_python_node', anonymous=True)
+    feed = camera_subscriber3.CameraFeed(debug=False)
+    arm = FrankaRos()
 
     # Main loop - temporary
     while True:
@@ -14,12 +17,14 @@ def main():
 
         # rgbFrame, depthFrame = feed.get_frames()
 
-        rgbFrame = feed.rgb
-        depthFrame = feed.depth
-        
+        while feed.depth is None:
+            print("depth image still none")
+            time.sleep(1)
 
-        cv2.imshow("FETCHED RGB", rgbFrame)
-        cv2.imshow("FETCHED Depth", depthFrame)
+        print("X pos: ", arm.x)
+
+        cv2.imshow("FETCHED RGB", feed.rgb)
+        cv2.imshow("FETCHED Depth", feed.depth)
         cv2.waitKey(1)
 
 
