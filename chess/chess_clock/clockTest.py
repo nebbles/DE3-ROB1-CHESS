@@ -73,6 +73,7 @@ def main(sig_q):
         ## If the queue is empty
         #except:
         #    pass
+        sig = 0
 
 
         for event in pygame.event.get():
