@@ -16,4 +16,7 @@ print("")
 while True:
     time.sleep(5)
     clock.sig_q.put(1)
+    time.sleep(5)
+    clock.sig_q.put(2)
+
 
