@@ -200,7 +200,7 @@ if __name__ == '__main__':
     # TODO clear main up
     parser = argparse.ArgumentParser(description='Control Franka Arm with Python.')
     # parser.add_argument('-m', '--motion-example', action='store_true',
-                        help='run example motion function')
+    #                     help='run example motion function')
     parser.add_argument('-p', '--position-example', action='store_true',
                         help='run example position reading function')
     args = parser.parse_args()  # get command line arguments
