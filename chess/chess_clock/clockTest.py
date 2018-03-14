@@ -67,12 +67,12 @@ def main(sig_q):
         clock.tick(30)
 
         # Get signal from ClockFeed
-        try:
-            sig = sig_q.get()
-            print("Got signal")
-        # If the queue is empty
-        except:
-            continue
+        #try:
+        #    sig = sig_q.get()
+        #    print("Got signal")
+        ## If the queue is empty
+        #except:
+        #    pass
 
         for event in pygame.event.get():
             if event.type == QUIT:
