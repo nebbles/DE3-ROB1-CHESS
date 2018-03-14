@@ -88,6 +88,12 @@ class FrankaRos:
             rospy.loginfo("franka_move_to: " + str(self.target_coords.data))
         self.pub_move_to.publish(self.target_coords)
 
+    def send_trajectory(self, trajectory):
+        # TODO docstring
+        for x, y, z, speed in trajectory:
+            self.move_to(x, y, z, speed)
+            time.sleep(0.005)  # control loop
+
     def move_relative(self, dx, dy, dz, speed):
         """Moves robot end effector in desired direction (in robot reference frame) given a
         target displacement and speed to travel at. The robot will not necessarily travel at this
