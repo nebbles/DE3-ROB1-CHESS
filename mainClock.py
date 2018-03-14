@@ -1,7 +1,6 @@
 from __future__ import print_function
 import cv2
 import time
-import camera_subscriber
 import argparse
 from perception.mainDetect import Perception
 from chess.engine import ChessEngine
