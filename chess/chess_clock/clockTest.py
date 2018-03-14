@@ -91,7 +91,7 @@ def main(sig_q):
 
             elif event.type == KEYDOWN or sig == 1 or sig == 2:
 
-                if event.key == K_a or sig == 1:
+                if sig == 1:
                     if not a_on:
                         # Set for 1 second (1000 milliseconds)
                         pygame.time.set_timer(USEREVENT, 1000)
@@ -103,7 +103,7 @@ def main(sig_q):
                         b_on = True
                         a_on = False
 
-                if event.key == K_b or sig == 2:
+                if sig == 2:
                     if not b_on:
                         pygame.time.set_timer(USEREVENT + 1, 1000)
                         b_on = True
