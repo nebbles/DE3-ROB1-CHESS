@@ -526,33 +526,29 @@ class MotionPlanner:
 
 
 
-def cur_pos_callback(data):
-        global glob_curr_pos_x, glob_curr_pos_y, glob_curr_pos_z
-        #rospy.loginfo(data.data)
-        glob_curr_pos_x = data.data[0]
-        glob_curr_pos_y = data.data[1]
-        glob_curr_pos_z = data.data[2]
-    #    print("x", glob_curr_pos_x)
-        
-def spinner():
-    # spin() simply keeps python from exiting until this node is stopped
-    rospy.spin()
-
-
-
 if __name__ == '__main__':
     arm = None
     from franka.franka_control_ros import FrankaRos
     arm = FrankaRos(log=True)
-    
-    # rospy.init_node('listener', anonymous=True)
 
-    rospy.Subscriber("franka_current_position", Float64MultiArray, cur_pos_callback, queue_size=1)
-    spinthread = thread.start_new_thread( spinner , ())
-    print("Waiting for current position")
-    while glob_curr_pos_z is None:
-        time.sleep(0.1)
-    print("current position changed")
+    print("entering true loop")
+    while True:
+        while arm.z is None:
+            print("waiting for chage in z")
+            time.sleep(1)
+        print("x: ", arm.x)
+        print("y: ", arm.y)
+        print("z: ", arm.z)
+        time.sleep(1)
+
+    
+
+    # rospy.Subscriber("franka_current_position", Float64MultiArray, cur_pos_callback, queue_size=1)
+    # spinthread = thread.start_new_thread( spinner , ())
+    # print("Waiting for current position")
+    # while glob_curr_pos_z is None:
+    #     time.sleep(0.1)
+    # print("current position changed")
     
     planner = MotionPlanner(arm, visual=False, manual_calibration=False, debug=True)
     # x, y, z = arm.get_position()

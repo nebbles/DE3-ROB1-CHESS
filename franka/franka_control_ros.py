@@ -57,7 +57,22 @@ class FrankaRos:
         self.pub_grasp = rospy.Publisher('franka_gripper_grasp', Float64MultiArray, queue_size=0)
         self.pub_move_grip = rospy.Publisher('franka_gripper_move', Float64MultiArray, queue_size=0)
 
+
+        self.x = None
+        self.y = None
+        self.z = None
+        rospy.Subscriber("franka_current_position", Float64MultiArray, self.cur_pos_callback, queue_size=1)
+
+
         time.sleep(0.5)
+
+    def cur_pos_callback(self, data):
+    	# global glob_curr_pos_x, glob_curr_pos_y, glob_curr_pos_z
+        #rospy.loginfo(data.data)
+        self.x = data.data[0]
+        self.y = data.data[1]
+        self.z = data.data[2]
+    	#    print("x", glob_curr_pos_x)
 
     def move_to(self, x, y, z, speed):
         """Moves robot end effector to desired coordinates (in robot reference frame) given a
