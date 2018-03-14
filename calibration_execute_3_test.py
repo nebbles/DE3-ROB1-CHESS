@@ -6,45 +6,46 @@ import numpy as np
 #import CameraFeed
 
 
-def run_calibration():
+def run_calibration(arm_object, planner, cam_feed):
     # franka_pos = get_franka_pos
-    # moves = generate_cube(franka_pos)
-    # marker_coordinates = np.zeros((9, 3))
-    # franka_coordinates = np.zeros((9, 3))
+    franka_pos = arm_object.get_position()
+    moves = generate_cube(franka_pos)
+    marker_coordinates = np.zeros((8, 3))
+    franka_coordinates = np.zeros((8, 3))
 
-    # for i in range(marker_coordinates.shape[0]):  # not lengths number of rows needs to be fixed
-    #
-    #     complete_trajectory = generate_trajectory(moves[i], moves[i+1])
-    #
-    #     execute_trajectory(complete_trajectory)
-    #     delay?
+    np.shape(moves)[0]
+
+    for i in range(1, np.shape(moves)[0]):  # not lengths number of rows needs to be fixed
     
-    #     franka_x, franka_y, franka_z = get_franka_pos()
-    #     franka_coordinates[i, 0] = franka_x
-    #     franka_coordinates[i, 1] = franka_y
-    #     franka_coordinates[i, 2] = franka_z
-
-    #rgb, depth = cam_feed.get_frames()
-    current_marker_pos = find_cross_auto('test_3.jpg') #change data type tupple to array
-
-    final_marker_pos = find_depth(current_marker_pos)
-    # current_marker_pos.append(current_marker_depth)
-    # current_marker_pos = find_franka_coordinate(current_marker_pos) #fix formatting one tuple + entry
-
-    # marker_coordinates[i, 0] = current_marker_pos[]#fix indexing
-    # marker_coordinates[i, 1] = current_marker_pos[]
-    # marker_coordinates[i, 2] = current_marker_pos[]
+        cur_pos = arm_object.get_position()
+        complete_trajectory = planner.apply_trapezoid_vel_profile([cur_pos, moves[i] ])
+    
+        arm_object.send_trajectory(complete_trajectory)
+        # delay?
+    
+        franka_x, franka_y, franka_z = arm_object.get_position()
+        franka_coordinates[i-1, 0] = franka_x
+        franka_coordinates[i-1, 1] = franka_y
+        franka_coordinates[i-1, 2] = franka_z
 
 
-    #return marker_coordinates, franka_coordinates
-    print final_marker_pos
+        rgb, depth = cam_feed.get_frames()
+        current_marker_pos = find_cross_auto(rgb) #change data type tupple to array
+
+        current_marker_pos = find_depth(depth, current_marker_pos)
+        current_marker_pos = fix_marker_offset(current_marker_pos)  # fix for the offset between actual location of marker and desired
+
+        marker_coordinates[i-1, 0] = current_marker_pos[0]
+        marker_coordinates[i-1, 1] = current_marker_pos[1]
+        marker_coordinates[i-1, 2] = current_marker_pos[2]
+
+
+    # #return marker_coordinates, franka_coordinates
+    # print final_marker_pos
 
     #return franka_coordinates, marker_coordinates
-    return final_marker_pos
+    return marker_coordinates, franka_coordinates
 
-def get_franka_pos():
-    """function that interfaces with ROS code to retrieve franka end effector position in franka's reference frame"""
-    return franka_pos
 
 
 def generate_cube(centre_point):
@@ -136,17 +137,6 @@ def generate_cube(centre_point):
     # return moves # list of moves to complete
 
 
-def generate_trajectory(start, goal):
-    """function that calls motion code on new start and goal positions"""
-
-    return # detailed trajectory
-
-
-def execute_trajectory(trajectory):
-    """Function that interfaces with ROS code to feed franka target positions"""
-    return # update status: motion finished
-
-
 def detect(c):
     """Function used by find_cross function to detect the edges and vertices of possible polygons in an image"""
     peri = cv2.arcLength(c, True)
@@ -165,7 +155,8 @@ def find_cross_manual(frame):
     markers_tuple = []
 
     while (1):
-        img = cv2.imread('test_2.jpg')
+        # img = cv2.imread('test_2.jpg')
+        img = frame
         imgsized = imutils.resize(img, width=640)
         imghsv = cv2.cvtColor(imgsized, cv2.COLOR_BGR2HSV)
 
@@ -247,7 +238,8 @@ def find_cross_auto(frame):
 
     while (1):
         print "im here"
-        img = cv2.imread(frame)
+        # img = cv2.imread(frame)
+        img = frame
         imgsized = imutils.resize(img, width=640)
         # imgsized = imutils.resize(img, width=640) try without resizing
         imghsv = cv2.cvtColor(imgsized, cv2.COLOR_BGR2HSV)
@@ -308,29 +300,37 @@ def find_cross_auto(frame):
         else:
             break
 
+    raw_input("press enter to continue")
+    cv2.destroyAllWindows()
 
     print chosen_marker
     return chosen_marker
 
-    cv2.destroyAllWindows()
-    # k = cv2.waitKey(5) & 0xFF
-    # if k == 27:
-    #     break
 
-
-def find_depth(coordinate):
+def find_depth(img, coordinate):
     """Function that finds depth of marker centre"""
-    img = cv2.imread('test_3.jpg') #might not be needed if already reading a cv image
+    # img = cv2.imread('test_3.jpg') #might not be needed if already reading a cv image
     depth = img[(coordinate[1]), (coordinate[0])]
     coordinates = coordinate[0], coordinate[1], depth[0]
 
     return coordinates
 
-def find_franka_coordinate(coordinates):
+def fix_marker_offset(coordinates):
     """Relates coordinates of centre of cross to franka end effectof actual coordinates"""
+    # TODO add the fixed marker offset
+    return coordinates
 
-    return franka_coordinates
 
+if __name__ == '__main__':
+    import rospy
+    import camera_subscriber
+    from franka.franka_control_ros import FrankaRos
+    from tortoise_hare2_anna import MotionPlanner
 
+    rospy.init_node('franka_python_node', anonymous=True)
+    feed = camera_subscriber.CameraFeed()
+    arm = FrankaRos()
+    
+    planner = MotionPlanner(arm, visual=False, manual_calibration=False, debug=True)
 
-run_calibration()
+    run_calibration(arm, planner, feed)

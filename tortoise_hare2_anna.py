@@ -410,7 +410,7 @@ class MotionPlanner:
         if self.debug:
             print("delta displacement (mm): ", dx * 1000)
 
-        dis_path = planner.discretise_path(path, dx)
+        dis_path = self.discretise_path(path, dx)
 
         # TODO: if smoothing is going to happen it MUST keep consistent delta displacement
         # run chaser/leader over path to generate a new one with same resolution
@@ -631,7 +631,7 @@ if __name__ == '__main__':
     arm = None
     from franka.franka_control_ros import FrankaRos
 
-    arm = FrankaRos(log=False)
+    arm = FrankaRos(init_ros_node=True)
 
     # print("entering true loop")
     # while True:
@@ -684,7 +684,7 @@ if __name__ == '__main__':
             #     arm.move_to(x, y, z, speed)
             #     time.sleep(0.005)  # control loop
 
-            chess_move = [("n", "g1f3")]
+            chess_move = [("n", "g8f6")]
             # chess_move = [("r", "h5"), ("p", "g6h5")]
             # chess_move = [("n", "b1"), ("b", "c1b1")]
             moves = planner.anna(chess_move, arm)
