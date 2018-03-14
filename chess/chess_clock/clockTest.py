@@ -57,11 +57,11 @@ def main(sig_q):
     background = pygame.Surface(screen.get_size())
     rect = background.fill((0, 0, 0))
 
-    clock_image, clock_rect = load_image("clock_image_new.png")
+    clock_image, clock_rect = load_image("chess/chess_clock/clock_image_new.png")
 
     clock = pygame.time.Clock()
 
-    font = pygame.font.Font("clock_font_digi.ttf", 120)
+    font = pygame.font.Font("chess/chess_clock/clock_font_digi.TTF", 120)
 
     while True:
         clock.tick(30)
