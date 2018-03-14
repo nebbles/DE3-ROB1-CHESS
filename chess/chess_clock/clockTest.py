@@ -68,7 +68,7 @@ def main(sig_q):
 
         # Get signal from ClockFeed
         try:
-            sig = sig_q.get()
+            sig = sig_q.get(False)
             print("Got signal")
         # If the queue is empty
         except:
