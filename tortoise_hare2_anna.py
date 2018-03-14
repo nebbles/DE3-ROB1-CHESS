@@ -239,21 +239,56 @@ class MotionPlanner:
 
             plt.show()
 
-    def an_to_coordinates(self, an):  # todo fix this function for kill move
+    def an_to_coordinates(self, chess_move):  # todo fix this function for kill move
         """Converts algebraic notation into real world ``x, y, z`` coordinates"""
-        # split AN location
-        letter = an[0]
-        number = an[1]
+
+        # Extract information from output of game engine
+        if len(chess_move) == 1:
+            start_an = chess_move[0][1][:2]
+            goal_an = chess_move[0][1][2:4]
+        elif len(chess_move) == 2:
+            start_an = chess_move[1][1][:2]
+            goal_an = chess_move[1][1][2:4]
+        else:
+            raise ValueError("Chess move was not understood; not 1 or 2 items")
+
+        # split start AN location
+        letter_start = start_an[0]
+        number_start = start_an[1]
+
+        # split goal AN location
+        letter_goal = goal_an[0]
+        number_goal = goal_an[1]
 
         # lookup in dictionary
-        x_in_chess = self.number_dict[number]
-        y_in_chess = self.letter_dict[letter]
+        x_in_chess_start = self.number_dict[number_start]
+        y_in_chess_start = self.letter_dict[letter_start]
+
+        x_in_chess_goal = self.number_dict[number_goal]
+        y_in_chess_goal = self.letter_dict[letter_goal]
 
         # move by dims_in_chess from the H8 coordinate
-        coord = [sum(i) for i in zip(self.H8, x_in_chess, y_in_chess)]
-        # overwrite z coordinate with predetermined z height
-        coord[2] = self.board_z_max
-        return coord
+        coord_start = [sum(i) for i in zip(self.H8, x_in_chess_start, y_in_chess_start)]
+        coord_goal = [sum(i) for i in zip(self.H8, x_in_chess_goal, y_in_chess_goal)]
+        coord_died = coord_goal
+
+        # select z coordinate based on what piece it is
+        if len(chess_move) == 1:
+            piece = chess_move[0][0].lower()  # which is the piece?
+            dims = self.piece_dims[piece] # height and grip dims
+            coord_start[2] = dims[1] # height dim
+            coord_goal[2] = dims[1] # height dim
+            return coord_start, coord_goal
+
+        elif len(chess_move) == 2:
+            alive_piece = chess_move[1][0].lower()  # which is the piece?
+            dead_piece = chess_move[0][0].lower()
+            alive_dims = self.piece_dims[alive_piece]  # height and grip dims
+            dead_dims = self.piece_dims[dead_piece]  # height and grip dims
+            coord_start[2] = alive_dims[1]  # height dim
+            coord_goal[2] = alive_dims[1]  # height dim
+            coord_died[2] = dead_dims[1]
+            return coord_start, coord_goal, coord_died
 
     @staticmethod
     def discretise(point_1, point_2, dx):  # todo clean up function
@@ -505,48 +540,77 @@ class MotionPlanner:
     def anna(self, chess_move, franka):
         """Creates a list of lists that depict the full start to goal trajectory [start to hover][hover to etc]"""
 
-        # Extract information from output of game engine
-        if len(chess_move) == 1:
-            start_an = chess_move[0][1][:2]
-            goal_an = chess_move[0][1][2:4]
-        elif len(chess_move) == 2:
-            start_an = chess_move[1][1][:2]
-            goal_an = chess_move[1][1][2:4]
-        else:
-            raise ValueError("Chess move was not understood; not 1 or 2 items")
+        # # Extract information from output of game engine
+        # if len(chess_move) == 1:
+        #     start_an = chess_move[0][1][:2]
+        #     goal_an = chess_move[0][1][2:4]
+        # elif len(chess_move) == 2:
+        #     start_an = chess_move[1][1][:2]
+        #     goal_an = chess_move[1][1][2:4]
+        # else:
+        #     raise ValueError("Chess move was not understood; not 1 or 2 items")
 
         # Convert ANs to coordinates
-        move_from = self.an_to_coordinates(start_an)
-        move_to = self.an_to_coordinates(goal_an)
+        # move_from = self.an_to_coordinates(chess_move, start_an)
+        # move_to = self.an_to_coordinates(chess_move, goal_an)
+        died = None
+        if len(chess_move) == 1:
+            move_from, move_to = self.an_to_coordinates(chess_move)
 
-        # Generate the intermediate positions of the path
-        move_from_hover = [move_from[0], move_from[1], self.hover_height]
-        move_to_hover = [move_to[0], move_to[1], self.hover_height]
-        dead_zone_hover = [self.dead_zone[0], self.dead_zone[1], self.hover_height]
+            # Generate the intermediate positions of the path
+            move_from_hover = [move_from[0], move_from[1], self.hover_height]
+            move_to_hover = [move_to[0], move_to[1], self.hover_height]
+
+            current_position = [franka.x, franka.y, franka.z]
+
+            moves = np.array([[[current_position, self.rest], [current_position, move_from_hover], [current_position, move_from]],
+                              [[current_position, move_from_hover], [current_position, move_to_hover], [current_position, move_to]],
+                              [[current_position, move_to_hover], [current_position, self.rest]]])
+
+
+        elif len(chess_move) == 2:
+            move_from, move_to, died = self.an_to_coordinates(chess_move)
+
+            # Generate the intermediate positions of the path
+            move_from_hover = [move_from[0], move_from[1], self.hover_height]
+            move_to_hover = [move_to[0], move_to[1], self.hover_height]
+            dead_zone_hover = [self.dead_zone[0], self.dead_zone[1], self.hover_height]
+
+            current_position = [franka.x, franka.y, franka.z]
+
+            moves = np.array([[[current_position, self.rest], [current_position, move_to_hover], [current_position, died]],
+                                  [[current_position, move_to_hover], [current_position, dead_zone_hover]],
+                                  [[current_position, move_from_hover], [current_position, move_from]],
+                                  [[current_position, move_from_hover], [current_position, move_to_hover], [current_position, move_to]],
+                                  [[current_position, move_to_hover], [current_position, self.rest]]])
+
+        # # Generate the intermediate positions of the path
+        # move_from_hover = [move_from[0], move_from[1], self.hover_height]
+        # move_to_hover = [move_to[0], move_to[1], self.hover_height]
+        # dead_zone_hover = [self.dead_zone[0], self.dead_zone[1], self.hover_height]
 
         # current_position = # TODO get position
-        current_position = [1, 1, 1]
-        current_position = [franka.x, franka.y, franka.z]
+        # current_position = [franka.x, franka.y, franka.z]
 
         # create numpy array of tuples to move from and to
-        if len(chess_move) == 1:  # NO PIECE DIED
-
-            moves = np.array([[[current_position, self.rest], [current_position, move_from_hover],
-                               [current_position, move_from]],
-                              [[current_position, move_from_hover],
-                               [current_position, move_to_hover], [current_position, move_to]],
-                              [[current_position, move_to_hover], [current_position, self.rest]]])
-
-        elif len(chess_move) == 2:  # A PIECE HAS DIED
-
-            moves = np.array([[[current_position, self.rest], [current_position, move_to_hover],
-                               [current_position, move_to]],
-                              [[current_position, move_to_hover],
-                               [current_position, dead_zone_hover]],
-                              [[current_position, move_from_hover], [current_position, move_from]],
-                              [[current_position, move_from_hover],
-                               [current_position, move_to_hover], [current_position, move_to]],
-                              [[current_position, move_to_hover], [current_position, self.rest]]])
+        # if len(chess_move) == 1:  # NO PIECE DIED
+        #
+        #     moves = np.array([[[current_position, self.rest], [current_position, move_from_hover],
+        #                        [current_position, move_from]],
+        #                       [[current_position, move_from_hover],
+        #                        [current_position, move_to_hover], [current_position, move_to]],
+        #                       [[current_position, move_to_hover], [current_position, self.rest]]])
+        #
+        # elif len(chess_move) == 2:  # A PIECE HAS DIED
+        #
+        #     moves = np.array([[[current_position, self.rest], [current_position, move_to_hover],
+        #                        [current_position, died]],
+        #                       [[current_position, move_to_hover],
+        #                        [current_position, dead_zone_hover]],
+        #                       [[current_position, move_from_hover], [current_position, move_from]],
+        #                       [[current_position, move_from_hover],
+        #                        [current_position, move_to_hover], [current_position, move_to]],
+        #                       [[current_position, move_to_hover], [current_position, self.rest]]])
 
         else:
             raise ValueError("The length of chess move tuple is invalid")
@@ -595,7 +659,7 @@ if __name__ == '__main__':
     # path_3 = np.array([[0, 0, 0], [0, 0.5, 0]])  # straight line example
     # path_4 = np.array([[0.5, -0.25, 0.2], [0.5, 0.25, 0.2]])  # move +y
 
-    path_5 = np.array([[arm.x, arm.y, arm.z], [arm.x, arm.y, arm.z - 0.2]])  # move +y
+    # path_5 = np.array([[arm.x, arm.y, arm.z], [arm.x, arm.y, arm.z - 0.2]])  # move +y
 
     # motion_plan = planner.apply_trapezoid_vel_profile(path_5)
 
@@ -629,6 +693,7 @@ if __name__ == '__main__':
                 for path in series:
                     path = np.array(path)
                     path[0] = current_position
+
                     # # plot 2 points
                     # if self.visual:
                     #     ax3d.plot(path[:, 0], path[:, 1], path[:, 2], 'r*')
