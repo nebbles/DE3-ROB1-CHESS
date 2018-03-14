@@ -44,10 +44,16 @@ class MotionPlanner:
             h1 = arm_object.get_position()
 
         else:
-            a1 = [0.730, -0.269, 0.076]
-            a8 = [0.265, -0.266, 0.069]
-            h8 = [0.303, 0.197, 0.071]
-            h1 = [0.741, 0.163, 0.077]
+            # FIRST VALUES
+            # a1 = [0.730, -0.269, 0.076]
+            # a8 = [0.265, -0.266, 0.069]
+            # h8 = [0.303, 0.197, 0.071]
+            # h1 = [0.741, 0.163, 0.077]
+            # NEW VALUES WED 13 MARCH
+            a1 = [0.757,  -0.257,  -0.04]
+            a8 = [0.3076, -0.2515, -0.04]
+            h8 = [0.326,   0.2125, -0.04]
+            h1 = [0.7702,  0.1956, -0.04]
 
         # else:  # from Paolo's collected coords
         #     a1_inner = 
@@ -59,7 +65,7 @@ class MotionPlanner:
         self.H8 = h8
 
         # Find the maximum z value of the board
-        self.board_z_max = max(a1[2], a8[2], h1[2], h8[2])
+        self.board_z_max = -0.02
 
         # Find x axis vector
         x_vector_1 = [(a8[0] - h8[0]), (a8[1] - h8[1]), self.board_z_max]
@@ -90,7 +96,7 @@ class MotionPlanner:
         self.hover_height = self.board_z_max + 0.2  # hard coded hover height
 
         # Find location of dead zone
-        dead_zone_x_vector = [-(i * 4) for i in self.x_unit_vector]
+        dead_zone_x_vector = [(i * 12) for i in self.x_unit_vector]
         dead_zone_y_vector = [i * 4 for i in self.y_unit_vector]
         dead_zone_z = self.board_z_max + 0.15  # hardcoded z coordinate of dead zone
         dead_zone = [sum(i) for i in zip(self.H8, dead_zone_x_vector, dead_zone_y_vector)]
@@ -354,9 +360,9 @@ class MotionPlanner:
         # set rate of message sending:  0.001 sec == dt == 1kHz  NOTE THIS IS GLOBALLY SET
         dt = 0.005
         # set acceleration, start with 0.1 (may need to reduce)  NOTE THIS IS GLOBALLY SET
-        acc = 0.5  # max 1.0
+        acc = 0.08  # max 1.0
         # set target travel speed for motion
-        target_speed = 0.8  # max 1.0
+        target_speed = 0.1  # max 1.0
 
         # discretise using a max unit of:  targV * dt # TODO link this to class
         # this unit should be 1/(acc * dt**2) to ensure there is one distance sample
@@ -596,7 +602,10 @@ if __name__ == '__main__':
     ## ANNA TEST STUFF
     # 
 
-    ungrip_dim = 0.05
+    ungrip_dim = 0.045
+    time.sleep(1)
+    arm.move_gripper(ungrip_dim, 0.1)
+    time.sleep(1)
 
     if True:
         import rospy
@@ -608,9 +617,10 @@ if __name__ == '__main__':
             #     arm.move_to(x, y, z, speed)
             #     time.sleep(0.005)  # control loop
 
-            chess_move = [("r", "a1a6")]
+            # chess_move = [("r", "a1a6")]
+            # chess_move = [("r", "h8"), ("p", "a1h8")]
+            chess_move = [("r", "h6"), ("r", "h1h6")]
             moves = planner.anna(chess_move, arm)
-            # moves = planner.anna([("r", "h8"), ("r", "a1h8")], arm)
             current_position = [arm.x, arm.y, arm.z]
 
             for i, series in enumerate(moves):
@@ -626,17 +636,18 @@ if __name__ == '__main__':
 
                     motion_plan = planner.apply_trapezoid_vel_profile(path)
 
-                    for x, y, z, speed in motion_plan:
-                        # print(x,y,z,speed)
-                        arm.move_to(x, y, z, speed)
-                        time.sleep(0.005)  # control loop
+                    arm.send_trajectory(motion_plan)
+                    # for x, y, z, speed in motion_plan:
+                    #     # print(x,y,z,speed)
+                    #     arm.move_to(x, y, z, speed)
+                    #     time.sleep(0.005)  # control loop
 
                     # update current position
                     current_position = [arm.x, arm.y, arm.z]
 
                 # gripper starts here
 
-                if len(chess_move) == 0:  # if not piece died
+                if len(chess_move) == 1:  # if not piece died
                     piece = chess_move[0][0].lower()  # which is the piece?
                     dims = planner.piece_dims[piece]  # height and grip dims
                     grip_dim = dims[0]  # grip dims
@@ -651,7 +662,7 @@ if __name__ == '__main__':
                         arm.move_gripper(ungrip_dim, 0.1)
                         time.sleep(1)
 
-                elif len(chess_move) == 1:
+                elif len(chess_move) == 2:
                     piece = chess_move[0][0].lower()
                     dims = planner.piece_dims[piece]
                     grip_dim = dims[0]
