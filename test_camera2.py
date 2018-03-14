@@ -8,7 +8,7 @@ import rospy
 
 def main():
     rospy.init_node('franka_python_node', anonymous=True)
-    feed = camera_subscriber3.CameraFeed(debug=False)
+    feed = camera_subscriber3.CameraFeed(debug=True)
     arm = FrankaRos()
 
     # Main loop - temporary
@@ -17,14 +17,12 @@ def main():
 
         # rgbFrame, depthFrame = feed.get_frames()
 
-        while feed.depth is None:
-            print("depth image still none")
-            time.sleep(1)
-
         print("X pos: ", arm.x)
 
-        cv2.imshow("FETCHED RGB", feed.rgb)
-        cv2.imshow("FETCHED Depth", feed.depth)
+        rgb, depth = feed.get_frames()
+
+        cv2.imshow("FETCHED RGB", rgb)
+        cv2.imshow("FETCHED Depth", depth)
         cv2.waitKey(1)
 
 
