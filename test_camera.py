@@ -21,15 +21,22 @@ def main():
 
     # Main loop - temporary
     while True:
-        time.sleep(0.05)  # refresh rate of camera frames
+        start_clk = time.time()
+        while time.time() < start_clk + 5:
+            time.sleep(0.05)  # refresh rate of camera frames
 
-        print("X pos: ", arm.x)
+            print("X pos: ", arm.x)
 
-        rgb_frame, depth_frame = feed.get_frames()
+            rgb_frame, depth_frame = feed.get_frames()
 
-        cv2.imshow("FETCHED RGB", rgb_frame)
-        cv2.imshow("FETCHED Depth", depth_frame)
-        cv2.waitKey(1)
+            cv2.imshow("FETCHED RGB", rgb_frame)
+            cv2.imshow("FETCHED Depth", depth_frame)
+            cv2.waitKey(1)
+
+        feed.close_subscribers()
+        time.sleep(5)
+
+        feed.start_subscribers()
 
 
 if __name__ == '__main__':

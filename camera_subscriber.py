@@ -31,14 +31,12 @@ class CameraFeed:
         if init_ros_node:
             rospy.init_node('image_converter', anonymous=True)
 
-        image_sub = Subscriber("/camera/rgb/image_rect_color", Image)
-        depth_sub = Subscriber("/camera/depth_registered/image_raw", Image)
+        self.start_subscribers()
 
-        tss = message_filters.ApproximateTimeSynchronizer([image_sub, depth_sub], queue_size=10,
-                                                          slop=0.5)
-        tss.registerCallback(self.callback)
+        
 
         time.sleep(0.5)
+
         if self.debug:
             print("Waiting for subscriber to return initial camera feed.")
         while self.depth_raw is None:
@@ -68,3 +66,15 @@ class CameraFeed:
             print("Image has been converted.")
 
         return cv_image, depth_image
+
+    def close_subscribers(self):
+        self.image_sub.unregister()
+        self.depth_sub.unregister()
+        self.tss = None
+
+    def start_subscribers(self):
+        self.image_sub = Subscriber("/camera/rgb/image_rect_color", Image)
+        self.depth_sub = Subscriber("/camera/depth_registered/image_raw", Image)
+        self.tss = message_filters.ApproximateTimeSynchronizer([self.image_sub, self.depth_sub], queue_size=10, slop=0.5)
+        self.tss.registerCallback(self.callback)
+
