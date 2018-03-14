@@ -44,8 +44,6 @@ class Square:
         ## DEBUG
         cv2.circle(image, self.roi, self.radius, (0, 0, 255), 1)
 
-        print(image.shape)
-
     def getDepth(self, depthImage):
 
         depth = depthImage[self.roi[1], self.roi[0]]
@@ -73,15 +71,17 @@ class Square:
 
         return average
 
-    def classify(self, image, drawParam=False):
+    def classify(self, image, drawParam=False, debug=False):
         """
         Classifies the square into empty ('E'), occupied by a black piece ('B') or occupied by a white piece ('W')
         """
-
-        print("The empty color of the square is: " + str(self.emptyColor))
+        if debug:
+            print("The empty color of the square is: " + str(self.emptyColor))
         # Find Color of ROI
         rgb = self.roiColor(image)
-        print("The current color of the square is: " + str(rgb))
+
+        if debug:
+            print("The current color of the square is: " + str(rgb))
         # Flag
         state = ''
 
@@ -95,7 +95,7 @@ class Square:
 
         print("Distance of match to empty square color: " + str(distance))
 
-        threshold = 50
+        threshold = 20
 
         # If distance is below threshold assign empty
         if distance < threshold:

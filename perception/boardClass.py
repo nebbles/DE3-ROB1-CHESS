@@ -28,14 +28,14 @@ class Board:
         """
 
         for i in range(8):
-            self.squares[8*i + 0].state = 'W'
-            self.squares[8*i + 1].state = 'W'
+            self.squares[8*i + 0].state = 'B'
+            self.squares[8*i + 1].state = 'B'
             self.squares[8*i + 2].state = 'E'
             self.squares[8*i + 3].state = 'E'
             self.squares[8*i + 4].state = 'E'
             self.squares[8*i + 5].state = 'E'
-            self.squares[8*i + 6].state = 'B'
-            self.squares[8*i + 7].state = 'B'
+            self.squares[8*i + 6].state = 'W'
+            self.squares[8*i + 7].state = 'W'
 
         for square in self.squares:
             self.BWEmatrix.append(square.state)
@@ -49,7 +49,6 @@ class Board:
 
         for i in range(len(matches)):
             if matches[i].classify(current) == 'E':
-                print("NEW EMPTY SQUARE DETECTED")
                 # First match is currently empty
                 if i == 0:
                     # Store old state
@@ -91,7 +90,7 @@ class Board:
                 counter += 1
 
         # Rotation in return statement
-        return np.rot90(bwe)
+        return np.rot90(bwe,k=3)
 
     def whichSquares(self, points):
         """

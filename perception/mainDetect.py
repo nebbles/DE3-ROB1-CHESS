@@ -47,7 +47,7 @@ class Perception:
             print("")
 
         # Extract chessboard from image
-        extractedImage = self.imageAnalysis(image, processedImage, debug=True)
+        extractedImage = self.imageAnalysis(image, processedImage, debug=False)
 
         # Chessboard Corners
         cornersImage = extractedImage.copy()
@@ -56,31 +56,36 @@ class Perception:
         cannyImage = self.cannyEdgeDetection(extractedImage)
 
         # Hough line detection to find rho & theta of any lines
-        h, v = self.houghLines(cannyImage, extractedImage)
+        h, v = self.houghLines(cannyImage, extractedImage, debug=False)
 
         # Find intersection points from Hough lines and filter them
-        intersections = self.findIntersections(h, v, extractedImage)
+        intersections = self.findIntersections(h, v, extractedImage, debug=False)
 
         # Assign intersections to a sorted list of lists
-        corners, cornerImage = self.assignIntersections(extractedImage, intersections)
+        corners, cornerImage = self.assignIntersections(extractedImage, intersections, debug=False)
 
         # Copy original image to display on
         squareImage = image.copy()
 
         # Get list of Square class instances
-        squares = self.makeSquares(corners, depthImage, squareImage, True)
+        squares = self.makeSquares(corners, depthImage, squareImage, debug=False)
         # Make a Board class from all the squares to hold information
         self.board = Board(squares)
 
         # Assign the initial BWE Matrix to the squares
         self.board.assignBWE()
 
+        print("")
+        print("The initial BWE has been assigned as: ")
+        self.printBwe(self.board.getBWE())
+        print("")
+
         ## DEBUG
         # Show the classified squares
         #self.board.draw(squareImage)
         #self.board.draw(depthImage)
-        #cv2.imshow("Classified Squares", squareImage)
 
+        #cv2.imshow("Classified Squares", squareImage)
         #cv2.imshow("Classified Squares", depthImage)
 
         cv2.imwrite("ClassifiedSquares.jpeg", squareImage)
@@ -104,29 +109,45 @@ class Perception:
         # Now we want to check in which square the change has happened
         matches = self.board.whichSquares(centres)
 
+        if len(matches) > 2:
+            print("")
+            print("Error: More than two squares have changed!")
+            print("")
+
+        # Get the old BWE to handle errors
+        old_bwe = self.board.getBWE()
+
         # Update the BWE by looking at which squares have changed
         self.board.updateBWE(matches, currentCopy)
 
         # Print second
         bwe = self.board.getBWE()
 
-        # Show BWE Update
-        cv2.imshow("Updating BWE", currentCopy)
+        # A change has been detected
+        if not (old_bwe==bwe).all():
+            # Show BWE Update
+            cv2.imshow("Updating BWE", currentCopy)
 
-        # Make current image the previous one
-        self.previous = current
+            # Make current image the previous one
+            self.previous = current
+            success = True
 
-        if debug:
+        # No change has been detected
+        else:
+            print("WARNING: No change has been detected. The BWE has not been updated.")
+            success = False
+
+        if debug and success:
             self.printBwe(bwe)
 
-        return bwe
+        return bwe, success
 
     def printBwe(self, bwe):
         """
         Prints the BWE
         """
         print("")
-        print("This is the BWE matrix: ")
+        print("BWE matrix: ")
         print("")
         print(bwe)
 
@@ -479,7 +500,7 @@ class Perception:
         numbers = ['1', '2', '3', '4', '5', '6', '7', '8']
         index = 0
 
-        print(corners)
+        #print(corners)
 
         for i in range(8):
             for j in range(8):
@@ -493,15 +514,18 @@ class Perception:
                 #print(c1, c2, c3, c4)
                 squares.append(square)
 
-                if debug:
-                    square.draw(image)
+                square.draw(image)
 
                 index += 1
-                print(index)
+                #print(index)
                 #xyz = square.getDepth(depthImage)
                 #coordinates.append(xyz)
+
+        cv2.imshow("Board Identified", image)
+
         if debug:
             cv2.imwrite("5SquaresIdentified.jpeg", image)
+
 
 
 
