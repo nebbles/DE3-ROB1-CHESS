@@ -28,14 +28,14 @@ class Board:
         """
 
         for i in range(8):
-            self.squares[8*i + 0].state = 'B'
-            self.squares[8*i + 1].state = 'B'
+            self.squares[8*i + 0].state = 'W'
+            self.squares[8*i + 1].state = 'W'
             self.squares[8*i + 2].state = 'E'
             self.squares[8*i + 3].state = 'E'
             self.squares[8*i + 4].state = 'E'
             self.squares[8*i + 5].state = 'E'
-            self.squares[8*i + 6].state = 'W'
-            self.squares[8*i + 7].state = 'W'
+            self.squares[8*i + 6].state = 'B'
+            self.squares[8*i + 7].state = 'B'
 
         for square in self.squares:
             self.BWEmatrix.append(square.state)
