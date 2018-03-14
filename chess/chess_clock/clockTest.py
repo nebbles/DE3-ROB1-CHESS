@@ -74,6 +74,9 @@ def main(sig_q):
         except:
             pass
 
+        print("loop")
+
+
         for event in pygame.event.get():
             if event.type == QUIT:
                 sys.exit()
@@ -131,21 +134,21 @@ def main(sig_q):
                     pygame.time.set_timer(USEREVENT + 1, 0)
                     pygame.time.set_timer(USEREVENT, 0)
 
-            # Format time into minutes:seconds
-            time_a_str = "%d:%02d" % (int(time_a / 60), int(time_a % 60))
-            time_b_str = "%d:%02d" % (int(time_b / 60), int(time_b % 60))
+        # Format time into minutes:seconds
+        time_a_str = "%d:%02d" % (int(time_a / 60), int(time_a % 60))
+        time_b_str = "%d:%02d" % (int(time_b / 60), int(time_b % 60))
 
-            time_a_txt = font.render(time_a_str, 1, (255, 255, 255))
-            time_b_txt = font.render(time_b_str, 1, (255, 255, 255))
+        time_a_txt = font.render(time_a_str, 1, (255, 255, 255))
+        time_b_txt = font.render(time_b_str, 1, (255, 255, 255))
 
-            time_a_rect = time_a_txt.get_rect()
-            time_a_rect.center = (360, 383)
-            time_b_rect = time_b_txt.get_rect()
-            time_b_rect.center = (920, 383)
+        time_a_rect = time_a_txt.get_rect()
+        time_a_rect.center = (360, 383)
+        time_b_rect = time_b_txt.get_rect()
+        time_b_rect.center = (920, 383)
 
-            screen.blit(background, rect)
-            screen.blit(clock_image, clock_rect)
-            screen.blit(time_a_txt, time_a_rect)
-            screen.blit(time_b_txt, time_b_rect)
+        screen.blit(background, rect)
+        screen.blit(clock_image, clock_rect)
+        screen.blit(time_a_txt, time_a_rect)
+        screen.blit(time_b_txt, time_b_rect)
 
-            pygame.display.update()
+        pygame.display.update()
