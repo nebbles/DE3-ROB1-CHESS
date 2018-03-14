@@ -15,7 +15,7 @@ from std_msgs.msg import MultiArrayDimension
 
 
 class FrankaRos:
-    def __init__(self, log=False, ip='192.168.0.88', debug=False):
+    def __init__(self, log=False, ip='192.168.0.88', debug=False, init_ros_node=False):
         """Initialisation of the FrankaRos class.
 
         Sets boolean flags such as logging and print statements for debugging. Sets the IP
@@ -49,7 +49,8 @@ class FrankaRos:
         self.target_gripper.layout.dim[0].size = 3  # width, speed, force
 
         # ros initiation
-        # rospy.init_node('franka_python_node', anonymous=True)
+        if init_ros_node:
+            rospy.init_node('franka_python_node', anonymous=True)
         self.pub_move_to = rospy.Publisher('franka_move_to', Float64MultiArray, queue_size=1)
         self.pub_grasp = rospy.Publisher('franka_gripper_grasp', Float64MultiArray, queue_size=0)
         self.pub_move_grip = rospy.Publisher('franka_gripper_move', Float64MultiArray, queue_size=0)
