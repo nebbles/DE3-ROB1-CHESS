@@ -68,7 +68,6 @@ def main(sig_q):
     while True:
         clock.tick(30)
         
-        sig = None
         # Get signal from ClockFeed
         try:
             sig = sig_q.get(False)
