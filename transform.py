@@ -3,7 +3,7 @@
 import numpy as np
 
 
-class Calibration:
+class TransformFrames:
     """Stores the transformation relationship between original and target reference frames. The
     class should be instantiated with a minimum of 4 frame->frame calibration points."""
     def __init__(self, frame_a_points, frame_b_points, debug=False):
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     A = my_data[0:num_pts, 0:3]
     B = my_data[0:num_pts, 3:]
 
-    calibrate = Calibration(A, B)
+    calibrate = TransformFrames(A, B)
 
     sample_in = my_data[0, 0:3]
     sample_out = calibrate.transform(sample_in)
