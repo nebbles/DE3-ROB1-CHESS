@@ -5,6 +5,7 @@ import camera_subscriber
 import argparse
 from perception.mainDetect import Perception
 from chess.engine import ChessEngine
+from chess.chess_clock.clockTest import ClockFeed
 
 def bwe_converter(bwe):
 
@@ -41,6 +42,7 @@ def main(static):
     feed = camera_subscriber.CameraFeed()
     feed.start_process()
     print("Camera Feed started")
+    print("")
 
     # Get picture of empty chessboard
 
@@ -54,6 +56,13 @@ def main(static):
         empty = cv2.imread('perception/empty.jpg', 1)
 
     print("Image fetched")
+    print("")
+
+    # Start Clock feed
+    clock = ClockFeed()
+    clock.start_process()
+    print("Chess clock initialised")
+    print("")
 
     '''
     2. Instantiate Perception object
@@ -92,7 +101,9 @@ def main(static):
     # Get frame of populated chessboard
     percept.initialImage(populated)
 
-    print("Initial image of populated board assigned and BWE initialised")
+    print("Initial image of populated board assigned and BWE initialised!")
+    print("")
+    print("The game has started!")
     print("")
 
     # Close 'Board Identified' Window
@@ -109,6 +120,9 @@ def main(static):
     # Counter to determine if it's Opponents (False) or Robots (True) turn
     move = False
 
+    # START of OPPONENT turn / Start the chess clock on A
+    clock.sig_q.put(1)
+
     while True:
 
         # Wait until key pressed
@@ -119,12 +133,15 @@ def main(static):
         except KeyboardInterrupt:
             cv2.destroyAllWindows()
 
+        # END of OPPONENT turn / A clock stops / B clock starts
+        clock.sig_q.put(1)
+
         # Refresh rate of camera frames
         time.sleep(0.05)
 
         # Get current image
         current, dummy = feed.get_frames()
-
+        # Show current image
         cv2.imshow("Current Image", current)
 
         # Update BWE
@@ -135,9 +152,15 @@ def main(static):
 
             if success: # If the BWE has been updated
                 try:
+                    # Get new move from Chess Engine
                     status, msg = engine.input_bwe(bwe_converted)
+                    '''
+                    HERE MOTION NEEDS TO PUT IN THE MOVE
+                    '''
+                    # END of ROBOT turn / B clock stops / A clock starts
+                    clock.sig_q.put(2)
                 except:
-                    print("ERROR: Chess engine failed!")
+                    print("ERROR: Chess engine or Motion failed!")
 
                 # Now it's the robots turn
                 move = True
@@ -161,7 +184,7 @@ def main(static):
                 print("Please try the move again!")
                 print("")
         else:
-
+            # The robots turn
             move = False
             print("")
             print("!!!Please make your move!!!")
