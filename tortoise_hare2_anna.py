@@ -626,6 +626,87 @@ class MotionPlanner:
 
         return moves
 
+    def input_chess_move(self, arm, chess_move):
+        moves = self.anna(chess_move, arm)
+        current_position = [arm.x, arm.y, arm.z]
+
+        for i, series in enumerate(moves):
+            series = np.array(series)
+
+            for path in series:
+                path = np.array(path)
+                path[0] = current_position
+
+                # # plot 2 points
+                # if self.visual:
+                #     ax3d.plot(path[:, 0], path[:, 1], path[:, 2], 'r*')
+                #     ax3d.plot(path[:, 0], path[:, 1], path[:, 2], 'r')
+
+                motion_plan = self.apply_trapezoid_vel_profile(path)
+
+                arm.send_trajectory(motion_plan)
+                # for x, y, z, speed in motion_plan:
+                #     # print(x,y,z,speed)
+                #     arm.move_to(x, y, z, speed)
+                #     time.sleep(0.005)  # control loop
+
+                # update current position
+                current_position = [arm.x, arm.y, arm.z]
+
+            # gripper starts here
+
+            if len(chess_move) == 1:  # if not piece died
+                piece = chess_move[0][0].lower()  # which is the piece?
+                dims = self.piece_dims[piece]  # height and grip dims
+                grip_dim = dims[0]  # grip dims
+                if i == 0:
+                    # grip
+                    time.sleep(1)
+                    arm.move_gripper(grip_dim, 0.1)
+                    time.sleep(1)
+                elif i == 1:
+                    # release
+                    time.sleep(1)
+                    arm.move_gripper(ungrip_dim, 0.1)
+                    time.sleep(1)
+
+            elif len(chess_move) == 2:
+                piece = chess_move[0][0].lower()
+                dims = self.piece_dims[piece]
+                grip_dim = dims[0]
+
+                # PICKING UP DEAD PIECE
+                if i == 0:
+                    # grip
+                    time.sleep(1)
+                    arm.move_gripper(grip_dim, 0.1)
+                    time.sleep(1)
+
+                # DROPPING OFF DEAD PIECE AT DEAD ZONE
+                elif i == 1:
+                    # release
+                    time.sleep(1)
+                    arm.move_gripper(ungrip_dim, 0.1)
+                    time.sleep(1)
+
+                # PICKING UP NEW PIECE
+                elif i == 2:
+                    piece = chess_move[1][0]  # change piece dims for second grip
+                    dims = self.piece_dims[piece]
+                    grip_dim = dims[0]
+
+                    # grip
+                    time.sleep(1)
+                    arm.move_gripper(grip_dim, 0.1)
+                    time.sleep(1)
+
+                # DROPPING OFF NEW PIECE TO ITS DESTINATION
+                elif i == 3:
+                    # release
+                    time.sleep(1)
+                    arm.move_gripper(ungrip_dim, 0.1)
+                    time.sleep(1)
+
 
 if __name__ == '__main__':
     arm = None
@@ -684,9 +765,18 @@ if __name__ == '__main__':
             #     arm.move_to(x, y, z, speed)
             #     time.sleep(0.005)  # control loop
 
-            chess_move = [("n", "g8f6")]
+            # chess_move = [("n", "g8f6")]
             # chess_move = [("r", "h5"), ("p", "g6h5")]
-            # chess_move = [("n", "b1"), ("b", "c1b1")]
+            # chess_move = [("p", "g4"), ("n", "f6g4")]
+
+            chess_move = [('p', 'd7d5')]
+
+            planner.input_chess_move(arm, chess_move)
+
+            import sys
+            sys.exit()
+
+
             moves = planner.anna(chess_move, arm)
             current_position = [arm.x, arm.y, arm.z]
 

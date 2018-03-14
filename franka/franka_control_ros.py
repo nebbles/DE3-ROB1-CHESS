@@ -51,20 +51,33 @@ class FrankaRos:
         # ros initiation
         if init_ros_node:
             rospy.init_node('franka_python_node', anonymous=True)
-        self.pub_move_to = rospy.Publisher('franka_move_to', Float64MultiArray, queue_size=1)
-        self.pub_grasp = rospy.Publisher('franka_gripper_grasp', Float64MultiArray, queue_size=0)
-        self.pub_move_grip = rospy.Publisher('franka_gripper_move', Float64MultiArray, queue_size=0)
+        self.pub_move_to = None
+        self.pub_grasp = None
+        self.pub_move_grip = None
 
         self.x = None
         self.y = None
         self.z = None
-        rospy.Subscriber('franka_current_position', Float64MultiArray,
-                         self.subscribe_position_callback, queue_size=1)
+        self.pos_sub = None
+        self.start_subscriber()
         time.sleep(0.5)
         if self.debug:
             print("Waiting for subscriber to return initial Franka position.")
         while self.z is None:
             time.sleep(0.1)
+
+    def start_subscriber(self):
+        self.pub_move_to = rospy.Publisher('franka_move_to', Float64MultiArray, queue_size=1)
+        self.pub_grasp = rospy.Publisher('franka_gripper_grasp', Float64MultiArray, queue_size=0)
+        self.pub_move_grip = rospy.Publisher('franka_gripper_move', Float64MultiArray, queue_size=0)
+        
+        self.pos_sub = rospy.Subscriber('franka_current_position', Float64MultiArray, self.subscribe_position_callback, queue_size=1)
+
+    def stop_subscriber(self):
+        self.pub_move_to.unregister()
+        self.pub_grasp.unregister()
+        self.pub_move_grip.unregister()
+        self.pos_sub.unregister()
 
     def subscribe_position_callback(self, data):
         # TODO docstring

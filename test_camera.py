@@ -17,7 +17,7 @@ from franka.franka_control_ros import FrankaRos
 def main():
     rospy.init_node('franka_python_node', anonymous=True)
     feed = camera_subscriber.CameraFeed()
-    arm = FrankaRos()
+    # arm = FrankaRos()
 
     # Main loop - temporary
     while True:
@@ -25,7 +25,7 @@ def main():
         while time.time() < start_clk + 5:
             time.sleep(0.05)  # refresh rate of camera frames
 
-            print("X pos: ", arm.x)
+            # print("X pos: ", arm.x)
 
             rgb_frame, depth_frame = feed.get_frames()
 
@@ -33,10 +33,10 @@ def main():
             cv2.imshow("FETCHED Depth", depth_frame)
             cv2.waitKey(1)
 
-        feed.close_subscribers()
-        time.sleep(5)
+        # feed.stop_subscribers()
+        # time.sleep(5)
 
-        feed.start_subscribers()
+        # feed.start_subscribers()
 
 
 if __name__ == '__main__':

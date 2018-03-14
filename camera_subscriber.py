@@ -67,7 +67,7 @@ class CameraFeed:
 
         return cv_image, depth_image
 
-    def close_subscribers(self):
+    def stop_subscribers(self):
         self.image_sub.unregister()
         self.depth_sub.unregister()
         self.tss = None

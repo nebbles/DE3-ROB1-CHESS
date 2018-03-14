@@ -6,6 +6,7 @@ import argparse
 from perception.mainDetect import Perception
 from chess.engine import ChessEngine
 from chess.chess_clock.clockTest import ClockFeed
+import rospy
 
 def bwe_converter(bwe):
 
@@ -27,20 +28,19 @@ def main(static):
     """
     Main program for testing
     """
+    rospy.init_node('franka_python_node', anonymous=True)
 
-    '''
-    0. Start up chess engine
-    '''
-
+    #  0. Start up chess engine
     engine = ChessEngine(debug=False, suppress_sunfish=False)
 
-    '''
-    1. Start by getting picture of empty chessboard
-    '''
+    time.sleep(1)
 
+    
+    #  1. Start by getting picture of empty chessboard
+    
     # Start camera feed
     feed = camera_subscriber.CameraFeed()
-    feed.start_process()
+    time.sleep(1)
     print("Camera Feed started")
     print("")
 
@@ -174,7 +174,7 @@ def main(static):
                 print("The status is: ", status)
                 print("The message is: ", msg)
                 print("")
-                print("!!!Please execute the Chess Engine's move!!!")
+                print("EXECUTE CHESS MOTION HERE")
                 print("")
 
             # If success is False, the whole thing just runs again :)
