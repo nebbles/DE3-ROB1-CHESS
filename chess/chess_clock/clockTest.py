@@ -44,6 +44,8 @@ def load_image(name, color_key=None):
 
 def main(sig_q):
 
+    sig = None
+
     time_a = 0
     time_b = 0
     a_on = False
