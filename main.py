@@ -59,10 +59,10 @@ def main(static):
     print("")
 
     # Start Clock feed
-    clock = ClockFeed()
-    clock.start_process()
-    print("Chess clock initialised")
-    print("")
+    #clock = ClockFeed()
+    #clock.start_process()
+    #print("Chess clock initialised")
+    #print("")
 
     '''
     2. Instantiate Perception object
@@ -121,7 +121,7 @@ def main(static):
     move = False
 
     # START of OPPONENT turn / Start the chess clock on A
-    clock.sig_q.put(1)
+    #clock.sig_q.put(1)
 
     while True:
 
@@ -134,7 +134,7 @@ def main(static):
             cv2.destroyAllWindows()
 
         # END of OPPONENT turn / A clock stops / B clock starts
-        clock.sig_q.put(1)
+        #clock.sig_q.put(1)
 
         # Refresh rate of camera frames
         time.sleep(0.05)
@@ -158,7 +158,7 @@ def main(static):
                     HERE MOTION NEEDS TO PUT IN THE MOVE
                     '''
                     # END of ROBOT turn / B clock stops / A clock starts
-                    clock.sig_q.put(2)
+                    #clock.sig_q.put(2)
                 except:
                     print("ERROR: Chess engine or Motion failed!")
 

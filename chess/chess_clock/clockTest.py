@@ -68,73 +68,82 @@ def main(sig_q):
     while True:
         clock.tick(30)
 
-        sig = None
 
         for event in pygame.event.get():
 
             # Get signal from ClockFeed
+            if sig == None:
+                try:
+                    sig = sig_q.get(False)
+                    print("Got signal: ", sig)
+                # If the queue is empty
+                except:
+                    pass
+
             try:
-                sig = sig_q.get(False)
-                print("Got signal")
-            # If the queue is empty
+                if event.type == QUIT:
+                    sys.exit()
+
+                if event.type == USEREVENT:
+                    if time_a > 0:
+                        time_a -= 1
+                    else:
+                        pygame.time.set_timer(USEREVENT, 0)
+
+                elif event.type == (USEREVENT + 1):
+                    if time_b > 0:
+                        time_b -= 1
+                    else:
+                        pygame.time.set_timer(USEREVENT, 0)
+
+                elif event.type == KEYDOWN or sig == 1 or sig == 2:
+
+                    if event.key == K_a or sig == 1:
+                        if not a_on:
+                            # Set for 1 second (1000 milliseconds)
+                            pygame.time.set_timer(USEREVENT, 1000)
+                            a_on = True
+                        else:
+                            # The other one should turn on immediately
+                            pygame.time.set_timer(USEREVENT, 0)
+                            pygame.time.set_timer(USEREVENT + 1, 1000)
+                            b_on = True
+                            a_on = False
+                        print("Signal has triggered A")
+
+                    if event.key == K_b or sig == 2:
+                        if not b_on:
+                            pygame.time.set_timer(USEREVENT + 1, 1000)
+                            b_on = True
+                        else:
+                            pygame.time.set_timer(USEREVENT + 1, 0)
+                            pygame.time.set_timer(USEREVENT, 1000)
+                            a_on = True
+                            b_on = False
+                        print("Signal has triggered B")
+
+
+                    sig = None
+                    print("Signal has been reset")
+
+                    if event.key == K_q:
+                        time_a += 60  # add a minute from allotted time
+
+                    if event.key == K_z:
+                        time_a -= 60  # subtract a minute
+
+                    if event.key == K_g:
+                        time_b += 60
+
+                    if event.key == K_n:
+                        time_b -= 60
+
+                    if event.key == K_PAUSE or event.key == K_p:
+                        # pause both timers
+                        pygame.time.set_timer(USEREVENT + 1, 0)
+                        pygame.time.set_timer(USEREVENT, 0)
             except:
                 pass
-
-            if event.type == QUIT:
-                sys.exit()
-
-            if event.type == USEREVENT:
-                if time_a > 0:
-                    time_a -= 1
-                else:
-                    pygame.time.set_timer(USEREVENT, 0)
-
-            elif event.type == (USEREVENT + 1):
-                if time_b > 0:
-                    time_b -= 1
-                else:
-                    pygame.time.set_timer(USEREVENT, 0)
-
-            elif event.type == KEYDOWN or sig == 1 or sig == 2:
-
-                if event.key == K_a or sig == 1:
-                    if not a_on:
-                        # Set for 1 second (1000 milliseconds)
-                        pygame.time.set_timer(USEREVENT, 1000)
-                        a_on = True
-                    else:
-                        # The other one should turn on immediately
-                        pygame.time.set_timer(USEREVENT, 0)
-                        pygame.time.set_timer(USEREVENT + 1, 1000)
-                        b_on = True
-                        a_on = False
-
-                if event.key == K_b or sig == 2:
-                    if not b_on:
-                        pygame.time.set_timer(USEREVENT + 1, 1000)
-                        b_on = True
-                    else:
-                        pygame.time.set_timer(USEREVENT + 1, 0)
-                        pygame.time.set_timer(USEREVENT, 1000)
-                        a_on = True
-                        b_on = False
-
-                if event.key == K_q:
-                    time_a += 60  # add a minute from allotted time
-
-                if event.key == K_z:
-                    time_a -= 60  # subtract a minute
-
-                if event.key == K_g:
-                    time_b += 60
-
-                if event.key == K_n:
-                    time_b -= 60
-
-                if event.key == K_PAUSE or event.key == K_p:
-                    # pause both timers
-                    pygame.time.set_timer(USEREVENT + 1, 0)
-                    pygame.time.set_timer(USEREVENT, 0)
 
         # Format time into minutes:seconds
         time_a_str = "%d:%02d" % (int(time_a / 60), int(time_a % 60))
@@ -154,3 +163,4 @@ def main(sig_q):
         screen.blit(time_b_txt, time_b_rect)
 
         pygame.display.update()
+
