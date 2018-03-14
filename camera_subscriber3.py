@@ -14,42 +14,53 @@ import time
 import numpy as np
 import multiprocessing as mp
 
-                                                                                                       
+
 class CameraFeed:
-  def __init__(self, debug=False):
-    self.debug = debug
+    def __init__(self, debug=False, init_ros_node=False):
+        self.debug = debug
 
+        self.rgb_raw = None
+        self.depth_raw = None
 
-    self.rgb = None
-    self.depth = None
+        self.bridge = CvBridge()
 
-    self.bridge = CvBridge()
+        if init_ros_node:
+            rospy.init_node('image_converter', anonymous=True)
 
-    # rospy.init_node('image_converter', anonymous=True)
+        image_sub = Subscriber("/camera/rgb/image_rect_color", Image)
+        depth_sub = Subscriber("/camera/depth_registered/image_raw", Image)
 
-    image_sub = Subscriber("/camera/rgb/image_rect_color", Image)
-    depth_sub = Subscriber("/camera/depth_registered/image_raw", Image)
-    
-    tss = message_filters.ApproximateTimeSynchronizer([image_sub, depth_sub],queue_size=10, slop=0.5)                                   
-    tss.registerCallback(self.callback)
-    
-    if self.debug:
-      print('Initialised Cam feed')
+        tss = message_filters.ApproximateTimeSynchronizer([image_sub, depth_sub], queue_size=10,
+                                                          slop=0.5)
+        tss.registerCallback(self.callback)
 
-  def callback(self, img, depth, debug=False):
-    try:
-      cv_image = self.bridge.imgmsg_to_cv2(img, "bgr8")
-    except CvBridgeError as e:
-      print(e)
+        time.sleep(0.5)
+        if self.debug:
+            print("Waiting for subscriber to return initial camera feed.")
+        while self.depth_raw is None:
+            time.sleep(0.1)
+        if self.debug:
+            print('Camera feed initialisation successful.')
 
-    try:
-      depth_image_raw = self.bridge.imgmsg_to_cv2(depth, "passthrough")
-      depth_image = ((255 * depth_image_raw)).astype(np.uint8)
-    except CvBridgeError as e:
-      print(e)
+    def callback(self, img, depth, debug=False):
+        self.rgb_raw = img
+        self.depth_raw = depth
+        if self.debug:
+            print("New images have been collected.")
 
-    if self.debug:
-      print("Image has been converted.")
+    def get_frames(self):
+        try:
+            cv_image = self.bridge.imgmsg_to_cv2(self.rgb_raw, "bgr8")
+        except CvBridgeError as e:
+            print(e)
 
-    self.rgb = cv_image
-    self.depth = depth_image
+        try:
+            depth_image_raw = self.bridge.imgmsg_to_cv2(self.depth_raw, "passthrough")
+            depth_image = ((255 * depth_image_raw)).astype(np.uint8)
+        except CvBridgeError as e:
+            print(e)
+
+        if self.debug:
+            print("Image has been converted.")
+
+        return cv_image, depth_image
