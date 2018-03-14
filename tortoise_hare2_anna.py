@@ -65,7 +65,7 @@ class MotionPlanner:
         self.H8 = h8
 
         # Find the maximum z value of the board
-        self.board_z_max = -0.02
+        self.board_z_max = -0.055
 
         # Find x axis vector
         x_vector_1 = [(a8[0] - h8[0]), (a8[1] - h8[1]), self.board_z_max]
@@ -133,13 +133,14 @@ class MotionPlanner:
                                  ])
 
         # Find the correct displacement for each piece
-        offset = 0.05
-        self.piece_dims = dict([('p', [(0.061 - offset), 0.132]),
-                                ('k', [(0.064 - offset), 0.130]),
-                                ('q', [(0.065 - offset), 0.138]),
-                                ('b', [(0.066 - offset), 0.134]),
-                                ('n', [(0.072 - offset), 0.096]),
-                                ('r', [(0.063 - offset), 0.120])
+        width_offset = 0.05
+        z_offset = self.board_z_max
+        self.piece_dims = dict([('p', [(0.061 - width_offset), 0.030+z_offset]),
+                                ('k', [(0.064 - width_offset), 0.063+z_offset]),
+                                ('q', [(0.065 - width_offset), 0.063+z_offset]),
+                                ('b', [(0.066 - width_offset), 0.049+z_offset]),
+                                ('n', [(0.067 - width_offset), 0.019+z_offset]),
+                                ('r', [(0.063 - width_offset), 0.029+z_offset])
                                 ])
 
     def generate_chess_motion(self, chess_move):
@@ -270,7 +271,7 @@ class MotionPlanner:
         # move by dims_in_chess from the H8 coordinate
         coord_start = [sum(i) for i in zip(self.H8, x_in_chess_start, y_in_chess_start)]
         coord_goal = [sum(i) for i in zip(self.H8, x_in_chess_goal, y_in_chess_goal)]
-        coord_died = coord_goal
+        coord_died = [sum(i) for i in zip(self.H8, x_in_chess_goal, y_in_chess_goal)]
 
         # select z coordinate based on what piece it is
         if len(chess_move) == 1:
@@ -283,11 +284,14 @@ class MotionPlanner:
         elif len(chess_move) == 2:
             alive_piece = chess_move[1][0].lower()  # which is the piece?
             dead_piece = chess_move[0][0].lower()
+
             alive_dims = self.piece_dims[alive_piece]  # height and grip dims
             dead_dims = self.piece_dims[dead_piece]  # height and grip dims
-            coord_start[2] = alive_dims[1]  # height dim
+
+            coord_start[2] = alive_dims[1]  # height dim  
             coord_goal[2] = alive_dims[1]  # height dim
             coord_died[2] = dead_dims[1]
+ 
             return coord_start, coord_goal, coord_died
 
     @staticmethod
@@ -627,7 +631,7 @@ if __name__ == '__main__':
     arm = None
     from franka.franka_control_ros import FrankaRos
 
-    arm = FrankaRos(log=True)
+    arm = FrankaRos(log=False)
 
     # print("entering true loop")
     # while True:
@@ -659,9 +663,8 @@ if __name__ == '__main__':
     # path_3 = np.array([[0, 0, 0], [0, 0.5, 0]])  # straight line example
     # path_4 = np.array([[0.5, -0.25, 0.2], [0.5, 0.25, 0.2]])  # move +y
 
-    # path_5 = np.array([[arm.x, arm.y, arm.z], [arm.x, arm.y, arm.z - 0.2]])  # move +y
-
-    # motion_plan = planner.apply_trapezoid_vel_profile(path_5)
+    path_5 = np.array([[arm.x, arm.y, arm.z], [arm.x, arm.y, arm.z - 0.2]])  # move +y
+    motion_plan = planner.apply_trapezoid_vel_profile(path_5)
 
     ## ANNA TEST STUFF
     # 
@@ -681,9 +684,9 @@ if __name__ == '__main__':
             #     arm.move_to(x, y, z, speed)
             #     time.sleep(0.005)  # control loop
 
-            # chess_move = [("r", "a1a6")]
-            # chess_move = [("r", "h8"), ("p", "a1h8")]
-            chess_move = [("r", "h6"), ("r", "h1h6")]
+            chess_move = [("n", "g1f3")]
+            # chess_move = [("r", "h5"), ("p", "g6h5")]
+            # chess_move = [("n", "b1"), ("b", "c1b1")]
             moves = planner.anna(chess_move, arm)
             current_position = [arm.x, arm.y, arm.z]
 
