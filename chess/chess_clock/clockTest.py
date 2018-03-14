@@ -89,7 +89,7 @@ def main(sig_q):
                 else:
                     pygame.time.set_timer(USEREVENT, 0)
 
-            elif event.type == KEYDOWN or player_sig == 1 or robot_sig == 2:
+            elif event.type == KEYDOWN or sig == 1 or sig == 2:
 
                 if event.key == K_a or sig == 1:
                     if not a_on:
