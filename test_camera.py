@@ -15,7 +15,7 @@ from franka.franka_control_ros import FrankaRos
 
 
 def main():
-    rospy.init_node('franka_python_node', anonymous=True)
+    rospy.init_node('test_camera_node', anonymous=True)
     feed = camera_subscriber.CameraFeed()
     # arm = FrankaRos()
 

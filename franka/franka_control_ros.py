@@ -50,7 +50,7 @@ class FrankaRos:
 
         # ros initiation
         if init_ros_node:
-            rospy.init_node('franka_python_node', anonymous=True)
+            rospy.init_node('franka_control_ros', anonymous=True)
         self.pub_move_to = None
         self.pub_grasp = None
         self.pub_move_grip = None
