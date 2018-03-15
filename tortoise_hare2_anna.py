@@ -51,8 +51,8 @@ class MotionPlanner:
             # h1 = [0.741, 0.163, 0.077]
             # NEW VALUES WED 13 MARCH
             a1 = [0.757,  -0.257,  -0.04]
-            a8 = [0.3076, -0.2515, -0.04]
-            h8 = [0.326,   0.2125, -0.04]
+            a8 = [0.3065, -0.2504, -0.04]
+            h8 = [0.323,   0.2225, -0.04]
             h1 = [0.7702,  0.1956, -0.04]
 
         # else:  # from Paolo's collected coords
@@ -65,7 +65,7 @@ class MotionPlanner:
         self.H8 = h8
 
         # Find the maximum z value of the board
-        self.board_z_max = -0.055
+        self.board_z_max = -0.062
 
         # Find x axis vector
         x_vector_1 = [(a8[0] - h8[0]), (a8[1] - h8[1]), self.board_z_max]
@@ -106,7 +106,7 @@ class MotionPlanner:
         # Find the location of the rest position
         rest_x_vector = [i * 4 for i in self.x_unit_vector]
         rest_y_vector = [(i * 4) for i in self.y_unit_vector]
-        rest_z = self.board_z_max + 0.4  # hardcoded z coordinate of the rest position
+        rest_z = self.board_z_max + 0.5  # hardcoded z coordinate of the rest position
         rest = [sum(i) for i in zip(self.H8, rest_x_vector, rest_y_vector)]
         rest[2] = rest_z
         self.rest = rest
