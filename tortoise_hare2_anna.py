@@ -55,42 +55,69 @@ class MotionPlanner:
             h8 = [0.323,   0.2225, -0.04]
             h1 = [0.7702,  0.1956, -0.04]
 
-        # else:  # from Paolo's collected coords
-        #     a1_inner = 
-        #     a8_ inner = 
-        #     h8_inner = 
-        #     h1_inner = 
+        
+        
 
         self.board = [a1, a8, h8, h1]
-        self.H8 = h8
-
         # Find the maximum z value of the board
-        self.board_z_max = -0.062
+        self.board_z_max = -0.075
+
+
+
+
+        ### PREVIOUS METHOD USING CORNER OF BOARD
 
         # Find x axis vector
-        x_vector_1 = [(a8[0] - h8[0]), (a8[1] - h8[1]), self.board_z_max]
-        x_vector_2 = [(a1[0] - h1[0]), (a1[1] - h1[1]), self.board_z_max]
-        x_vector = [sum(x) / 2 for x in zip(x_vector_1, x_vector_2)]
-        self.x_unit_vector = [coord / 8 for coord in x_vector]
+        # x_vector_1 = [(a8[0] - h8[0]), (a8[1] - h8[1]), self.board_z_max]
+        # x_vector_2 = [(a1[0] - h1[0]), (a1[1] - h1[1]), self.board_z_max]
+        # x_vector = [sum(x) / 2 for x in zip(x_vector_1, x_vector_2)]
+        # self.x_unit_vector = [coord / 8 for coord in x_vector]
 
-        # from Paolo's collected coords
-        # x_vector_1 = [(a8_inner[0] - h8_inner[0]), (a8_inner[1] - h8_inner[1]), self.board_z_max]
-        # x_vector_2 = [(a1_inner[0] - h1_inner[0]), (a1_inner[1] - h1_inner[1]), self.board_z_max]
-        # x_vector = [sum(x)/2 for x in zip(x_vector_1, x_vector_2)]
-        # self.x_unit_vector = [coord/6 for coord in x_vector]
+        
 
         # Find y axis vector
-        y_vector_1 = [(h1[0] - h8[0]), (h1[1] - h8[1]), self.board_z_max]
-        y_vector_2 = [(a1[0] - a8[0]), (a1[1] - a8[1]), self.board_z_max]
-        y_vector = [sum(x) / 2 for x in zip(y_vector_1, y_vector_2)]
-        self.y_unit_vector = [coord / 8 for coord in y_vector]
+        # y_vector_1 = [(h1[0] - h8[0]), (h1[1] - h8[1]), self.board_z_max]
+        # y_vector_2 = [(a1[0] - a8[0]), (a1[1] - a8[1]), self.board_z_max]
+        # y_vector = [sum(x) / 2 for x in zip(y_vector_1, y_vector_2)]
+        # self.y_unit_vector = [coord / 8 for coord in y_vector]
 
-        # y_vector_1 = [(h1_inner[0] - h8_inner[0]), (h1_inner[1] - h8_inner[1]), self.board_z_max]
-        # y_vector_2 = [(a1_inner[0] - a8_inner[0]), (a1_inner[1] - a8_inner[1]), self.board_z_max]
-        # y_vector = [sum(x)/2 for x in zip(y_vector_1, y_vector_2)]
-        # self.y_unit_vector = [coord/6 for coord in y_vector]
+        # self.H8 = h8
 
-        # self.H8 = h8_inner - x_unit_vector - y_unit_vector
+        ### NEW METHOD USING INTERSECTION POINTS ON BOARD
+
+
+        # else:  # from Paolo's collected coords
+        a1_inner = [0.7267045425008777, -0.19296634171907032, -0.06872549226985156]
+        a8_inner = [0.3927532235233764, -0.18683619713296443, -0.07657893758846493]
+        h8_inner = [0.4011762302881528, 0.1679801463159881, -0.07535828159982629]
+        h1_inner = [0.7364192616073851, 0.1560582695967688, -0.06846008006252183]
+
+
+        # from Paolo's collected coords
+        x_vector_1 = [(a8_inner[0] - h8_inner[0]), (a8_inner[1] - h8_inner[1]), self.board_z_max]
+        x_vector_2 = [(a1_inner[0] - h1_inner[0]), (a1_inner[1] - h1_inner[1]), self.board_z_max]
+        x_vector = [sum(x)/2 for x in zip(x_vector_1, x_vector_2)]
+        self.x_unit_vector = [coord/6 for coord in x_vector]
+
+
+        y_vector_1 = [(h1_inner[0] - h8_inner[0]), (h1_inner[1] - h8_inner[1]), self.board_z_max]
+        y_vector_2 = [(a1_inner[0] - a8_inner[0]), (a1_inner[1] - a8_inner[1]), self.board_z_max]
+        y_vector = [sum(x)/2 for x in zip(y_vector_1, y_vector_2)]
+        self.y_unit_vector = [coord/6 for coord in y_vector]
+
+        print(self.x_unit_vector)
+        print(self.y_unit_vector)
+        print(h8_inner)
+
+        self.H8 = [A-B-C for A, B, C in zip(h8_inner, self.x_unit_vector, self.y_unit_vector)]
+
+        # self.H8 = h8_inner - self.x_unit_vector - self.y_unit_vector
+        print(self.H8)
+
+
+
+
+
 
         # Find hover height
         self.hover_height = self.board_z_max + 0.2  # hard coded hover height
@@ -139,7 +166,7 @@ class MotionPlanner:
                                 ('k', [(0.064 - width_offset), 0.063+z_offset]),
                                 ('q', [(0.065 - width_offset), 0.063+z_offset]),
                                 ('b', [(0.066 - width_offset), 0.049+z_offset]),
-                                ('n', [(0.067 - width_offset), 0.019+z_offset]),
+                                ('n', [(0.060 - width_offset), 0.023+z_offset]),
                                 ('r', [(0.063 - width_offset), 0.029+z_offset])
                                 ])
 
@@ -395,13 +422,13 @@ class MotionPlanner:
                               + (point_b[2] - point_a[2]) ** 2)
         return length
 
-    def apply_trapezoid_vel_profile(self, path):  # todo docstring and finish the function
+    def apply_trapezoid_vel_profile(self, path, acceleration=0.02, max_speed=0.8):  # todo docstring and finish the function
         # set rate of message sending:  0.001 sec == dt == 1kHz  NOTE THIS IS GLOBALLY SET
         dt = 0.005
         # set acceleration, start with 0.1 (may need to reduce)  NOTE THIS IS GLOBALLY SET
-        acc = 0.08  # max 1.0
+        acc = acceleration  # max 1.0
         # set target travel speed for motion
-        target_speed = 0.1  # max 1.0
+        target_speed = max_speed  # max 1.0
 
         # discretise using a max unit of:  targV * dt # TODO link this to class
         # this unit should be 1/(acc * dt**2) to ensure there is one distance sample
@@ -410,20 +437,25 @@ class MotionPlanner:
         if self.debug:
             print("delta displacement (mm): ", dx * 1000)
 
-        dis_path = self.discretise_path(path, dx)
+        lop = 0
+        while lop == 0:
+            dis_path = self.discretise_path(path, dx)
 
-        # TODO: if smoothing is going to happen it MUST keep consistent delta displacement
-        # run chaser/leader over path to generate a new one with same resolution
-        # corner = 0.05  # in meters
-        # steps = int(corner * 2 / dx)
-        # print("Steps: ", steps)
-        # smooth_path = planner.smooth_corners(dis_path, size_of_corner=steps, passes=6)
-        smooth_path = dis_path
+            # TODO: if smoothing is going to happen it MUST keep consistent delta displacement
+            # run chaser/leader over path to generate a new one with same resolution
+            # corner = 0.05  # in meters
+            # steps = int(corner * 2 / dx)
+            # print("Steps: ", steps)
+            # smooth_path = planner.smooth_corners(dis_path, size_of_corner=steps, passes=6)
+            smooth_path = dis_path
 
-        # find the length of the new path
-        lop = self.length_of_path(smooth_path)
-        if self.debug:
-            print("LOP: ", lop)
+            # find the length of the new path
+            lop = self.length_of_path(smooth_path)
+            if self.debug:
+                print("LOP: ", lop)
+            if lop == 0:
+                print("Length of path is zero, adding indistinguishable offset.")
+                path[1] = [c+0.000001 for c in path[1]]
 
         # check if the length of path is < ( speed**2/acc )
         minimum_path_length = target_speed ** 2 / acc
@@ -627,6 +659,21 @@ class MotionPlanner:
         return moves
 
     def input_chess_move(self, arm, chess_move):
+        ungrip_dim = 0.045
+        gripper_delay = 0.5
+
+        if len(chess_move) > 1:
+            cmove = chess_move[1][1]
+        else:
+            cmove = chess_move[0][1]
+
+        # acceleration imporvement if move does not involve unreliable ranks
+        ranks = ['8']
+        if (cmove[1] not in ranks) and (cmove[3] not in ranks):
+            a = 0.08
+        else:
+            a = 0.02
+
         moves = self.anna(chess_move, arm)
         current_position = [arm.x, arm.y, arm.z]
 
@@ -642,7 +689,7 @@ class MotionPlanner:
                 #     ax3d.plot(path[:, 0], path[:, 1], path[:, 2], 'r*')
                 #     ax3d.plot(path[:, 0], path[:, 1], path[:, 2], 'r')
 
-                motion_plan = self.apply_trapezoid_vel_profile(path)
+                motion_plan = self.apply_trapezoid_vel_profile(path, acceleration=a)
 
                 arm.send_trajectory(motion_plan)
                 # for x, y, z, speed in motion_plan:
@@ -661,14 +708,14 @@ class MotionPlanner:
                 grip_dim = dims[0]  # grip dims
                 if i == 0:
                     # grip
-                    time.sleep(1)
+                    time.sleep(gripper_delay)
                     arm.move_gripper(grip_dim, 0.1)
-                    time.sleep(1)
+                    time.sleep(gripper_delay)
                 elif i == 1:
                     # release
-                    time.sleep(1)
+                    time.sleep(gripper_delay)
                     arm.move_gripper(ungrip_dim, 0.1)
-                    time.sleep(1)
+                    time.sleep(gripper_delay)
 
             elif len(chess_move) == 2:
                 piece = chess_move[0][0].lower()
@@ -678,16 +725,16 @@ class MotionPlanner:
                 # PICKING UP DEAD PIECE
                 if i == 0:
                     # grip
-                    time.sleep(1)
+                    time.sleep(gripper_delay)
                     arm.move_gripper(grip_dim, 0.1)
-                    time.sleep(1)
+                    time.sleep(gripper_delay)
 
                 # DROPPING OFF DEAD PIECE AT DEAD ZONE
                 elif i == 1:
                     # release
-                    time.sleep(1)
+                    time.sleep(gripper_delay)
                     arm.move_gripper(ungrip_dim, 0.1)
-                    time.sleep(1)
+                    time.sleep(gripper_delay)
 
                 # PICKING UP NEW PIECE
                 elif i == 2:
@@ -696,16 +743,16 @@ class MotionPlanner:
                     grip_dim = dims[0]
 
                     # grip
-                    time.sleep(1)
+                    time.sleep(gripper_delay)
                     arm.move_gripper(grip_dim, 0.1)
-                    time.sleep(1)
+                    time.sleep(gripper_delay)
 
                 # DROPPING OFF NEW PIECE TO ITS DESTINATION
                 elif i == 3:
                     # release
-                    time.sleep(1)
+                    time.sleep(gripper_delay)
                     arm.move_gripper(ungrip_dim, 0.1)
-                    time.sleep(1)
+                    time.sleep(gripper_delay)
 
 
 if __name__ == '__main__':
@@ -747,6 +794,11 @@ if __name__ == '__main__':
     path_5 = np.array([[arm.x, arm.y, arm.z], [arm.x, arm.y, arm.z - 0.2]])  # move +y
     motion_plan = planner.apply_trapezoid_vel_profile(path_5)
 
+    # arm.send_trajectory(motion_plan)
+
+    # import sys
+    # sys.exit()
+
     ## ANNA TEST STUFF
     # 
 
@@ -769,7 +821,7 @@ if __name__ == '__main__':
             # chess_move = [("r", "h5"), ("p", "g6h5")]
             # chess_move = [("p", "g4"), ("n", "f6g4")]
 
-            chess_move = [('p', 'd7d5')]
+            chess_move = [('p', 'a7a6')]
 
             planner.input_chess_move(arm, chess_move)
 
