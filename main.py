@@ -1,5 +1,6 @@
 from __future__ import print_function
 import cv2
+import sys
 import time
 import camera_subscriber
 import argparse
@@ -7,6 +8,8 @@ from perception.mainDetect import Perception
 from chess.engine import ChessEngine
 from chess.chess_clock.clockTest import ClockFeed
 import rospy
+from franka.franka_control_ros import FrankaRos
+from tortoise_hare2_anna import MotionPlanner
 
 def bwe_converter(bwe):
 
@@ -28,10 +31,17 @@ def main(static):
     """
     Main program for testing
     """
-    rospy.init_node('franka_python_node', anonymous=True)
+    # Create ROS node for this project runtime
+    rospy.init_node('chess_project_node', anonymous=True)
+    
+    # Create an object of the Franka control class
+    arm = FrankaRos()
+
+    # Create a planner object for executing chess moves
+    planner = MotionPlanner(arm, visual=False, manual_calibration=False, debug=True)
 
     #  0. Start up chess engine
-    engine = ChessEngine(debug=False, suppress_sunfish=False)
+    engine = ChessEngine(debug=True, suppress_sunfish=False)
 
     time.sleep(1)
 
@@ -174,7 +184,12 @@ def main(static):
                 print("The status is: ", status)
                 print("The message is: ", msg)
                 print("")
-                print("EXECUTE CHESS MOTION HERE")
+                if status < 1:
+                    print("There was an invlid move sent to Sunfish")
+                    sys.exit()
+                print("EXECUTE CHESS MOTION")
+                # chess_move = [('n', 'h1g3')]  # example of chess move, do not uncomment
+                planner.input_chess_move(arm, msg)
                 print("")
 
             # If success is False, the whole thing just runs again :)
