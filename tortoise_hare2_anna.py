@@ -399,7 +399,7 @@ class MotionPlanner:
         # set rate of message sending:  0.001 sec == dt == 1kHz  NOTE THIS IS GLOBALLY SET
         dt = 0.005
         # set acceleration, start with 0.1 (may need to reduce)  NOTE THIS IS GLOBALLY SET
-        acc = 0.08  # max 1.0
+        acc = 0.1  # max 1.0
         # set target travel speed for motion
         target_speed = 0.1  # max 1.0
 
@@ -452,6 +452,7 @@ class MotionPlanner:
         end_stage_t = target_speed / acc
         # find path distance for acc and dec
         end_stage_displacement = end_stage_t * target_speed / 2
+        print("Acc/dec time: ", end_stage_t)
 
         # find displacement for constant speed section of motion
         mid_stage_displacement = lop - 2 * end_stage_displacement
@@ -769,7 +770,8 @@ if __name__ == '__main__':
             # chess_move = [("r", "h5"), ("p", "g6h5")]
             # chess_move = [("p", "g4"), ("n", "f6g4")]
 
-            chess_move = [('p', 'd7d5')]
+            # chess_move = [("p", "e4"), ("p", "d5e4")]
+            chess_move = [('n', 'g8f6')]
 
             planner.input_chess_move(arm, chess_move)
 
