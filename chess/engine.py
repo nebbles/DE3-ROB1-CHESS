@@ -3,7 +3,7 @@ This engine is designed to interface with the modified sunfish file to
 provide a specialised interface between the other modules in this project
 and the chess logic underneath.
 """
-
+from __future__ import print_function
 import multiprocessing as mp
 import time
 import sys
@@ -309,19 +309,18 @@ class ChessEngine:
             move_to_index = self.state.convert_to_index(move_to_pos)
             move_from_piece = self.state.board[move_from_index]
 
-            # Update the chess state with the reply
-            self.state.board[move_to_index] = self.state.board[move_from_index]
-            self.state.board[move_from_index] = '.'
-
+            # First, construct response to return to caller
             response = []
-
             if self.state.board[move_to_index].isupper():
                 kill_piece = self.state.board[move_to_index]
                 response.append((kill_piece, move_to_pos))
             else:
                 kill_piece = None
-
             response.append((move_from_piece, move_from_pos+move_to_pos))
+
+            # Second, update the chess state with the reply for reference on next turn
+            self.state.board[move_to_index] = self.state.board[move_from_index]
+            self.state.board[move_from_index] = '.'
 
             if self.debug:
                 print("Computer move from: ", move_from_pos)
