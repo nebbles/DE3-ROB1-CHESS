@@ -50,6 +50,8 @@ class FrankaRos:
 
         # ros initiation
         if init_ros_node:
+            if self.debug:
+                print("Starting ROS node: franka_control_ros")
             rospy.init_node('franka_control_ros', anonymous=True)
         self.pub_move_to = None
         self.pub_grasp = None
@@ -61,10 +63,10 @@ class FrankaRos:
         self.pos_sub = None
         self.start_subscriber()
         time.sleep(0.5)
-        if self.debug:
-            print("Waiting for subscriber to return initial Franka position.")
+        print("Waiting for subscriber to return initial Franka position. You may need to check that 'franka_controller_sub' is running.")
         while self.z is None:
             time.sleep(0.1)
+        print("Initial Franka position found: ", [self.x, self.y, self.z])
 
     def start_subscriber(self):
         self.pub_move_to = rospy.Publisher('franka_move_to', Float64MultiArray, queue_size=1)

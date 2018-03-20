@@ -484,6 +484,7 @@ class MotionPlanner:
         end_stage_t = target_speed / acc
         # find path distance for acc and dec
         end_stage_displacement = end_stage_t * target_speed / 2
+        print("Acc/dec time: ", end_stage_t)
 
         # find displacement for constant speed section of motion
         mid_stage_displacement = lop - 2 * end_stage_displacement
@@ -821,8 +822,8 @@ if __name__ == '__main__':
             # chess_move = [("r", "h5"), ("p", "g6h5")]
             # chess_move = [("p", "g4"), ("n", "f6g4")]
 
-            chess_move = [('p', 'a7a6')]
-
+            # chess_move = [("p", "e4"), ("p", "d5e4")]
+            chess_move = [('n', 'g8f6')]
             planner.input_chess_move(arm, chess_move)
 
             import sys
