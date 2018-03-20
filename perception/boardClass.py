@@ -47,28 +47,56 @@ class Board:
         Updates the BWE
         """
 
-        for i in range(len(matches)):
-            if matches[i].classify(current) == 'E':
-                # First match is currently empty
-                if i == 0:
-                    # Store old state
-                    old = matches[i].state
-                    # Assign new state
-                    matches[i].state = 'E'
-                    self.BWEmatrix[matches[i].index] = matches[i].state
-                    # Replace state of other square with the previous one of the currently white one
-                    matches[i+1].state = old
-                    self.BWEmatrix[matches[i+1].index] = matches[i+1].state
-                # Second match is currently empty
-                if i == 1:
-                    # Store old state
-                    old = matches[i].state
-                    # Assign new state
-                    matches[i].state = 'E'
-                    self.BWEmatrix[matches[i].index] = matches[i].state
-                    # Replace state of other square with the previous one of the currently white one
-                    matches[i-1].state = old
-                    self.BWEmatrix[matches[i-1].index] = matches[i-1].state
+        
+        distance_one = matches[0].classify(current)
+        distance_two = matches[1].classify(current)
+
+        if distance_one < distance_two:
+            # Store old state
+            old = matches[0].state
+            # Assign new state
+            matches[0].state = 'E'
+            self.BWEmatrix[matches[0].index] = matches[0].state
+            # Replace state of other square with the previous one of the currently white one
+            matches[1].state = old
+            self.BWEmatrix[matches[1].index] = matches[1].state
+            print(self.BWEmatrix[matches[0].index])
+            print(self.BWEmatrix[matches[1].index])
+            print("I: Match reassigned as empty")
+
+        else:
+            # Store old state
+            old = matches[1].state
+            # Assign new state
+            matches[1].state = 'E'
+            self.BWEmatrix[matches[1].index] = matches[1].state
+            # Replace state of other square with the previous one of the currently white one
+            matches[0].state = old
+            self.BWEmatrix[matches[0].index] = matches[0].state
+
+            print("II: Match reassigned as empty")
+
+            # if matches[i].classify(current) == 'E':
+            #     # First match is currently empty
+            #     if i == 0:
+            #         # Store old state
+            #         old = matches[i].state
+            #         # Assign new state
+            #         matches[i].state = 'E'
+            #         self.BWEmatrix[matches[i].index] = matches[i].state
+            #         # Replace state of other square with the previous one of the currently white one
+            #         matches[i+1].state = old
+            #         self.BWEmatrix[matches[i+1].index] = matches[i+1].state
+            #     # Second match is currently empty
+            #     if i == 1:
+            #         # Store old state
+            #         old = matches[i].state
+            #         # Assign new state
+            #         matches[i].state = 'E'
+            #         self.BWEmatrix[matches[i].index] = matches[i].state
+            #         # Replace state of other square with the previous one of the currently white one
+            #         matches[i-1].state = old
+            #         self.BWEmatrix[matches[i-1].index] = matches[i-1].state
 
     def getBWE(self):
         """

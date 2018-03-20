@@ -98,13 +98,13 @@ class Square:
         threshold = 40
 
         # If distance is below threshold assign empty
-        if distance < threshold:
-            print("Square is empty again. Assigning State E to: " + str(self.position))
-            state = 'E'
+        # if distance < threshold:
+        #     print("Square is empty again. Assigning State E to: " + str(self.position))
+        #     state = 'E'
 
         if drawParam:
             cv2.putText(image, state, self.roi, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
 
         ## DEBUG
         # print(flag)
-        return state
+        return distance
