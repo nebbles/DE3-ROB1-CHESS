@@ -18,7 +18,7 @@ This part consists two classes and Queue structure was implemented. Here we use 
 
 The nest step is to subscribe to the camera topic in ROS. Then, in a callback function of subscribed topic, ROS images are converted into OpenCV image using CvBridge. 
 
-.. figure:: CvBridge.png
+.. figure:: _static/CvBridge.png
     :align: center
     :figclass: align-center
     
