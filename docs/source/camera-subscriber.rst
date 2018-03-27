@@ -7,9 +7,7 @@ In this project, a RGBD camera was used to detect FRANKA and the chessboard. Thi
 
 Design
 ======
-The external RGBD camera is connected through USB. In order to use OpenNI-compliant devices in ROS and launch the camera drive we need to run:
- 
-**run**::
+The external RGBD camera is connected through USB. In order to use OpenNI-compliant devices in ROS and launch the camera drive we need to run::
 
  roslaunch openni2_launch openni2.launch
 
