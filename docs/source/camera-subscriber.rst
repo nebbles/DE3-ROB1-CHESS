@@ -17,10 +17,6 @@ This part consists two classes and Queue structure was implemented. Here we use 
     depthFrame = self.depth_q.get()
 
 The nest step is to subscribe to the camera topic in ROS. Then, in a callback function of subscribed topic, ROS images are converted into OpenCV image using CvBridge. 
-
-.. figure:: _static/CvBridge.png
-    :align: center
-    :figclass: align-center
     
 Before we can put an item in the Queue, we need to ensure the queue is empty. If not, the item in the Queue has to be removed::
 
