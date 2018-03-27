@@ -47,6 +47,7 @@ Contents
    perception
    chess-engine
    motion
+   camera-subscriber
 
 .. toctree::
    :maxdepth: 2
