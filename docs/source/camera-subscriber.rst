@@ -11,6 +11,4 @@ The external RGB-D camera is connected through USB. In order to use OpenNI-compl
 
  roslaunch openni2_launch openni2.launch
 
-This part consists two classes and Queue structure was implemented. Here we use multiptocessing to spawn multiple subprocesses for parallel execution of tasks. We first initialise Queues holding RGB and depth images that need to be processed, and set the maxsize to 1. Therefore, only one image can be held at a time.
-
-``a`` method to retrieve the results from the Queue
+This part consists two classes and Queue structure was implemented. Here we use multiptocessing to spawn multiple subprocesses for parallel execution of tasks. We first initialise Queues holding RGB and depth images that need to be processed, and set the maxsize to 1. Therefore, only one image can be held at a time. ``a`` method to retrieve the results from the Queue
