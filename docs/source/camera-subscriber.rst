@@ -36,7 +36,7 @@ Before we can put an item in the Queue, we need to ensure the queue is empty. If
                 if self.debug:
                     print("\033[91m" + "Exception Empty was raised. Could not remove from queue." + "\033[0m")
                     
- Now Queues are empty and ready to put both RGD and depth image into them::
+Now Queues are empty and ready to put both RGD and depth image into them::
  
   self.rgb_q.put(cv_image)
   self.depth_q.put(depth_image)
