@@ -10,8 +10,8 @@ from perception.boardClass import Board
 
 class Perception:
     """
-    The perception class contains the board as well as some functions needed to generate it and output
-    a BWE matrix. The updating of the BWE is done within Board
+    The perception class contains a Board instance as well as functions needed to generate it and output
+    a BWE matrix. The updating of the BWE is done within the Board class.
     """
     def __init__(self, board = 0, previous = 0):
         # The Board instance
@@ -25,7 +25,7 @@ class Perception:
     """
     def initialImage(self, initial):
         """
-        This function sets the previous variable to the initial populated board
+        This function sets the previous variable to the initial populated board. This function is deprecated.
         """
 
         self.previous = initial
@@ -33,7 +33,8 @@ class Perception:
     def makeBoard(self, image, depthImage):
         """
         Takes an image of an empty board and takes care of image processing and subdividing it into 64 squares
-        which are then stored in one Board object that is returned.
+        which are then stored in one Board object that is returned. Expanding to depth calibration has not yet been
+        finished.
         """
         try:
             # Process Image: convert to B/w
@@ -93,7 +94,7 @@ class Perception:
 
     def bwe(self, current, debug=False):
         """
-        Takes care of taking the camera picture, comparing it to the previous one, updating the BWE and returning it
+        Takes care of taking the camera picture, comparing it to the previous one, updating the BWE and returning it.
         """
 
         ## DEBUG
@@ -144,7 +145,7 @@ class Perception:
 
     def printBwe(self, bwe):
         """
-        Prints the BWE
+        Prints the BWE.
         """
         print("")
         print("BWE matrix: ")
@@ -157,7 +158,7 @@ class Perception:
 
     def processFile(self, img, debug=False):
         """
-        Converts input image to grayscale & applies adaptive thresholding
+        Converts input image to grayscale & applies adaptive thresholding.
         """
         img = cv2.GaussianBlur(img,(5,5),0)
         # Convert to HSV
@@ -179,7 +180,7 @@ class Perception:
 
     def imageAnalysis(self, img, processedImage, debug=False):
         """
-        Finds the contours in the chessboard
+        Finds the contours in the chessboard, filters the largest one (the chessboard) and masks it.
         """
 
         ### CHESSBOARD EXTRACTION (Contours)
@@ -272,7 +273,7 @@ class Perception:
     def categoriseLines(self, lines, debug=False):
         """
         Sorts the lines into horizontal & Vertical. Then sorts the lines based on their respective centers
-        (x for vertical, y for horizontal). H
+        (x for vertical, y for horizontal).
         """
         horizontal = []
         vertical = []
@@ -345,7 +346,7 @@ class Perception:
 
     def drawLines(self, image, lines, color=(0,0,255), thickness=2):
         """
-        What you think it does
+        Draws lines. This function was used to debug Hough Lines generation.
         """
         #print("Going to print: ", len(lines))
         for l in lines:
@@ -359,7 +360,8 @@ class Perception:
 
     def findIntersections(self, horizontals,verticals, image, debug=True):
         """
-        WARNING: This function is trashy af. IDK why it works but it does. Finds intersections between Hough lines
+        Finds intersections between Hough lines and filters out close points. The filter relies on a computationally
+        expensive for loop and could definitely be improved.
         """
         intersections = []
 
@@ -430,7 +432,8 @@ class Perception:
         """
         Takes the filtered intersections and assigns them to a list containing nine sorted lists, each one representing
         one row of sorted corners. The first list for instance contains the nine corners of the first row sorted
-        in an ascending fashion.
+        in an ascending fashion. This function necessitates that the chessboard's horizontal lines are exactly
+        horizontal on the camera image, for the purposes of row assignment.
         """
 
         # Corners array / Each list in list represents a row of corners
@@ -485,7 +488,7 @@ class Perception:
 
     def makeSquares(self, corners, depthImage, image, debug=True):
         """
-        Instantiates the 64 squares when given 81 corner points
+        Instantiates the 64 squares given 81 corner points.
         """
 
         # List of Square objects

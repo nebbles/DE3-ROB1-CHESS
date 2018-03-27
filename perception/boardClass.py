@@ -4,7 +4,7 @@ import numpy as np
 
 class Board:
     """
-    Holds all the squares and the BWE matrix
+    Holds all the Square instances and the BWE matrix.
     """
     def __init__(self, squares, BWEmatrix = [], leah = 'noob coder'):
         # Squares
@@ -16,7 +16,7 @@ class Board:
 
     def draw(self,image):
         """
-        Draws the board and classifies the squares (draws the square state on the image)
+        Draws the board and classifies the squares (draws the square state on the image).
         """
         for square in self.squares:
             square.draw(image)
@@ -24,7 +24,7 @@ class Board:
 
     def assignBWE(self):
         """
-        Assigns states to squares and initialises the BWE matrix
+        Assigns initial setup states to squares and initialises the BWE matrix.
         """
 
         for i in range(8):
@@ -44,7 +44,10 @@ class Board:
 
     def updateBWE(self, matches, current):
         """
-        Updates the BWE
+        Updates the BWE by looking at the two squares that have changed and determining which one is now empty. This
+        relies on calculated the distance in RGB space provided by the classify function. The one with a lower distance
+        to the colour of its empty square must now be empty and its old state can be assigned to the other square that
+        has changed.
         """
 
         
@@ -76,28 +79,6 @@ class Board:
 
             print("II: Match reassigned as empty")
 
-            # if matches[i].classify(current) == 'E':
-            #     # First match is currently empty
-            #     if i == 0:
-            #         # Store old state
-            #         old = matches[i].state
-            #         # Assign new state
-            #         matches[i].state = 'E'
-            #         self.BWEmatrix[matches[i].index] = matches[i].state
-            #         # Replace state of other square with the previous one of the currently white one
-            #         matches[i+1].state = old
-            #         self.BWEmatrix[matches[i+1].index] = matches[i+1].state
-            #     # Second match is currently empty
-            #     if i == 1:
-            #         # Store old state
-            #         old = matches[i].state
-            #         # Assign new state
-            #         matches[i].state = 'E'
-            #         self.BWEmatrix[matches[i].index] = matches[i].state
-            #         # Replace state of other square with the previous one of the currently white one
-            #         matches[i-1].state = old
-            #         self.BWEmatrix[matches[i-1].index] = matches[i-1].state
-
     def getBWE(self):
         """
         Converts BWE from list of strings to a rotated numpy array
@@ -122,7 +103,8 @@ class Board:
 
     def whichSquares(self, points):
         """
-        Returns the squares which a list of points lie within
+        Returns the squares which a list of points lie within. This function is needed to filter out changes in the
+        images that are compared which have nothing to do with the game, e.g. an arm.
         """
         matches = []
         for square in self.squares:

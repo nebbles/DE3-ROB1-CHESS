@@ -4,7 +4,7 @@ import numpy as np
 
 class Square:
     """
-    Class holding the position of a chess square
+    Class holding the position, index, corners, empty colour and state of a chess square
     """
     def __init__(self, position, c1, c2, c3, c4, index, image, state=''):
         # ID
@@ -32,13 +32,15 @@ class Square:
         self.roi = (cx, cy)
         self.radius = 5
 
-        # Empty color
+        # Empty color. The colour the square has when it's not occupied, i.e. shade of black or white. By storing these
+        # at the beginnig of the game, we can then make much more robust predictions on how the state of the board has
+        # changed.
         self.emptyColor = self.roiColor(image)
 
 
     def draw(self, image, color=(0, 0, 255), thickness=2):
         """
-        Draws the square onto an image
+        Draws the square onto an image.
         """
         cv2.drawContours(image, [self.contours], 0, color, thickness)
         ## DEBUG
@@ -73,7 +75,7 @@ class Square:
 
     def classify(self, image, drawParam=False, debug=False):
         """
-        Classifies the square into empty ('E'), occupied by a black piece ('B') or occupied by a white piece ('W')
+        Returns the RGB 3-dimensional distance from a squares current color to its empty color.
         """
         if debug:
             print("The empty color of the square is: " + str(self.emptyColor))

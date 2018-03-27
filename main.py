@@ -31,6 +31,13 @@ def main(static):
     """
     Main program for testing
     """
+
+    '''
+    1. Setup
+
+    Initialise ROS, FRANKA and the camera feed. Clock feed still needs to be added
+    '''
+
     # Create ROS node for this project runtime
     rospy.init_node('chess_project_node', anonymous=True)
     
@@ -84,11 +91,7 @@ def main(static):
     percept = Perception()
 
     # Make a Board instance within Perception. This assigns the grid and the initial BWE given an image of an empty board
-
-    #try:
     percept.makeBoard(empty, depthEmpty)
-    #except Exception as e:
-    #    print("Board could not be instantiated. Error message: " + str(e))
 
     # Wait for user input
     print("Picture of empty board taken and Board instantiated. Please press any key after you have populated the board")
@@ -102,14 +105,14 @@ def main(static):
 
     The board now needs to be populated in the normal setup. previous is initialised to the image with the populated
     chessboard with pieces in the start positions. Current is the picture taken after a move has been made. This
-    needs to run in a loop so that the BWE is updated forever
+    runs in a loop so that the BWE is updated forever
     '''
 
     # Get picture of populated chessboard
     populated, dummy = feed.get_frames()
 
-    # Get frame of populated chessboard
-    percept.initialImage(populated)
+    # Assign populated image as first 'previous' image, i.e. to compare with current image
+    percept.previous = populated
 
     print("Initial image of populated board assigned and BWE initialised!")
     print("")
@@ -119,19 +122,17 @@ def main(static):
     # Close 'Board Identified' Window
     cv2.destroyAllWindows()
 
-    # Populated Board
-    populated, dummy = feed.get_frames()
+    # Show populated board
     cv2.imshow("Populated Board", populated)
 
     '''
     4. Main loop
+
+    Clock integration still pending.
     '''
 
-    # Counter to determine if it's Opponents (False) or Robots (True) turn
+    # Boolean to determine if it's Opponents (False) or Robots (True) turn
     move = False
-
-    # START of OPPONENT turn / Start the chess clock on A
-    #clock.sig_q.put(1)
 
     while True:
 
