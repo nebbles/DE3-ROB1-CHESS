@@ -11,9 +11,11 @@ The external RGB-D camera is connected through USB. In order to use OpenNI-compl
 
  roslaunch openni2_launch openni2.launch
 
-This part consists two classes and Queue structure was implemented. Here we use multiptocessing to spawn multiple subprocesses for parallel execution of tasks. We first initialise Queues holding RGB and depth images that need to be processed, and set the maxsize to 1. Therefore, only one image can be held at a time. ``.get()``method to retrieve the results from ``queue``::
+This part consists two classes and Queue structure was implemented. Here we use multiptocessing to spawn multiple subprocesses for parallel execution of tasks. We first initialise Queues holding RGB and depth images that need to be processed, and set the maxsize to 1. Therefore, only one image can be held at a time. ``.get()``method to retrieve the results from Queue::
 
     rgbFrame = self.rgb_q.get()
     depthFrame = self.depth_q.get()
 
-
+The nest step is to subscribe to the camera topic in ROS. Then, in a callback function of subscribed topic, ROS images are converted into OpenCV image using CvBridge. 
+..todo:: flowchart
+Before we can put an item in the Queue, we need to ensure the queue is empty. If not, the item in the Queue has to be removed.
