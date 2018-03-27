@@ -17,5 +17,32 @@ This part consists two classes and Queue structure was implemented. Here we use 
     depthFrame = self.depth_q.get()
 
 The nest step is to subscribe to the camera topic in ROS. Then, in a callback function of subscribed topic, ROS images are converted into OpenCV image using CvBridge. 
-..todo:: flowchart
-Before we can put an item in the Queue, we need to ensure the queue is empty. If not, the item in the Queue has to be removed.
+
+.. todo:: flowchart
+
+Before we can put an item in the Queue, we need to ensure the queue is empty. If not, the item in the Queue has to be removed::
+
+ if not self.rgb_q.empty() and not self.depth_q.empty():
+            if self.debug:
+                print("Queue has item in it.")
+            try:
+                if self.debug:
+                    print("Attempting to remove item from queue.")
+                self.rgb_q.get(False)
+                self.depth_q.get(False)
+                if self.debug:
+                    print("Successfully removed images from queue.")
+            except:
+                if self.debug:
+                    print("\033[91m" + "Exception Empty was raised. Could not remove from queue." + "\033[0m")
+                    
+ Now Queues are empty and ready to put both RGD and depth image into them::
+ 
+  self.rgb_q.put(cv_image)
+  self.depth_q.put(depth_image)
+
+We can fetch the latest image from Queue by retuning rgbFrame and depthFrame::
+
+    rgbFrame = self.rgb_q.get()
+    depthFrame = self.depth_q.get()
+
