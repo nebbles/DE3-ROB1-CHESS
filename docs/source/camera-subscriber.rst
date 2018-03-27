@@ -18,8 +18,6 @@ This part consists two classes and Queue structure was implemented. Here we use 
 
 The nest step is to subscribe to the camera topic in ROS. Then, in a callback function of subscribed topic, ROS images are converted into OpenCV image using CvBridge. 
 
-.. todo:: flowchart
-
 Before we can put an item in the Queue, we need to ensure the queue is empty. If not, the item in the Queue has to be removed::
 
  if not self.rgb_q.empty() and not self.depth_q.empty():
