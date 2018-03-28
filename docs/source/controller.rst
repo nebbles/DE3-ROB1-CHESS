@@ -2,10 +2,18 @@
 Controller
 **********
 
+The controller interfaces the different modules and in this way ensures the flow of the chess game. It handles the whole process from setting up the game and calibrating FRANKA through to to playing the actual game. The board is empty when main.py is started. The user is subsequently required to populate the board and the game is started. After having made a move, the user presses a keyboard button to trigger the chess clock. The move is detected and passed to Sunfish, which replies with the optimal next move. A motion plan for the move is generated and executed by the robot. 
+
+.. Note::
+ Automatic calibration and the chess clock integration were not finished
+
 Main.py File
 ============
 
-.. todo:: redo and add system diagram
+.. figure:: _static/system_diagram_2.png
+    :align: center
+    :figwidth: 50 em
+    :figclass: align-center
 
 Below is the specification for the modules of the Chess Project Python Program. This is to ensure that each module fulfills its function and that the overall goal of the project is achieved. Each module can then seperately be improved and updated, assuming compliance with this specification.
 
