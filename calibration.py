@@ -6,12 +6,14 @@ import numpy as np
 
 def run_calibration(arm_object, planner_object, cam_feed):
     """
-    Description written here.
+    Runs calibration moving the end-effector between the 8 vertices of the cube (x, y, z),
+    then detecting the marker at each of these 8 steps,
+    applying the marker offset and producing the array of u, v, w positions.
 
     :param arm_object:
     :param planner_object:
     :param cam_feed:
-    :return:
+    :return: 8x3 array with marker coordinates (camera frame) and 8x3 array with respective franka coordinates (vertices of cube)
     """
     franka_pos = arm_object.get_position()
     moves = generate_cube(franka_pos)
@@ -147,10 +149,12 @@ def find_cross_manual(frame):
     Uses open CV2 to detect a red cross in a photo. This function applies a red mask,
     finds contours, finds the number of vertexes in polygons, and selects the shape with the
     appropriate number of vertices, area and perimeter. It then finds the centre of the cross and
-    returns its coordinates.
+    returns its coordinates. Manual detection mode allows users to double check that if one marker
+    is detected that the correct one has been selected, and if multiple detectors are selected they are
+    able to enter the number of the correct marker.
 
     :param frame:
-    :return:
+    :return: x,y coordinates of the red cross marker in camera frame
     """
 
     markers = []
@@ -233,10 +237,11 @@ def find_cross_auto(frame):
     Uses open CV2 to detect a red cross in a photo. This function applies a red mask,
     finds contours, finds the nuber of vertexes in polygons, and selects the shape with the
     appropriate number of vertices, area and perimeter. It then finds the centre of the cross and
-    returns its coordinates.
+    returns its coordinates. The automatic mode the detected marker is automatically returned,
+    however if multiple are detected they are able to switch to manual mode.
 
     :param frame:
-    :return:
+    :return: x,y coordinates of the red cross marker in camera frame
     """
 
     markers = []
