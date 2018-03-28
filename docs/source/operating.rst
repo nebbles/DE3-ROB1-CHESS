@@ -136,9 +136,10 @@ Python-Franka API with ``franka_control.py``
 
 The Python-FRANKA module (``franka_control.py``) is designed to allow easy access to the C++ controller programs provided by Petar. The provided Python module is structured as follows.
 
-.. automodule:: franka.archive.franka_control
-  :members:
-  :undoc-members:
+.. TODO
+.. .. automodule:: franka.archive.franka_control
+..   :members:
+..   :undoc-members:
 
 **Example**
 
