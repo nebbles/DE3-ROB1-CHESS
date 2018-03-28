@@ -164,7 +164,7 @@ Running Calibration
 The ``run_calibration()`` function runs the calibration functions moving the end-effector between the 8 vertices of the cube (x, y, z), then detecting the marker at each of these 8 steps, applying the marker offset and producing the array of u, v, w positions.
 
 Converting between Reference Frames
-===================================
+-----------------------------------
 
 Overview
 --------
@@ -175,7 +175,7 @@ To be able to convert camera coordinates, provided by OpenCV tracking tools and 
 
   aX = b
 
-This is modelled on the idea that you can take a coordinate in our camera frame (e.g. RGB-D camera provides ``u, v, w`` coordinates) and convert it to the equivalent, corresponding coordinate in the robots reference frame (e.g. ``x, y, z``) so that the robot can move to that coordinate in the camera's view. ``a`` represents the camera coordinate, and ``b`` represents the output of the function (which mulitplies ``a`` with our transformation matrix ``X``), which represents the same point in the workspace (but in terms of the robot's reference frame).
+This is modelled on the idea that a coordinate in the main frame (e.g. RGB-D camera provides ``u, v, w`` coordinates) and converts it to the equivalent, corresponding coordinate in the robots reference frame (e.g. ``x, y, z``) so that the robot can move to that point on the camera's view. ``a`` represents our camera coordinate, and ``b`` represents the output of our function, that mulitplies ``a`` with our transformation matrix ``X``, which represents the same point but on the robots reference frame.
 
 .. figure:: _static/reference_frame_camera.png
     :figwidth: 20 em
@@ -220,7 +220,7 @@ Where :math:`m_{ij}` is the unknown in *X*,
       m_{41}&m_{42}&m_{43}&m_{44}
     \end{bmatrix}
 
-In MATLab, the function for solving this equation is simply ``X = a\b``, or less commonly written as ``X = mldivide(a,b)``. `The mldivide() function`_ in MATLab is a complex one, and utilises many different possible algorithms depending on its inputs. To get the similar behaviour in Python, use `numpy's lstsq function`_ which has similarites and differences which have been discussed `{1}`_ `{2}`_, but ultimately provides the same functionality of returning a least square solution to the equation. This is used in the function as shown below::
+In MATLab, the function for solving this equation is simply ``X = a\b``, or less commonly written as ``X = mldivide(a,b)``. `The mldivide() function`_ in MATLab is a complex one, and utilises many different possible algorithms depending on its inputs. To get the similar behaviour in Python, the `numpy's lstsq function`_ is used. It has similarites and differences which have been discussed `{1}`_ `{2}`_, but ultimately provides the same functionality of returning a least square solution to the equation. The function is used as in our example below::
 
   import numpy as np
   from numpy import random
