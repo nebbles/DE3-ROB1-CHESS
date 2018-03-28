@@ -7,9 +7,9 @@
 DE3-ROB1 CHESS Group Documentation
 **********************************
 
-The goal of this project was to create a fully automated chess playing robot by applying code to a FRANKA Panda arm. The project was written in Python and ROS was used to interface with FRANKA. 
+The goal of this project was to create a fully automated chess playing robot by applying code to a FRANKA Panda arm. The project was written in Python and ROS was used to interface with FRANKA.
 
-Open source code was used for the game engine, giving the robot the ability to calculate the best next move. Open Computer Vision libraries were used to visualise the board. This allowed the robot to automatically know what the opponent’s last move was. A virtual chess clock allowed the user to finish their move, alerting FRANKA to calculate the next move. Motion planning was used to create a path for FRANKA to follow and control the grippers. A smooth velocity profile was applied, making the motion more smooth and natural. A manual calibration process was used to send accurate and precise coordinates to FRANKA.
+Open source code was used for the game engine, giving the robot the ability to calculate the best next move. Open Computer Vision libraries were used to visualise the board. This allowed the robot to automatically know what the opponent's last move was. A virtual chess clock allowed the user to finish their move, alerting FRANKA to calculate the next move. Motion planning was used to create a path for FRANKA to follow and control the grippers. A smooth velocity profile was applied, making the motion more smooth and natural. A manual calibration process was used to send accurate and precise coordinates to FRANKA.
 
 Future improvements to the project could include a final implementation of automated calibration as well as a smoother trajectory. Overall, the main aims of this project were successfully achieved. A complete game of chess could be played between human and robot.
 
