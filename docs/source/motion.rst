@@ -7,55 +7,6 @@ Description
 
 This part of the project is responsible for providing the FRANKA arm with instructions on when and where to move. It takes in the algebraic notation (AN) of the start and end locations of the desired move, and then generates a motion plan to be sent to FRANKA for execution.
 
-
-Callibration
-============
-
-When the TODO:XXX function is instantiated, the callibration procedure is executed.
-The 4 inner corner coordinates gathered by the perception module are stored and these are used as the base information.
-
-.. figure:: _static/callibration_positions.png
-    :align: center
-    :figwidth: 20 em
-    :figclass: align-center
-
-4 vectors are calculated from this information, along the x and y axis of the board:
-
-- x axis 1: H8 to A8
-- x axis 2: H1 to A1
-- y axis 1: H8 to H1
-- y axis 2: A8 to A1
-
-.. figure:: _static/reference_frame_diagram.png
-    :align: center
-    :figwidth: 20 em
-    :figclass: align-center
-
-The x and y vectors are averaged respectively to give overall x and y directional vectors.
-These are then divided by 6 to give x and y unit vetors equivalent to a single board square.
-The H8 coordinate is stored and used as the starting point for all future location calculations.
-
-The maximum z value of the board is extracted from the perception coordinates. This is then used to hardcode a hover height, rest position and deadzone location as global variables.
-
-The coordinates of each square on the board are stored using 2 dictionaries, one for the numbers and one for the letters in AN. These locations are found by multiplying the unit vectors appropriately. For example, ``f`` is found by adding 2.5 times ``x_unit_vector`` to the H8 coordinate.
-
-Derived positions:
-
-.. figure:: _static/derived_positions.png
-    :align: center
-    :figwidth: 20 em
-    :figclass: align-center
-
-The ``x,y,z`` coordinates to pick up each piece were also stored in a global dictionary. Hardcoded width values were used for the gripping width, whilst the ``board_z_max`` was used to derive the correct height at which to pick up each piece.
-
-Iterations
-==========
-
-**Manual Callibration**
-
-This process was used to callibrate the robot before the perception method was implemented. Instructions were sent to the console, informing the user to move the FRANKA end point to A1, A8, H8, H1, the deadzone, the rest position and the desired hover height. After each instruction is sent, the real world coordinates of FRANKA were collected and stored.
-
-
 Grippers
 ========
 

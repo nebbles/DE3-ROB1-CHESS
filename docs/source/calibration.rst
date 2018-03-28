@@ -4,15 +4,53 @@ Calibration
 
 To use our reference frame conversion code, use the following command in the terminal when in the directory you want it copied to::
 
-  svn export https://github.com/nebbles/DE3-ROB1-CHESS/trunk/calibration.py
+  svn export https://github.com/nebbles/DE3-ROB1-CHESS/trunk/tools/transform.py
 
-Introduction
-============
+Manual Calibration
+==================
+
+In the interim before having complete automatic calibration, we used manual calibration to determine the position of the board relative to the Franka base frame. The FRANKA end-effector was moved to each of the inner corners and the positions reported by the FRANKA were then hardcoded.
+
+When the ``MotionPlanner`` class is instantiated, the calibration is automatically taken from the hardcode values in our ``__init__`` function. In an automatic version, the hardcoded values would be replaced by coordinates gathered by the calibration procedure.
+
+.. figure:: _static/calibration_positions.png
+    :align: center
+    :figwidth: 30 em
+    :figclass: align-center
+
+4 vectors are calculated from this information, along the x and y axis of the board:
+
+- *x axis 1:* H8 to A8
+- *x axis 2:* H1 to A1
+- *y axis 1:* H8 to H1
+- *y axis 2:* A8 to A1
+
+.. figure:: _static/reference_frame_diagram.png
+    :align: center
+    :figwidth: 30 em
+    :figclass: align-center
+
+The x and y vectors are averaged respectively to give overall x and y directional vectors.
+These are then divided by 6 to give x and y unit vetors equivalent to a single board square.
+The H8 coordinate is stored and used as the starting point for all future location calculations.
+
+The minimum z value of the board is hardcoded when manually moving the end-effector around. This value is then used to hardcode a hover height, rest position and deadzone location as global variables.
+
+The coordinates of each square on the board are stored using 2 dictionaries, one for the numbers and one for the letters in AN. These locations are found by multiplying the unit vectors appropriately. For example, ``f`` is found by adding 2.5 times ``x_unit_vector`` to the H8 coordinate.
+
+Derived positions:
+
+.. figure:: _static/derived_positions.png
+    :align: center
+    :figwidth: 30 em
+    :figclass: align-center
+
+The ``x,y,z`` coordinates to pick up each piece were also stored in a global dictionary. Hardcoded width values were used for the gripping width, whilst the ``board_z_max`` was used to derive the correct height at which to pick up each piece.
+
+Automatic Calibration
+=====================
 
 .. todo:: Intro to our calibration procedure...
-
-Procedure
-=========
 
 To calibrate the chess board between the FRANKA and Camera reference frame, we needed specific points where we could take the x, y, z of the robot end effector and the u, v, w of this point when detected by the camera. To complete we placed a trackable marker on the end effector which would move to the 8 vertices of a cube around its rest position.
 
@@ -20,11 +58,11 @@ Generating a cube
 -----------------
 
 The generate_cube function generates an array of 9 x, y, z coordinates for calibration based on an end-effector (1x3) input position followed by the 8 coordinates of the each vertex of the cube.
-An array is created about (0, 0, 0) of edge length 0.1 metres. 
+An array is created about (0, 0, 0) of edge length 0.1 metres.
 
 .. figure:: _static/generate_cube_original.png
     :align: center
-    :figwidth: 20 em
+    :figwidth: 30 em
     :figclass: align-center
 
 .. literalinclude:: ../../calibration.py
@@ -34,7 +72,7 @@ This array is then multiplied by 3 transformations matrices rotating it by 30deg
 
 .. figure:: _static/generate_cube_original_transformed.png
     :align: center
-    :figwidth: 20 em
+    :figwidth: 30 em
     :figclass: align-center
 
 .. literalinclude:: ../../calibration.py
@@ -44,7 +82,7 @@ A for loop is used to add each row of the array to the x, y, z end-effector posi
 
 .. figure:: _static/generate_cube_endeff_transformed.png
     :align: center
-    :figwidth: 20 em
+    :figwidth: 30 em
     :figclass: align-center
 
 .. literalinclude:: ../../calibration.py
@@ -58,7 +96,7 @@ OpenCV was used to detect the shape and colour of the marker. The detect functio
 
 .. figure:: _static/mask.JPG
     :align: center
-    :figwidth: 20 em
+    :figwidth: 30 em
     :figclass: align-center
 
 .. literalinclude:: ../../calibration.py
@@ -82,12 +120,12 @@ Image moments are used to find the x, y coordinates of the centre of the shape, 
 Automatic vs Manual Marker Detection
 ------------------------------------
 
-The manual detection method allows users to double check that if one marker is detected that the correct one has been selected, and if multiple detectors are selected they are able to enter the number of the correct marker. 
+The manual detection method allows users to double check that if one marker is detected that the correct one has been selected, and if multiple detectors are selected they are able to enter the number of the correct marker.
 In the automatic mode the detected marker is automatically returned, however if multiple are detected they are able to switch to manual mode.
 
 .. figure:: _static/detect.JPG
     :align: center
-    :figwidth: 20 em
+    :figwidth: 30 em
     :figclass: align-center
 
 Find Depth
@@ -101,7 +139,7 @@ The find_depth() function returns the RGB value of a pixel at coordinates x, y o
 Marker Offset
 -------------
 
-A hardcoded offset value is measured to adjust the perception u, v, w of the detected marker to the position of the end-effector of the robot. This is since the marker is not placed exactly at the position where FRANKA records its x, y, z end effector positon. 
+A hardcoded offset value is measured to adjust the perception u, v, w of the detected marker to the position of the end-effector of the robot. This is since the marker is not placed exactly at the position where FRANKA records its x, y, z end effector positon.
 
 Running Calibration
 -------------------
