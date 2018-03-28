@@ -50,15 +50,15 @@ The ``x,y,z`` coordinates to pick up each piece were also stored in a global dic
 Automatic Calibration
 =====================
 
-.. todo:: Intro to our calibration procedure...
+To advance beyond the manual hardcoded approach described above we devised a system whereby we could place the the FRANKA end-effector in the centre of the field of view of our camera, and allow it to automatically calibrate itself off some small controlled motions.
 
-To calibrate the chess board between the FRANKA and Camera reference frame, we needed specific points where we could take the x, y, z of the robot end effector and the u, v, w of this point when detected by the camera. To complete we placed a trackable marker on the end effector which would move to the 8 vertices of a cube around its rest position.
+So to calibrate the chess board, we continued to use image recognition techniques described in the Perception module, but to relate the Franka base frame to the camera we used a trackable marker located on the robot end-effector which would allow the camera to locate the arm in space as it moved between 8 vertices of a cube (built around the starting position of the end-effector).
 
 Generating a cube
 -----------------
 
-The generate_cube function generates an array of 9 x, y, z coordinates for calibration based on an end-effector (1x3) input position followed by the 8 coordinates of the each vertex of the cube.
-An array is created about (0, 0, 0) of edge length 0.1 metres.
+The generate_cube function generates an array of 9 ``x, y, z`` coordinates for calibration based on an end-effector (1x3) input position followed by the 8 coordinates of the each vertex of the cube.
+An array is created about ``(0, 0, 0)`` of edge length 0.1 metres.
 
 .. figure:: _static/generate_cube_original.png
     :align: center
@@ -68,7 +68,7 @@ An array is created about (0, 0, 0) of edge length 0.1 metres.
 .. literalinclude:: ../../calibration.py
    :lines: 56-58
 
-This array is then multiplied by 3 transformations matrices rotating it by 30deg in the x, y and z axes producing an 8x3 array of the transformed cube about (0, 0, 0).
+This array is then multiplied by 3 transformations matrices rotating it by 30 degrees in the x, y and z axes producing an 8x3 array of the transformed cube about ``(0, 0, 0)``. This is because when creating a transformation matrix between two frames we need each of our points in the robotic frame to be different in all three axes. If there are duplicates (say 4 points are planar on x-y) then we start accumulating errors in our transformation matrix. See `Converting between Reference Frames`_ later for more information on the transformation matrix.
 
 .. figure:: _static/generate_cube_original_transformed.png
     :align: center
@@ -78,7 +78,7 @@ This array is then multiplied by 3 transformations matrices rotating it by 30deg
 .. literalinclude:: ../../calibration.py
    :lines: 78-89
 
-A for loop is used to add each row of the array to the x, y, z end-effector positions to offset the transformed cube by the current FRANKA end effector position. These are appended to the cube_output array.
+A for loop is used to add each row of the array to the x, y, z end-effector positions to offset the transformed cube by the current FRANKA end effector position. These are appended to the ``cube_output`` array.
 
 .. figure:: _static/generate_cube_endeff_transformed.png
     :align: center
@@ -91,10 +91,10 @@ A for loop is used to add each row of the array to the x, y, z end-effector posi
 Detecting the Marker
 --------------------
 
-After trying various markers including LEDs and ARUCO markers. It was found a simple red cross marker was effective for the camera to detect as the colour often contrasted the rest of the frame and the shape could be easily distinguished.
+Various markers including LEDs and ARUCO markers were tried first. These were superceded once it was identified a simple red cross marker was effective for the camera to detect. This was because the colour often had good contrast with the rest of the frame and therefore a shape could be easily distinguished.
 OpenCV was used to detect the shape and colour of the marker. The detect function was used to detect the area, perimeter and the number of sides of all the polygons found in a frame.
 
-.. figure:: _static/mask.JPG
+.. figure:: _static/mask.jpg
     :align: center
     :figwidth: 30 em
     :figclass: align-center
@@ -131,7 +131,7 @@ In the automatic mode the detected marker is automatically returned, however if 
 Find Depth
 ----------
 
-The find_depth() function returns the RGB value of a pixel at coordinates x, y on a frame. Only the first value in the list is required since this function is used on a greyscale depth frame.
+The ``find_depth()`` function returns the RGB value of a pixel at coordinates x, y on a frame. Only the first value in the list is required since this function is used on a greyscale depth frame.
 
 .. literalinclude:: ../../calibration.py
    :lines: 310-314
@@ -144,10 +144,10 @@ A hardcoded offset value is measured to adjust the perception u, v, w of the det
 Running Calibration
 -------------------
 
-The run_calibration() function runs the calibration functions moving the end-effector between the 8 vertices of the cube (x, y, z), then detecting the marker at each of these 8 steps, applying the marker offset and producing the array of u, v, w positions.
+The ``run_calibration()`` function runs the calibration functions moving the end-effector between the 8 vertices of the cube (x, y, z), then detecting the marker at each of these 8 steps, applying the marker offset and producing the array of u, v, w positions.
 
-Reference Frames
-================
+Converting between Reference Frames
+===================================
 
 Overview
 --------
