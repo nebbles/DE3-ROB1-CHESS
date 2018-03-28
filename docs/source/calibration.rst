@@ -47,13 +47,13 @@ Derived positions:
 
 The coordinates of each square on the board are stored using 2 dictionaries, one for the numbers and one for the letters in algebraic notation. These locations are found by multiplying the unit vectors appropriately. For example, ``f`` is found by adding 2.5 times ``x_unit_vector`` to the H8 coordinate.
 
--.. literalinclude:: ../../motion.py
+.. literalinclude:: ../../motion.py
    :lines: 87-105
 
 Hardcoded width values were used for the gripping width, whilst the ``board_z_max`` was used to derive the correct height at which to pick up each piece.
 
 Automated Calibration
-==================
+=====================
 
 To advance beyond the manual hardcoded approach described above, a system was devised whereby the FRANKA end-effector could be placed in the centre of the field of view of the camera, allowing it to automatically calibrate itself from predetermined controlled motions.
 To calibrate the chess board, image recognition techniques described in the Perception module were used to relate the Franka base frame to the camera. A trackable marker located on the robot end-effector allowed the camera to locate the arm in space as it moved between 8 vertices of a cube (built around the starting position of the end-effector).

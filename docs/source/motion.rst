@@ -63,7 +63,7 @@ The positions are outputted in pairs of start and end locations, with every inte
 	An additional move taking FRANKA from its current position to its rest position is always included in case the arm is not already in its rest location.
 
 Executing the Trajectory
-------------------------
+========================
 
 Before any trajectory is executed, the gripper is moved to it's ungripped position. This dimension is again hardcoded. Doing this at the beginning of the algorithm prevents any collisions between the end effector and the peices.
 
@@ -79,7 +79,7 @@ This exectution process is repeated as many times as there are paths in the seri
    En passant moves have been disabled for this project, so the location of the killed piece will always be the same as the goal location.
 
 Smoothing the trajectory
-------------------------
+========================
 
 3 different methods were attempted to try and smooth the path to give a more natural movement.
 
@@ -130,7 +130,7 @@ To correct this problem, the same algorithm was run multiple times, chamfering t
 The problem here is that the distance between the points on the chamfered edges is smaller than the distance between points on unaffected edges. This did not work with the velocity profile algorithm, and was therefore not used in the final iteration of the motion code.
 
 Trapezium Velocity Profile
---------------------------
+==========================
 
 The velocity profile applied is the industry standard trapezium profile. The acceleration period is mirrored to create the deceleration period. The middle section is scaled accordingly; keeping the end-effector at a constant speed. The profile is modelled around two main input parameters:
 
