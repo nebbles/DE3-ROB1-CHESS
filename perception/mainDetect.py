@@ -70,6 +70,7 @@ class Perception:
 
         # Get list of Square class instances
         squares = self.makeSquares(corners, depthImage, squareImage, debug=False)
+
         # Make a Board class from all the squares to hold information
         self.board = Board(squares)
 

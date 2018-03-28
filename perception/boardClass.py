@@ -50,7 +50,7 @@ class Board:
         has changed.
         """
 
-        
+        # Calculates distances to empty colors of squares
         distance_one = matches[0].classify(current)
         distance_two = matches[1].classify(current)
 
@@ -63,9 +63,6 @@ class Board:
             # Replace state of other square with the previous one of the currently white one
             matches[1].state = old
             self.BWEmatrix[matches[1].index] = matches[1].state
-            print(self.BWEmatrix[matches[0].index])
-            print(self.BWEmatrix[matches[1].index])
-            print("I: Match reassigned as empty")
 
         else:
             # Store old state
@@ -76,8 +73,6 @@ class Board:
             # Replace state of other square with the previous one of the currently white one
             matches[0].state = old
             self.BWEmatrix[matches[0].index] = matches[0].state
-
-            print("II: Match reassigned as empty")
 
     def getBWE(self):
         """

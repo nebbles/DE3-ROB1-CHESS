@@ -24,6 +24,7 @@ class Square:
         # Properties of the contour
         self.area = cv2.contourArea(self.contours)
         self.perimeter = cv2.arcLength(self.contours, True)
+
         M = cv2.moments(self.contours)
         cx = int(M['m10'] / M['m00'])
         cy = int(M['m01'] / M['m00'])
