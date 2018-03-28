@@ -1,15 +1,17 @@
 from __future__ import print_function
-import cv2
 import sys
 import time
-import camera_subscriber
 import argparse
+import cv2
+import camera_subscriber
 from perception.mainDetect import Perception
 from chess.engine import ChessEngine
-from chess.chess_clock.clockTest import ClockFeed
-import rospy
 from franka.franka_control_ros import FrankaRos
 from motion import MotionPlanner
+from chess.chess_clock.clockTest import ClockFeed
+# noinspection PyUnresolvedReferences
+import rospy
+
 
 def bwe_converter(bwe):
 
@@ -27,6 +29,7 @@ def bwe_converter(bwe):
 
     return bwe_converted
 
+
 def main(static):
     """
     Main program for testing
@@ -35,7 +38,7 @@ def main(static):
     '''
     1. Setup
 
-    Initialise ROS, FRANKA and the camera feed. Clock feed still needs to be added
+    Initialise ROS, FRANKA and the camera feed. Clock feed hasn't been added yet.
     '''
 
     # Create ROS node for this project runtime
@@ -45,16 +48,13 @@ def main(static):
     arm = FrankaRos()
 
     # Create a planner object for executing chess moves
-    planner = MotionPlanner(arm, visual=False, manual_calibration=False, debug=True)
+    planner = MotionPlanner(visual=False, debug=True)
 
     #  0. Start up chess engine
     engine = ChessEngine(debug=True, suppress_sunfish=False)
 
     time.sleep(1)
 
-    
-    #  1. Start by getting picture of empty chessboard
-    
     # Start camera feed
     feed = camera_subscriber.CameraFeed()
     time.sleep(1)
@@ -63,23 +63,18 @@ def main(static):
 
     # Get picture of empty chessboard
 
-    if not static:
-        try:
-            empty, depthEmpty = feed.get_frames()
-        except:
-            print("Image could not be fetched. ")
-    else:
-        empty, depthEmpty = feed.get_frames()
+    empty, depth_empty = feed.get_frames()
+    if static:
         empty = cv2.imread('perception/empty.jpg', 1)
 
     print("Image fetched")
     print("")
 
     # Start Clock feed
-    #clock = ClockFeed()
-    #clock.start_process()
-    #print("Chess clock initialised")
-    #print("")
+    # clock = ClockFeed()
+    # clock.start_process()
+    # print("Chess clock initialised")
+    # print("")
 
     '''
     2. Instantiate Perception object
@@ -88,36 +83,34 @@ def main(static):
     '''
 
     # Make Perception instance
-    percept = Perception()
+    perception = Perception()
 
-    # Make a Board instance within Perception. This assigns the grid and the initial BWE given an image of an empty board
-    percept.makeBoard(empty, depthEmpty)
+    # Make a Board instance within Perception. This assigns the grid and the initial BWE given an
+    #  image of an empty board
+    perception.makeBoard(empty, depth_empty)
 
     # Wait for user input
-    print("Picture of empty board taken and Board instantiated. Please press any key after you have populated the board")
+    print("Picture of empty board taken and Board instantiated. Please press any key after you "
+          "have populated the board")
     cv2.waitKey(0)
-    print("")
-    print("Continuing...")
-    print("")
+    print("\nContinuing...\n")
 
     '''
     3. Populate board
 
-    The board now needs to be populated in the normal setup. previous is initialised to the image with the populated
-    chessboard with pieces in the start positions. Current is the picture taken after a move has been made. This
-    runs in a loop so that the BWE is updated forever
+    The board now needs to be populated in the normal setup. previous is initialised to the image 
+    with the populated chessboard with pieces in the start positions. Current is the picture 
+    taken after a move has been made. This runs in a loop so that the BWE is updated forever.
     '''
 
     # Get picture of populated chessboard
     populated, dummy = feed.get_frames()
 
     # Assign populated image as first 'previous' image, i.e. to compare with current image
-    percept.previous = populated
+    perception.previous = populated
 
-    print("Initial image of populated board assigned and BWE initialised!")
-    print("")
-    print("The game has started!")
-    print("")
+    print("Initial image of populated board assigned and BWE initialised!\n")
+    print("The game has started!\n")
 
     # Close 'Board Identified' Window
     cv2.destroyAllWindows()
@@ -125,27 +118,20 @@ def main(static):
     # Show populated board
     cv2.imshow("Populated Board", populated)
 
-    '''
-    4. Main loop
+    # MAIN LOOP
+    # Clock integration still pending.
 
-    Clock integration still pending.
-    '''
-
-    # Boolean to determine if it's Opponents (False) or Robots (True) turn
-    move = False
-
+    robot_move = False  # flag to track who's turn it is
     while True:
-
         # Wait until key pressed
-        print("When you have made the move, please press any key to update the BWE matrix.")
-        print("")
+        print("When you have made the move, please press any key to update the BWE matrix.\n")
         try:
             cv2.waitKey(0)
         except KeyboardInterrupt:
             cv2.destroyAllWindows()
 
         # END of OPPONENT turn / A clock stops / B clock starts
-        #clock.sig_q.put(1)
+        # clock.sig_q.put(1)
 
         # Refresh rate of camera frames
         time.sleep(0.05)
@@ -156,62 +142,50 @@ def main(static):
         cv2.imshow("Current Image", current)
 
         # Update BWE
-        bwe, success = percept.bwe(current, debug=True)
+        bwe, success = perception.bwe(current, debug=True)
         bwe_converted = bwe_converter(bwe)
 
-        if move == False: # The opponent's turn
-
-            if success: # If the BWE has been updated
-                try:
-                    # Get new move from Chess Engine
-                    status, msg = engine.input_bwe(bwe_converted)
-                    '''
-                    HERE MOTION NEEDS TO PUT IN THE MOVE
-                    '''
-                    # END of ROBOT turn / B clock stops / A clock starts
-                    #clock.sig_q.put(2)
-                except:
-                    print("ERROR: Chess engine or Motion failed!")
-
+        if not robot_move:  # The opponent's turn
+            if success:  # If the BWE has been updated
                 # Now it's the robots turn
-                move = True
+                robot_move = True
+
+                # Get new move from Chess Engine
+                status, msg = engine.input_bwe(bwe_converted)
 
                 # Let Chess Engine finish
                 time.sleep(0.05)
 
                 # Print chess engine return
-                print("")
-                print("Chess Engine Return:")
+                print("\nChess Engine Return:")
                 print("The status is: ", status)
                 print("The message is: ", msg)
                 print("")
                 if status < 1:
-                    print("There was an invlid move sent to Sunfish")
+                    print("An invalid move was sent to Sunfish. Exiting...")
                     sys.exit()
-                print("EXECUTE CHESS MOTION")
-                # chess_move = [('n', 'h1g3')]  # example of chess move, do not uncomment
+                print("Executing chess motion...")
+                # msg = [('n', 'h1g3')]  # example of chess move
                 planner.input_chess_move(arm, msg)
-                print("")
+
+                # END of ROBOT turn / B clock stops / A clock starts
+                # clock.sig_q.put(2)
 
             # If success is False, the whole thing just runs again :)
             else:
-                print("")
-                print("ERROR: Move has not been recognised")
-                print("Please try the move again!")
-                print("")
+                print("\nERROR: Move has not been recognised\nPlease try the move again!\n")
         else:
-            # The robots turn
-            move = False
-            print("")
-            print("!!!Please make your move!!!")
-            print("")
+            robot_move = False  # The robots turn
+            print("\nIt's time for the user to make their move!\n")
 
         # Don't know exactly why this is needed
         cv2.waitKey(1)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Perception Testing")
-    parser.add_argument('-s', '--static', action='store_true', help='Initialising board from a saved and static image')
+    parser.add_argument('-s', '--static', action='store_true', help='Initialising board from a '
+                                                                    'saved and static image')
     args = parser.parse_args()
 
     try:
