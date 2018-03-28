@@ -92,14 +92,16 @@ This exectution process is repeated as many times as there are paths in the seri
 
 Once this information has been collected, the following algorithm can be implemented:
 
-Iterations
-==========
+Generating the Trajectory
+=========================
 
-**Smoothing the trajectory**
+Smoothing the trajectory
+------------------------
 
 3 different methods were attempted to try and smooth the path to give a more natural movement.
 
-1)	Interpolation
+1. Interpolation
+~~~~~~~~~~~~~~~~
 
 The first method attempted was interpolation. This generated knot points along a given path and joined them up using a spline.
 
@@ -117,7 +119,8 @@ These outputs were then given to another ``scipy`` function that evaluates the v
 
 The problem with this method was a lack of control over the path and difficultly in finding a consistently reliable smoothing factor.
 
-2)	Tortoise and Hare
+2. Tortoise and Hare
+~~~~~~~~~~~~~~~~~~~~
 
 A discretised list of points was duplicated ans shifted, such that one was several steps ahead of the other. The corresponding points in each list were then averaged, producing a third list of points. The result of this was a chamfered rather than smoothed corner.
 
@@ -126,7 +129,8 @@ A discretised list of points was duplicated ans shifted, such that one was sever
     :align: center
     :figclass: align-center
 
-3)	Repeated Tortoise and Hare
+3. Repeated Tortoise and Hare
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To correct this problem, the same algrithm was run multiple tmies, chamfering the chamfer. This created a smooth path:
 
@@ -137,11 +141,72 @@ To correct this problem, the same algrithm was run multiple tmies, chamfering th
 
 The problem here is that the distance between the points on the chamfered edges is smaller than the distance between points on unaffected edges. This did not work with the velocity profile algorithm.
 
+Trapezium Velocity Profile
+--------------------------
+
+The velocity profile applied is the industry standard trapezium profile. The acceleration period is mirrored to create the deceleration period. The middle section is scaled accordingly; keeping the end-effector at a constant speed. The profile is modelled around two main input parameters:
+
+* The desired target speed of end-effector travel.
+* The acceleration and deceleration of the end-effector.
+
+Firstly, the path must be discretised into small, equally sized units. This ``dx`` value can be calculated to an ideal value: ``acceleration * dt**2``.
+
+There are two types of profile that had to be designed for. The simple case was that the distance of the travel (i.e. the length of the discretised path) is far enough for the end-effector to reach the target speed. In this case, *period 2* is scaled along the time axis accordingly.
+
+.. figure:: _static/velocity1.png
+    :figwidth: 40 em
+    :align: center
+    :figclass: align-center
+
+The velocity profile is then constructed (remember that area under graph is displacement):
+
+#. The end stage time is calculated: ``target_speed / acceleration``
+#. The end stage displacement is calculated: ``end_stage_time * target_speed / 2``
+#. The mid stage displacement is calculated: ``path_length - 2 * end_stage_displacement``
+#. The mid stage time is calculated: ``mid_stage_displacement / target_speed``
+#. The total time is calculated: ``end_stage_time * 2 + mid_stage_time``
+
+A time list from ``0`` to ``total_time`` in steps of ``dt`` are created.
+
+.. note:: The ``dt`` variable is fixed by the control loop running the libfranka control loop. So it cannot be changed locally from ``0.05`` seconds in this trajectory generator.
+
+A list of speeds is then created using this time list and the parameters calculated earlier (where ``c`` is the calculated intercept for the deceleration period):
+
+.. literalinclude:: ../../motion.py
+   :lines: 325-339
+
+The original discretised path list is now sampled using the speed list. For each speed, the corresponding number of samples in the path list is calculated (``speed_value * dt / dx``) and these sampled points are stored in a new list which can be sent directly to ``franka_controller_sub``.
+
+In another circumstance, the length of the path may be calculated to be to short to allow the end-effector to reach the target speed. As a result, the target speed is simply scaled down until the condition is met, allowing for a smaller triangular profile to be used.
+
+The new target speed is calculated as:
+
+.. math::
+
+  targetSpeed = \sqrt{pathLength * acceleration}
+
+.. figure:: _static/velocity2.png
+    :figwidth: 40 em
+    :align: center
+    :figclass: align-center
+
 Limitations
 ===========
 
 Feedback
-Lack of smoothness
+--------
+
+Unfortunately feedback control was not implemented to ensure the robot was moving accurately and successfully picking up pieces.
+
+Smoothing
+---------
+
+Smoothing was removed from the final version since the tortoise-hare method produced a path with uneven discretisation which prevented the velocity profile from successfully being applied.
+
+Error in velocity profile
+-------------------------
+
+There is a small error in the velocity sampling when transitioning between acceleration/deceleration periods to the mid stage periods. This could be resolved in a future update by reducing the acceleration by a small amount so that the discretisation is in multiples of ``dt``.
 
 
 Implementation
