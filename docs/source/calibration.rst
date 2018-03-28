@@ -2,6 +2,8 @@
 Calibration
 ***********
 
+Calibration allows coordinates to be sent to FRANKA in it's own reference frame for it to move to. By callibrating FRANKA, a conversion can take place between an alternative frame of reference to FRANKA's. Both manual and automated methods of doing this were devised.
+
 To use our reference frame conversion code, use the following command in the terminal when in the directory you want it copied to::
 
   svn export https://github.com/nebbles/DE3-ROB1-CHESS/trunk/tools/transform.py
@@ -9,13 +11,15 @@ To use our reference frame conversion code, use the following command in the ter
 Manual Calibration
 ==================
 
-In the interim before having complete automatic calibration, we used manual calibration to determine the position of the board relative to the Franka base frame. The FRANKA end-effector was moved to each of the inner corners and the positions reported by the FRANKA were then hardcoded.
-
+In the interim before having complete automatic calibration, we used manual calibration to determine the position of the board relative to the FRANKA base frame. The FRANKA end-effector was moved to each of the inner corners as shown below and the positions reported by the FRANKA were then hardcoded.
 When the ``MotionPlanner`` class is instantiated, the calibration is automatically taken from the hardcode values in our ``__init__`` function. In an automatic version, the hardcoded values would be replaced by coordinates gathered by the calibration procedure.
 
 .. figure:: _static/calibration_positions.png
     :align: center
     :figwidth: 30 em
+
+When the ``MotionPlanner`` class is instantiated, the calibration is automatically taken from the hardcode values in our ``__init__`` function. In an automatic version, the hardcoded values would be replaced by coordinates gathered by the calibration procedure.
+
     :figclass: align-center
 
 4 vectors are calculated from this information, along the x and y axis of the board:
@@ -34,8 +38,6 @@ The x and y vectors are averaged respectively to give overall x and y directiona
 These are then divided by 6 to give x and y unit vetors equivalent to a single board square.
 The H8 coordinate is stored and used as the starting point for all future location calculations.
 
-The minimum z value of the board is hardcoded when manually moving the end-effector around. This value is then used to hardcode a hover height, rest position and deadzone location as global variables.
-
 The coordinates of each square on the board are stored using 2 dictionaries, one for the numbers and one for the letters in AN. These locations are found by multiplying the unit vectors appropriately. For example, ``f`` is found by adding 2.5 times ``x_unit_vector`` to the H8 coordinate.
 
 Derived positions:
@@ -43,16 +45,23 @@ Derived positions:
 .. figure:: _static/derived_positions.png
     :align: center
     :figwidth: 30 em
-    :figclass: align-center
+
+The coordinates of each square on the board are stored using 2 dictionaries, one for the numbers and one for the letters in algebraic notation. These locations are found by multiplying the unit vectors appropriately. For example, ``f`` is found by adding 2.5 times ``x_unit_vector`` to the H8 coordinate.
+
+.. literalinclude:: ../../motion.py
+   :lines: 87-105
+
+Hardcoded width values were used for the gripping width, whilst the ``board_z_max`` was used to derive the correct height at which to pick up each piece.
+
 
 The ``x,y,z`` coordinates to pick up each piece were also stored in a global dictionary. Hardcoded width values were used for the gripping width, whilst the ``board_z_max`` was used to derive the correct height at which to pick up each piece.
 
-Automatic Calibration
-=====================
+To advance beyond the manual hardcoded approach described above, a system was devised whereby the FRANKA end-effector could be placed in the centre of the field of view of the camera, allowing it to automatically calibrate itself from predetermined controlled motions.
+To calibrate the chess board, image recognition techniques described in the Perception module were used to relate the Franka base frame to the camera. A trackable marker located on the robot end-effector allowed the camera to locate the arm in space as it moved between 8 vertices of a cube (built around the starting position of the end-effector).
 
 To advance beyond the manual hardcoded approach described above we devised a system whereby we could place the the FRANKA end-effector in the centre of the field of view of our camera, and allow it to automatically calibrate itself off some small controlled motions.
 
-So to calibrate the chess board, we continued to use image recognition techniques described in the Perception module, but to relate the Franka base frame to the camera we used a trackable marker located on the robot end-effector which would allow the camera to locate the arm in space as it moved between 8 vertices of a cube (built around the starting position of the end-effector).
+The ``generate_cube`` function generates an array of 9 ``x, y, z`` coordinates for calibration based on an end-effector (1 x 3 array) input position followed by the 8 coordinates of the each vertex of the cube.
 
 Generating a cube
 -----------------
@@ -62,8 +71,9 @@ An array is created about ``(0, 0, 0)`` of edge length 0.1 metres.
 
 .. figure:: _static/generate_cube_original.png
     :align: center
-    :figwidth: 30 em
     :figclass: align-center
+
+This array is then multiplied by 3 transformations matrices rotating it by 30 degrees in the x, y and z axes producing an 8 x 3 array of the transformed cube about ``(0, 0, 0)``. When creating a transformation matrix between two frames, all of the points in the robotic frame need to be different in all three axes. If there are duplicates (say 4 points are planar on x-y) then we start accumulating errors in the transformation matrix. See `Converting between Reference Frames`_ later for more information on the transformation matrix.
 
 .. literalinclude:: ../../calibration.py
    :lines: 60-62
@@ -71,9 +81,10 @@ An array is created about ``(0, 0, 0)`` of edge length 0.1 metres.
 This array is then multiplied by 3 transformations matrices rotating it by 30 degrees in the x, y and z axes producing an 8x3 array of the transformed cube about ``(0, 0, 0)``. This is because when creating a transformation matrix between two frames we need each of our points in the robotic frame to be different in all three axes. If there are duplicates (say 4 points are planar on x-y) then we start accumulating errors in our transformation matrix. See `Converting between Reference Frames`_ later for more information on the transformation matrix.
 
 .. figure:: _static/generate_cube_original_transformed.png
-    :align: center
     :figwidth: 30 em
     :figclass: align-center
+
+A ``for`` loop was used to add each row of the array to the x, y, z end-effector positions offseting the transformed cube by the current FRANKA end effector position. These are appended to the ``cube_output`` array.
 
 .. literalinclude:: ../../calibration.py
    :lines: 80-91
@@ -83,7 +94,9 @@ A for loop is used to add each row of the array to the x, y, z end-effector posi
 .. figure:: _static/generate_cube_endeff_transformed.png
     :align: center
     :figwidth: 30 em
-    :figclass: align-center
+
+Various markers including LEDs and ARUCO markers were trailled first. These were superceded once it was identified that a simple red cross marker was effective for the camera to detect. This was due to the good colour contrast between the marker and the rest of the frame, allowing a shape to be distinguished.
+OpenCV was used to detect the shape and colour of the marker. The ``detect`` function was used to find the area, perimeter and the number of sides of all the polygons found in a frame.
 
 .. literalinclude:: ../../calibration.py
    :lines: 93-99
@@ -93,15 +106,18 @@ Detecting the Marker
 
 Various markers including LEDs and ARUCO markers were tried first. These were superceded once it was identified a simple red cross marker was effective for the camera to detect. This was because the colour often had good contrast with the rest of the frame and therefore a shape could be easily distinguished.
 OpenCV was used to detect the shape and colour of the marker. The detect function was used to detect the area, perimeter and the number of sides of all the polygons found in a frame.
+To prevent detecting all polygons in the frame, the frame is resized and filtered for the red colour desired. The frame was converted from RGB to HSV to aid extracting objects of specific colour; this was done using a mask over a specific range of HSV values.
 
 .. figure:: _static/mask.JPG
     :align: center
     :figwidth: 30 em
-    :figclass: align-center
+
+The detect function was used in the ``find_cross_manual`` and ``find_cross_auto`` functions. Parameters based on the number of sides, the total area and perimeter of the detect polygons were used to filter out other shapes and ensure that the red cross marker was detected.
 
 .. literalinclude:: ../../calibration.py
    :lines: 134-144
 
+Image moments were used to find the ``x, y`` coordinates of the centre of the shape, which are returned.
 To prevent detecting all polygons in the frame, the frame is resized and filtered for the red colour we desire. The frame was converted from RGB to HSV to aid extracting objects of specific colour; this was done using a mask over a specific range of HSV values.
 
 .. literalinclude:: ../../calibration.py
@@ -132,6 +148,7 @@ Find Depth
 ----------
 
 The ``find_depth()`` function returns the RGB value of a pixel at coordinates x, y on a frame. Only the first value in the list is required since this function is used on a greyscale depth frame.
+The ``run_calibration()`` function runs the calibration functions moving the end-effector between the 8 vertices of the cube (x, y, z), then detecting the marker at each of these 8 steps, applying the marker offset and producing the array of u, v, w positions (coordinates in the camera frame).
 
 .. literalinclude:: ../../calibration.py
    :lines: 320-332
@@ -160,7 +177,10 @@ To be able to convert camera coordinates, provided by OpenCV tracking tools and 
 
 This is modelled on the idea that you can take a coordinate in our camera frame (e.g. RGB-D camera provides ``u, v, w`` coordinates) and convert it to the equivalent, corresponding coordinate in the robots reference frame (e.g. ``x, y, z``) so that the robot can move to that coordinate in the camera's view. ``a`` represents the camera coordinate, and ``b`` represents the output of the function (which mulitplies ``a`` with our transformation matrix ``X``), which represents the same point in the workspace (but in terms of the robot's reference frame).
 
-.. todo:: add image of reference frames of both robot, camera, board
+.. figure:: _static/reference_frame_camera.png
+    :figwidth: 20 em
+    :align: center
+    :figclass: align-center
 
 Creating the transformation matrix
 ----------------------------------
