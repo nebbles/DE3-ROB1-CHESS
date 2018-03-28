@@ -66,7 +66,7 @@ The ``generate_cube`` function generates an array of 9 ``x, y, z`` coordinates f
 Generating a cube
 -----------------
 
-The generate_cube function generates an array of 9 ``x, y, z`` coordinates for calibration based on an end-effector (1x3) input position followed by the 8 coordinates of the each vertex of the cube.
+The generate_cube function generates an array of 9 ``x, y, z`` coordinates for calibration based on an end-effector (1 x 3) input position followed by the 8 coordinates of the each vertex of the cube.
 An array is created about ``(0, 0, 0)`` of edge length 0.1 metres.
 
 .. figure:: _static/generate_cube_original.png
