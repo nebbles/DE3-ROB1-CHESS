@@ -2,23 +2,26 @@ import cv2
 import imutils
 import matplotlib.pyplot as plt
 import numpy as np
-#from mpl_toolkits.mplot3d import Axes3D
-#import CameraFeed
 
 
-def run_calibration(arm_object, planner, cam_feed):
-    # franka_pos = get_franka_pos
+def run_calibration(arm_object, planner_object, cam_feed):
+    """
+    Description written here.
+
+    :param arm_object:
+    :param planner_object:
+    :param cam_feed:
+    :return:
+    """
     franka_pos = arm_object.get_position()
     moves = generate_cube(franka_pos)
     marker_coordinates = np.zeros((8, 3))
     franka_coordinates = np.zeros((8, 3))
 
-    np.shape(moves)[0]
-
     for i in range(1, np.shape(moves)[0]):  # not lengths number of rows needs to be fixed
     
         cur_pos = arm_object.get_position()
-        complete_trajectory = planner.apply_trapezoid_vel_profile([cur_pos, moves[i] ])
+        complete_trajectory = planner_object.apply_trapezoid_vel([cur_pos, moves[i]])
     
         arm_object.send_trajectory(complete_trajectory)
         # delay?
@@ -28,36 +31,33 @@ def run_calibration(arm_object, planner, cam_feed):
         franka_coordinates[i-1, 1] = franka_y
         franka_coordinates[i-1, 2] = franka_z
 
-
         rgb, depth = cam_feed.get_frames()
-        current_marker_pos = find_cross_auto(rgb) #change data type tupple to array
+        current_marker_pos = find_cross_auto(rgb)  # change data type tupple to array
 
         current_marker_pos = find_depth(depth, current_marker_pos)
-        current_marker_pos = fix_marker_offset(current_marker_pos)  # fix for the offset between actual location of marker and desired
+        # fix for the offset between actual location of marker and desired
+        current_marker_pos = fix_marker_offset(current_marker_pos)
 
         marker_coordinates[i-1, 0] = current_marker_pos[0]
         marker_coordinates[i-1, 1] = current_marker_pos[1]
         marker_coordinates[i-1, 2] = current_marker_pos[2]
 
-
-    # #return marker_coordinates, franka_coordinates
-    # print final_marker_pos
-
-    #return franka_coordinates, marker_coordinates
     return marker_coordinates, franka_coordinates
 
 
-
 def generate_cube(centre_point):
-    """function generates an array of 8 x,y,z coordinates for calibration based on an end-effector (1x3) input position"""
+    """
+    Generates an array of 8 x,y,z coordinates for calibration based on an end-effector (1x3)
+    input position.
 
+    :param centre_point:
+    :return:
+    """
     x, y, z = centre_point[0], centre_point[1], centre_point[2]
     # Initial Cube
     p_cube = np.array(
-        [[-0.05, -0.05, -0.05], [-0.05, 0.05, -0.05], [-0.05, 0.05, 0.05], [-0.05, -0.05, 0.05], [0.05, -0.05, -0.05],
-         [0.05, 0.05, -0.05], [0.05, -0.05, 0.05], [0.05, 0.05, 0.05]])
-
-    # print(p_cube)
+        [[-0.05, -0.05, -0.05], [-0.05, 0.05, -0.05], [-0.05, 0.05, 0.05], [-0.05, -0.05, 0.05],
+         [0.05, -0.05, -0.05], [0.05, 0.05, -0.05], [0.05, -0.05, 0.05], [0.05, 0.05, 0.05]])
 
     p_cube_x = []
     p_cube_y = []
@@ -126,39 +126,42 @@ def generate_cube(centre_point):
 
     plt.show()
 
-    # print(cube_output)
-
     return cube_output  # 9x3 array
-
-# if __name__ == '__main__':
-#     c = calibrate_cube((1, 1, 1))
-#     print('output positions =', c)
-
-    # return moves # list of moves to complete
 
 
 def detect(c):
-    """Function used by find_cross function to detect the edges and vertices of possible polygons in an image"""
+    """
+    Used by find_cross function to detect the edges and vertices of possible polygons in an image.
+
+    :param c:
+    :return:
+    """
     peri = cv2.arcLength(c, True)
     area = cv2.contourArea(c)
     approx = cv2.approxPolyDP(c, 0.02 * peri, True)
-    return (len(approx), peri, area)
+    return len(approx), peri, area
 
 
 def find_cross_manual(frame):
-    """function that uses open CV2 to detect a red cross in a photo. This function applies a red mask, finds contours,
-    finds the nuber of vertexes in polygons, and selects the shape with the appropriate number of vertices, area and perimeter.
-    It then finds the centre of the cross and returns its coordinates"""
+    """
+    Uses open CV2 to detect a red cross in a photo. This function applies a red mask,
+    finds contours, finds the number of vertexes in polygons, and selects the shape with the
+    appropriate number of vertices, area and perimeter. It then finds the centre of the cross and
+    returns its coordinates.
+
+    :param frame:
+    :return:
+    """
 
     markers = []
-    all_markers = []
     markers_tuple = []
 
-    while (1):
+    while 1:
         # img = cv2.imread('test_2.jpg')
+
         img = frame
-        imgsized = imutils.resize(img, width=640)
-        imghsv = cv2.cvtColor(imgsized, cv2.COLOR_BGR2HSV)
+        img_sized = imutils.resize(img, width=640)
+        img_hsv = cv2.cvtColor(img_sized, cv2.COLOR_BGR2HSV)
 
         # cv2.imshow('frameb', imgsized)
 
@@ -167,41 +170,37 @@ def find_cross_manual(frame):
         lower_red2 = np.array([0, 70, 50])
         upper_red2 = np.array([10, 200, 200])
 
-        mask1 = cv2.inRange(imghsv, lower_red1, upper_red1)
-        mask2 = cv2.inRange(imghsv, lower_red2, upper_red2)
+        mask1 = cv2.inRange(img_hsv, lower_red1, upper_red1)
+        mask2 = cv2.inRange(img_hsv, lower_red2, upper_red2)
         mask = mask1 | mask2
 
         # cv2.imshow('mask', mask)
 
-        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+        contours = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours = contours[0] if imutils.is_cv2() else contours[1]
 
-        for c in cnts:
-
+        for c in contours:
             shape = detect(c)
 
             if 14 > shape[0] > 10 and 800 > shape[1] > 50 and 15000 > shape[2] > 100:
                 # if 14 > shape[0] > 10:
+                m = cv2.moments(c)
+                c_x = int((m["m10"] / m["m00"]))
+                c_y = int((m["m01"] / m["m00"]))
+                cv2.circle(img_sized, (c_x, c_y), 3, (0, 255, 255), -1)
+                markers.append(c_x)
+                markers.append(c_y)
+                markers_tuple.append((c_x, c_y))
 
-                # print shape
-                # all_markers.append(shape)
-                M = cv2.moments(c)
-                cX = int((M["m10"] / M["m00"]))
-                cY = int((M["m01"] / M["m00"]))
-                cv2.circle(imgsized, (cX, cY), 3, (0, 255, 255), -1)
-                markers.append(cX)
-                markers.append(cY)
-                markers_tuple.append((cX, cY))
-
-                cv2.drawContours(imgsized, [c], -1, (0, 255, 0), 2)
+                cv2.drawContours(img_sized, [c], -1, (0, 255, 0), 2)
 
                 for i in range(len(markers_tuple)):
-                    cv2.putText(imgsized, str(i), markers_tuple[i], cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                    cv2.putText(img_sized, str(i), markers_tuple[i], cv2.FONT_HERSHEY_SIMPLEX,
+                                0.5, (0, 0, 0), 2)
 
-                cv2.imshow("Image", imgsized)
+                cv2.imshow("Image", img_sized)
 
         # print markers
-        # print all_markers
 
         # pts = np.array(markers)
         # cv2.polylines(imgsized, [pts], True, (255, 0, 255), 3)
@@ -210,6 +209,7 @@ def find_cross_manual(frame):
         cv2.waitKey(0)
         break
 
+    chosen_marker = None
     if len(markers_tuple) == 1:
         double_check = input("Was the correct marker selected? Press 1 for YES or 9 for NO")
         if double_check == 1:
@@ -227,22 +227,27 @@ def find_cross_manual(frame):
     print chosen_marker
     return chosen_marker
 
+
 def find_cross_auto(frame):
-    """function that uses open CV2 to detect a red cross in a photo. This function applies a red mask, finds contours,
-    finds the nuber of vertexes in polygons, and selects the shape with the appropriate number of vertices, area and perimeter.
-    It then finds the centre of the cross and returns its coordinates"""
+    """
+    Uses open CV2 to detect a red cross in a photo. This function applies a red mask,
+    finds contours, finds the nuber of vertexes in polygons, and selects the shape with the
+    appropriate number of vertices, area and perimeter. It then finds the centre of the cross and
+    returns its coordinates.
+
+    :param frame:
+    :return:
+    """
 
     markers = []
-    chosen_marker = []
     markers_tuple = []
 
-    while (1):
-        print "im here"
+    while 1:
         # img = cv2.imread(frame)
         img = frame
-        imgsized = imutils.resize(img, width=640)
-        # imgsized = imutils.resize(img, width=640) try without resizing
-        imghsv = cv2.cvtColor(imgsized, cv2.COLOR_BGR2HSV)
+        img_sized = imutils.resize(img, width=640)
+        # img_sized = imutils.resize(img, width=640) try without resizing
+        img_hsv = cv2.cvtColor(img_sized, cv2.COLOR_BGR2HSV)
 
         # cv2.imshow('frameb', imgsized)
 
@@ -251,40 +256,40 @@ def find_cross_auto(frame):
         lower_red2 = np.array([0, 70, 50])
         upper_red2 = np.array([10, 255, 255])
 
-        mask1 = cv2.inRange(imghsv, lower_red1, upper_red1)
-        mask2 = cv2.inRange(imghsv, lower_red2, upper_red2)
+        mask1 = cv2.inRange(img_hsv, lower_red1, upper_red1)
+        mask2 = cv2.inRange(img_hsv, lower_red2, upper_red2)
         mask = mask1 | mask2
 
         # cv2.imshow('mask', mask)
 
-        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+        contours = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours = contours[0] if imutils.is_cv2() else contours[1]
 
-        for c in cnts:
+        for c in contours:
 
             shape = detect(c)
 
             if 14 > shape[0] > 10 and 800 > shape[1] > 50 and 15000 > shape[2] > 100:
                 # print 'I am here'
                 # print shape
-                # if 14 > shape[0] > 10 and 200 > shape[1] > 50 and 820 > shape[2] > 100: # change these values to match geometry of cross
-                M = cv2.moments(c)
+                # change these values to match geometry of cross
+                # if 14 > shape[0] > 10 and 200 > shape[1] > 50 and 820 > shape[2] > 100:
+                m = cv2.moments(c)
 
+                c_x = int((m["m10"] / m["m00"]))
+                c_y = int((m["m01"] / m["m00"]))
+                cv2.circle(img_sized, (c_x, c_y), 3, (0, 255, 255), -1)
+                markers.append(c_x)
+                markers.append(c_y)
+                markers_tuple.append((c_x, c_y))
 
-
-                cX = int((M["m10"] / M["m00"]))
-                cY = int((M["m01"] / M["m00"]))
-                cv2.circle(imgsized, (cX, cY), 3, (0, 255, 255), -1)
-                markers.append(cX)
-                markers.append(cY)
-                markers_tuple.append((cX, cY))
-
-                cv2.drawContours(imgsized, [c], -1, (0, 255, 0), 2)
+                cv2.drawContours(img_sized, [c], -1, (0, 255, 0), 2)
 
                 for i in range(len(markers_tuple)):
-                    cv2.putText(imgsized, str(i), markers_tuple[i], cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                    cv2.putText(img_sized, str(i), markers_tuple[i], cv2.FONT_HERSHEY_SIMPLEX,
+                                0.5, (0, 0, 0), 2)
 
-                cv2.imshow("Image", imgsized)
+                cv2.imshow("Image", img_sized)
 
         cv2.waitKey(0)
 
@@ -308,20 +313,32 @@ def find_cross_auto(frame):
 
 
 def find_depth(img, coordinate):
-    """Function that finds depth of marker centre"""
+    """
+    Finds depth of marker centre in a depth image.
+
+    :param img:
+    :param coordinate:
+    :return:
+    """
     # img = cv2.imread('test_3.jpg') #might not be needed if already reading a cv image
     depth = img[(coordinate[1]), (coordinate[0])]
     coordinates = coordinate[0], coordinate[1], depth[0]
 
     return coordinates
 
+
 def fix_marker_offset(coordinates):
-    """Relates coordinates of centre of cross to franka end effectof actual coordinates"""
+    """
+    Relates coordinates of centre of cross to Franka end-effector position.
+
+    **Note** Currently this is not implemented.
+    """
     # TODO add the fixed marker offset
     return coordinates
 
 
 if __name__ == '__main__':
+    # noinspection PyUnresolvedReferences
     import rospy
     import camera_subscriber
     from franka.franka_control_ros import FrankaRos
@@ -331,6 +348,6 @@ if __name__ == '__main__':
     feed = camera_subscriber.CameraFeed()
     arm = FrankaRos()
     
-    planner = MotionPlanner(arm, visual=False, manual_calibration=False, debug=True)
+    planner = MotionPlanner(visual=False, debug=True)
 
     run_calibration(arm, planner, feed)
