@@ -4,7 +4,6 @@
 #
 # Make sure that you are running:
 #   roscore
-#   franka_controller_sub
 #   roslaunch openni2_launch openni2.launch
 from __future__ import print_function
 import roslib
