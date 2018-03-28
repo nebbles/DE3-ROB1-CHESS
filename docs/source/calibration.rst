@@ -152,26 +152,29 @@ Converting between Reference Frames
 Overview
 --------
 
-To be able to convert camera coordinates, provided by opencv tracking tools and other methods, we need to maintain a relationship between multiple reference frames. This relationship relates the camera reference frame and the robot base reference frame used by the libfranka controller. This relationship is maintained in a 4-by-4 transformation matrix, and is constructed using the following general formula:
+To be able to convert camera coordinates, provided by OpenCV tracking tools and other methods, a relationship between multiple reference frames needs to be maintained. The desired relationship relates the camera reference frame and the robot base reference frame used by the libfranka controller. This relationship is stored in a 4-by-4 transformation matrix, and is constructed using the following general formula:
 
 .. math::
 
   aX = b
 
-This is modelled on the idea that we can take a coordinate in our main frame (e.g. RGB-D camera provides ``u, v, w`` coordinates) and convert it to the equivalent, corresponding coordinate in the robots reference frame (e.g. ``x, y, z``) so that the robot can move to that point on the camera's view. ``a`` represents our camera coordinate, and ``b`` represents the output of our function, that mulitplies ``a`` with our transformation matrix ``X``, which represents the same point but on the robots reference frame.
+This is modelled on the idea that you can take a coordinate in our camera frame (e.g. RGB-D camera provides ``u, v, w`` coordinates) and convert it to the equivalent, corresponding coordinate in the robots reference frame (e.g. ``x, y, z``) so that the robot can move to that coordinate in the camera's view. ``a`` represents the camera coordinate, and ``b`` represents the output of the function (which mulitplies ``a`` with our transformation matrix ``X``), which represents the same point in the workspace (but in terms of the robot's reference frame).
 
 .. todo:: add image of reference frames of both robot, camera, board
 
 Creating the transformation matrix
 ----------------------------------
 
-To create the transformation matrix, we construct a set of linear equations that we want to solve using a simple least squares algorithm, commonly used in linear regression. This algorithm tries to minimise the sum of squares for each solution to the set of linear equations.
+To create the transformation matrix, you construct a set of linear equations that are then solved using a simple least squares algorithm, commonly used in linear regression. This algorithm tries to minimise the sum of squares for each solution to the set of linear equations.
 
-This set of linear equations is constructed using *calibration points*. These points (usually a minimum of 4) are a set of known, corresponding coordinates in both the cameras reference frame and the robots. These can be automatically sourced with a setup program, or manually. To manually get these points, the robots end effector would be moved to a point in the field of view of the camera, and the robot would report its position (``x, y, z``). The camera would then detect the robot end effector in the field of view and report the location according to its own reference frame (``u, v, w``) and so these two points are the same point (they correspond) but are in different reference frames. We collect a minimum of 4 calibration points, ideally up to 8 or 10 because this will increase the accuracy of our transformation matrix, as there may have been a small error in the values reported by the camera or robot.
+This set of linear equations is constructed using *calibration points*. These points (usually a minimum of 4) are a set of known, corresponding coordinates in both the cameras reference frame and the robots. These can be automatically sourced with a setup program, or manually. To manually get these points, the robots end effector are moved to a point in the field of view of the camera, and the robot would report its position (``x, y, z``). The camera would then detect the robot end effector in the field of view and report the location according to its own reference frame (``u, v, w``) and so these two points are the same point (they correspond) but are in different reference frames. A minimum of 4 calibration points are collected, ideally up to 8 or 10 because this will increase the accuracy of the transformation matrix, as there may have been a small error in the values reported by the camera or robot.
 
-.. todo:: add image of linear regression with caption
+.. figure:: _static/regression.png
+    :figwidth: 20 em
+    :align: center
+    :figclass: align-center
 
-We now have our calibration equation (of *n* calibration points), and we want to solve for the unknowns in the transformation matrix, *X*.
+The calibration equation (of *n* calibration points) can now be solved for the unknowns in the transformation matrix, *X*.
 
 .. math::
 
@@ -197,7 +200,7 @@ Where :math:`m_{ij}` is the unknown in *X*,
       m_{41}&m_{42}&m_{43}&m_{44}
     \end{bmatrix}
 
-In MATLab, the function for solving this equation is simply ``X = a\b``, or less commonly written as ``X = mldivide(a,b)``. `The mldivide() function`_ in MATLab is a complex one, and utilises many different possible algorithms depending on its inputs. To get the similar behaviour in Python, we use `numpy's lstsq function`_ which has similarites and differences which have been discussed `{1}`_ `{2}`_, but ultimately provides us the same functionality of returning a least square solution to the equation. We use the function as in our example below::
+In MATLab, the function for solving this equation is simply ``X = a\b``, or less commonly written as ``X = mldivide(a,b)``. `The mldivide() function`_ in MATLab is a complex one, and utilises many different possible algorithms depending on its inputs. To get the similar behaviour in Python, use `numpy's lstsq function`_ which has similarites and differences which have been discussed `{1}`_ `{2}`_, but ultimately provides the same functionality of returning a least square solution to the equation. This is used in the function as shown below::
 
   import numpy as np
   from numpy import random
