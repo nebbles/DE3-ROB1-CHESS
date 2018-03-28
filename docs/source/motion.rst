@@ -84,7 +84,7 @@ Smoothing the trajectory
 3 different methods were attempted to try and smooth the path to give a more natural movement.
 
 1. Interpolation
-~~~~~~~~~~~~~~~~
+----------------
 
 The first method attempted was interpolation. This generated knot points along a given path and joined them up using a spline.
 
@@ -105,7 +105,7 @@ The problem with this method was a lack of control over the path and difficultly
 .. _`{1}`: https://en.wikipedia.org/wiki/Interpolation
 
 2. Tortoise and Hare
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 A discretised list of points was duplicated and shifted, such that one was several steps ahead of the other. The corresponding points in each list were then averaged, producing a third list of points. The result of this was a chamfered rather than smoothed corner.
 
@@ -115,7 +115,7 @@ A discretised list of points was duplicated and shifted, such that one was sever
     :figclass: align-center
 
 3. Repeated Tortoise and Hare
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------
 
 To correct this problem, the same algorithm was run multiple times, chamfering the chamfer. This created a smooth path:
 
