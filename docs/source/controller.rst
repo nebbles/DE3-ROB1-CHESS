@@ -69,9 +69,16 @@ Below is the specification for the modules of the Chess Project Python Program. 
 
 * Inputs:
 
-  * Action command object - takes each command and builds a motion plan around it
-  * Takes in current robot Arm data and modifies motion plan accordingly
+  *  Inner corner xyz locations from the perception module
+  *  Action command object:
+    * Whether or not there is a death first
+    * The piece type of death
+    * Location of death
+    * Move piece type
+    * Action-move (piece type)
+    * Action-move-from (location)
+    * Action-move-to (location)
 
 * Outputs:
 
-  * Stores motion plan which gets passed to the publisher node
+  * Trajectory and gripping commands
