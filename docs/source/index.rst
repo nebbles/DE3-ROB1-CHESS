@@ -7,6 +7,8 @@ About
 
 This is the documentation for the group CHESS Project for the Robotics 1 module in Design Engineering, Imperial College London, in March 2018.
 
+The project is hosted on GitHub: https://github.com/nebbles/DE3-ROB1-CHESS.
+
 The Authors
 -----------
 
