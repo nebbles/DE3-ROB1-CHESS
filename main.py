@@ -9,7 +9,7 @@ from chess.engine import ChessEngine
 from chess.chess_clock.clockTest import ClockFeed
 import rospy
 from franka.franka_control_ros import FrankaRos
-from tortoise_hare2_anna import MotionPlanner
+from motion import MotionPlanner
 
 def bwe_converter(bwe):
 

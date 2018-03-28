@@ -325,7 +325,7 @@ if __name__ == '__main__':
     import rospy
     import camera_subscriber
     from franka.franka_control_ros import FrankaRos
-    from tortoise_hare2_anna import MotionPlanner
+    from motion import MotionPlanner
 
     rospy.init_node('franka_python_node', anonymous=True)
     feed = camera_subscriber.CameraFeed()

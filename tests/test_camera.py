@@ -12,7 +12,7 @@ import rospy
 import time
 import camera_subscriber
 from franka.franka_control_ros import FrankaRos
-from tortoise_hare2_anna import MotionPlanner
+from motion import MotionPlanner
 import numpy as np
 
 

@@ -1,14 +1,12 @@
 from __future__ import print_function
 import numpy as np
-import matplotlib
-
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # for: fig.gca(projection = '3d')
 import time
 import rospy
 from std_msgs.msg import Float64MultiArray
-import thread
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # for: fig.gca(projection = '3d')
 
 glob_curr_pos_x = None
 glob_curr_pos_y = None
