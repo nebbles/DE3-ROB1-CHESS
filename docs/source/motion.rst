@@ -57,11 +57,13 @@ The intermediate positions are then found; these are dependant on whether or not
 
 The positions are outputted in pairs of start and end locations, with every intermediate position represented. The start position is always set to the current position of FRANKA, rather than the end position of the previous command. This would account for any errors in FRANKA's motion.
 
-.. TODO
-.. .. literalinclude:: ../../motion/Trajectory.py
-..    :lines: 66-80
+.. literalinclude:: ../../motion.py
+   :lines: 467-471
 
-THIS SHOULD BE THE CODE THAT SHOWS THE PAIRS OF POSITIONS ^^^
+*The current position is forced at the beginning stage of each straight line movement.*
+
+.. literalinclude:: ../../motion.py
+   :lines: 556-580
 
 .. note::
 	An additional move taking FRANKA from it's current position to it's rest position is always included in case the arm is not already in it's rest location.
@@ -85,12 +87,10 @@ It is then determined whether or not a gripping action should be executed, based
 
 This exectution process is repeated as many times as there are paths in the series, completing a single chess move.
 
-
 .. tip::
    En passant moves have been disabled for this project, so the location of the killed piece will always be the same as the goal location.
 
 Once this information has been collected, the following algorithm can be implemented:
-
 
 Iterations
 ==========
