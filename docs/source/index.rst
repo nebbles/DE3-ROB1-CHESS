@@ -20,7 +20,9 @@ This is the documentation for the group Chess Project for the Robotics 1 module 
 
 The authors: Anna Bernbaum, Ben Greenberg, Josephine Latreille, Sanish Mistry, Leah Pattison, Paolo Ruegg, Sylvia Zhang.
 
-For enquiries on this documentation, please contact bsg115@ic.ac.uk
+For enquiries on this documentation or source code, please contact bsg115@ic.ac.uk
+
+For help with out perception code, please contact either leah.pattison15@imperial.ac.uk or paolo.ruegg15@imperial.ac.uk
 
 Popular Links
 =============
@@ -48,12 +50,12 @@ Contents
    :maxdepth: 2
    :caption: Project Development
 
-   controller
+   camera
    calibration
    perception
    chess-engine
    motion
-   camera-subscriber
+   controller
 
 .. toctree::
    :maxdepth: 2
