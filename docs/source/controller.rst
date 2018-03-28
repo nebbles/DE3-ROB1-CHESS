@@ -1,6 +1,20 @@
-**************
-Controller API
-**************
+**********
+Controller
+**********
+
+Using Test Scripts
+==================
+
+Throughout our project we used test scripts. These can be seen in the ``tests`` folder. To run these tests properly (e.g. ``test_camera.py``) you should type the following into the terminal::
+
+  cd DE3-ROB1-CHESS/
+  python -m tests.test_camera.py
+
+This is to ensure relative imports work properly, as every import is relative to the project level directory.
+
+Main File
+=========
+
 
 .. todo:: redo and add system diagram
 
