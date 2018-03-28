@@ -10,8 +10,8 @@ from perception.boardClass import Board
 
 class Perception:
     """
-    The perception class contains the board as well as some functions needed to generate it and output
-    a BWE matrix. The updating of the BWE is done within Board
+    The perception class contains a Board instance as well as functions needed to generate it and output
+    a BWE matrix. The updating of the BWE is done within the Board class.
     """
     def __init__(self, board = 0, previous = 0):
         # The Board instance
@@ -25,7 +25,7 @@ class Perception:
     """
     def initialImage(self, initial):
         """
-        This function sets the previous variable to the initial populated board
+        This function sets the previous variable to the initial populated board. This function is deprecated.
         """
 
         self.previous = initial
@@ -33,7 +33,8 @@ class Perception:
     def makeBoard(self, image, depthImage):
         """
         Takes an image of an empty board and takes care of image processing and subdividing it into 64 squares
-        which are then stored in one Board object that is returned.
+        which are then stored in one Board object that is returned. Expanding to depth calibration has not yet been
+        finished.
         """
         try:
             # Process Image: convert to B/w
@@ -47,7 +48,7 @@ class Perception:
             print("")
 
         # Extract chessboard from image
-        extractedImage = self.imageAnalysis(image, processedImage, debug=True)
+        extractedImage = self.imageAnalysis(image, processedImage, debug=False)
 
         # Chessboard Corners
         cornersImage = extractedImage.copy()
@@ -56,31 +57,37 @@ class Perception:
         cannyImage = self.cannyEdgeDetection(extractedImage)
 
         # Hough line detection to find rho & theta of any lines
-        h, v = self.houghLines(cannyImage, extractedImage)
+        h, v = self.houghLines(cannyImage, extractedImage, debug=False)
 
         # Find intersection points from Hough lines and filter them
-        intersections = self.findIntersections(h, v, extractedImage)
+        intersections = self.findIntersections(h, v, extractedImage, debug=False)
 
         # Assign intersections to a sorted list of lists
-        corners, cornerImage = self.assignIntersections(extractedImage, intersections)
+        corners, cornerImage = self.assignIntersections(extractedImage, intersections, debug=False)
 
         # Copy original image to display on
         squareImage = image.copy()
 
         # Get list of Square class instances
-        squares = self.makeSquares(corners, depthImage, squareImage, True)
+        squares = self.makeSquares(corners, depthImage, squareImage, debug=False)
+
         # Make a Board class from all the squares to hold information
         self.board = Board(squares)
 
         # Assign the initial BWE Matrix to the squares
         self.board.assignBWE()
 
+        print("")
+        print("The initial BWE has been assigned as: ")
+        self.printBwe(self.board.getBWE())
+        print("")
+
         ## DEBUG
         # Show the classified squares
         #self.board.draw(squareImage)
         #self.board.draw(depthImage)
-        #cv2.imshow("Classified Squares", squareImage)
 
+        #cv2.imshow("Classified Squares", squareImage)
         #cv2.imshow("Classified Squares", depthImage)
 
         cv2.imwrite("ClassifiedSquares.jpeg", squareImage)
@@ -88,7 +95,7 @@ class Perception:
 
     def bwe(self, current, debug=False):
         """
-        Takes care of taking the camera picture, comparing it to the previous one, updating the BWE and returning it
+        Takes care of taking the camera picture, comparing it to the previous one, updating the BWE and returning it.
         """
 
         ## DEBUG
@@ -104,29 +111,45 @@ class Perception:
         # Now we want to check in which square the change has happened
         matches = self.board.whichSquares(centres)
 
+        if len(matches) > 2:
+            print("")
+            print("Error: More than two squares have changed!")
+            print("")
+
+        # Get the old BWE to handle errors
+        old_bwe = self.board.getBWE()
+
         # Update the BWE by looking at which squares have changed
         self.board.updateBWE(matches, currentCopy)
 
         # Print second
         bwe = self.board.getBWE()
 
-        # Show BWE Update
-        cv2.imshow("Updating BWE", currentCopy)
+        # A change has been detected
+        if not (old_bwe==bwe).all():
+            # Show BWE Update
+            cv2.imshow("Updating BWE", currentCopy)
 
-        # Make current image the previous one
-        self.previous = current
+            # Make current image the previous one
+            self.previous = current
+            success = True
 
-        if debug:
+        # No change has been detected
+        else:
+            print("WARNING: No change has been detected. The BWE has not been updated.")
+            success = False
+
+        if debug and success:
             self.printBwe(bwe)
 
-        return bwe
+        return bwe, success
 
     def printBwe(self, bwe):
         """
-        Prints the BWE
+        Prints the BWE.
         """
         print("")
-        print("This is the BWE matrix: ")
+        print("BWE matrix: ")
         print("")
         print(bwe)
 
@@ -136,7 +159,7 @@ class Perception:
 
     def processFile(self, img, debug=False):
         """
-        Converts input image to grayscale & applies adaptive thresholding
+        Converts input image to grayscale & applies adaptive thresholding.
         """
         img = cv2.GaussianBlur(img,(5,5),0)
         # Convert to HSV
@@ -158,7 +181,7 @@ class Perception:
 
     def imageAnalysis(self, img, processedImage, debug=False):
         """
-        Finds the contours in the chessboard
+        Finds the contours in the chessboard, filters the largest one (the chessboard) and masks it.
         """
 
         ### CHESSBOARD EXTRACTION (Contours)
@@ -251,7 +274,7 @@ class Perception:
     def categoriseLines(self, lines, debug=False):
         """
         Sorts the lines into horizontal & Vertical. Then sorts the lines based on their respective centers
-        (x for vertical, y for horizontal). H
+        (x for vertical, y for horizontal).
         """
         horizontal = []
         vertical = []
@@ -322,13 +345,9 @@ class Perception:
 
         return hor, ver
 
-    # def showImage(image, lines):
-    #     cv2.line(image, (Line.p1), (Line.p2), (255, 0, 0), 2, cv2.LINE_AA)
-    #     cv2.imshow('Hough lines', image)
-
     def drawLines(self, image, lines, color=(0,0,255), thickness=2):
         """
-        What you think it does
+        Draws lines. This function was used to debug Hough Lines generation.
         """
         #print("Going to print: ", len(lines))
         for l in lines:
@@ -342,7 +361,8 @@ class Perception:
 
     def findIntersections(self, horizontals,verticals, image, debug=True):
         """
-        WARNING: This function is trashy af. IDK why it works but it does. Finds intersections between Hough lines
+        Finds intersections between Hough lines and filters out close points. The filter relies on a computationally
+        expensive for loop and could definitely be improved.
         """
         intersections = []
 
@@ -413,7 +433,8 @@ class Perception:
         """
         Takes the filtered intersections and assigns them to a list containing nine sorted lists, each one representing
         one row of sorted corners. The first list for instance contains the nine corners of the first row sorted
-        in an ascending fashion.
+        in an ascending fashion. This function necessitates that the chessboard's horizontal lines are exactly
+        horizontal on the camera image, for the purposes of row assignment.
         """
 
         # Corners array / Each list in list represents a row of corners
@@ -468,7 +489,7 @@ class Perception:
 
     def makeSquares(self, corners, depthImage, image, debug=True):
         """
-        Instantiates the 64 squares when given 81 corner points
+        Instantiates the 64 squares given 81 corner points.
         """
 
         # List of Square objects
@@ -479,7 +500,7 @@ class Perception:
         numbers = ['1', '2', '3', '4', '5', '6', '7', '8']
         index = 0
 
-        print(corners)
+        #print(corners)
 
         for i in range(8):
             for j in range(8):
@@ -493,15 +514,18 @@ class Perception:
                 #print(c1, c2, c3, c4)
                 squares.append(square)
 
-                if debug:
-                    square.draw(image)
+                square.draw(image)
 
                 index += 1
-                print(index)
+                #print(index)
                 #xyz = square.getDepth(depthImage)
                 #coordinates.append(xyz)
+
+        cv2.imshow("Board Identified", image)
+
         if debug:
             cv2.imwrite("5SquaresIdentified.jpeg", image)
+
 
 
 

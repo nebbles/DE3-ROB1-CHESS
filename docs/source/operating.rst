@@ -15,17 +15,32 @@ Starting ROS to control Franka
 ..
 ..     Interfacing Python with FRANKA.
 
-Using a single workstation for roscore
---------------------------------------
+The recommended setup for controlling the franka can be seen in the tree below. The top level shows the devices required and their IP address, the second tier shows the commands needed to run the files::
 
-To use ROS to control the Franka arm from one workstation, you need to have the master node running for ROS. To do this, open a new terminal window and run:
+  .
+  ├── Franka Control Box (192.168.0.88)
+  ├── Host workstation computer (192.168.0.77)
+  │   ├── roscore
+  │   └── ./franka_controller_sub 192.168.0.88
+  └── Project workstation computer
+      ├── roslaunch openni2_launch openni2.launch
+      ├── camera_subscriber.py (this does not need to be run seperately)
+      └── main.py
 
-.. code-block:: bash
+.. tip:: To test the image feed out without using it in ``main.py`` you can use the ``test_camera.py`` file in the ``tests`` folder.
 
-  roscore
-
-
-From this point, you can now initialise the subscriber node.
+.. Using a single workstation for roscore
+.. --------------------------------------
+..
+.. .. warning:: **This is not recommended**. In order to maintain the realtime loop required by the ``franka_controller_sub`` it should run on its own computer.
+..
+.. To use ROS to control the Franka arm from one workstation, you need to have the master node running for ROS. To do this, open a new terminal window and run:
+..
+.. .. code-block:: bash
+..
+..   roscore
+..
+.. From this point, you can now initialise the subscriber node.
 
 Networking with other workstations
 ----------------------------------
@@ -62,7 +77,7 @@ Sometimes there is an "**error with no active exception**" thrown by this execut
 Using the publisher
 ===================
 
-First, make sure you are running ``roscore`` and the subscriber, ``franka_controller_sub``.
+First, make sure you are running ``roscore`` and the subscriber, ``franka_controller_sub`` on the main lab workstation.
 
 **Example**
 
@@ -88,8 +103,12 @@ To use the ``FrankaRos`` class in your own Python script would look something li
    franka = FrankaRos(debug_flag=True)
    # we set the flag true to get prints to the console about what FrankaRos is doing
 
-   franka.move_to(x=0.26, y=-0.4, z=0.36, speed=0.1)
-   # we tell the arm to go to a specific point in robot space
+   while True:
+      data = arm.get_position()
+      print("End effector position:")
+      print("X: ", data[0])
+      print("Y: ", data[1])
+      print("Z: ", data[2])
 
 .. automodule:: franka.franka_control_ros
   :members:
@@ -98,7 +117,7 @@ To use the ``FrankaRos`` class in your own Python script would look something li
 Using Franka without ROS
 ========================
 
-.. note:: **This method is deprecated**. It is now recommended you use ROS to control the Arm using a Python publisher. It is best you stick with the method detailed above.
+.. note:: **This method is deprecated**. It is now recommended you use ROS to control the Arm using a Python publisher, such as the way described above.
 
 Setting Permissions
 -------------------
@@ -136,9 +155,10 @@ Python-Franka API with ``franka_control.py``
 
 The Python-FRANKA module (``franka_control.py``) is designed to allow easy access to the C++ controller programs provided by Petar. The provided Python module is structured as follows.
 
-.. automodule:: franka.archive.franka_control
-  :members:
-  :undoc-members:
+.. TODO
+.. .. automodule:: franka.archive.franka_control
+..   :members:
+..   :undoc-members:
 
 **Example**
 

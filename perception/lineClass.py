@@ -4,6 +4,9 @@ import numpy as np
 
 class Line:
     def __init__(self, x1, y1, x2, y2):
+        """
+        Holds the lines gradient, two points and some other information.
+        """
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
@@ -24,13 +27,13 @@ class Line:
 
     def draw(self, image, color=(0, 0, 255), thickness=2):
         """
-        Draws line onto image
+        Draws line onto an image.
         """
         cv2.line(image, (self.x1, self.y1), (self.x2, self.y2), color, thickness)
 
     def intersect(self, other):
         """
-        Finds intersections points between two lines
+        Finds intersections points between two lines.
         """
 
         if self.x * other.b == other.a * self.y:
@@ -45,7 +48,7 @@ class Line:
 
 def filterClose(lines, horizontal=True, threshold = 40):
     """
-    Filters close lines
+    Filters close lines.
     """
     if horizontal:
         item = 1
