@@ -152,7 +152,7 @@ Converting between Reference Frames
 Overview
 --------
 
-To be able to convert camera coordinates, provided by opencv tracking tools and other methods, we need to maintain a relationship between multiple reference frames. The key relationship is that which relates the camera reference frame and the robot base reference frame used by the frankalib controller. This relationship is maintained in a 4-by-4 transformation matrix, and is constructed using the following general formula:
+To be able to convert camera coordinates, provided by opencv tracking tools and other methods, we need to maintain a relationship between multiple reference frames. This relationship relates the camera reference frame and the robot base reference frame used by the libfranka controller. This relationship is maintained in a 4-by-4 transformation matrix, and is constructed using the following general formula:
 
 .. math::
 
