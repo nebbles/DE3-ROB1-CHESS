@@ -67,9 +67,9 @@ You can confirm that the workstation computer is able to communicate with the wo
 Removing or adding the Franka's end-effector (hand)
 ===================================================
 
-There are a number of steps that need to be done when removing or readding hte frnka hand ot the arm.
+To remove or add the hand, first shutdown the arm completely. Secure/remove the hand using both screws and the attach/detach the interface cable.
 
-.. todo:: add full guidance on how to add/remove hand and change settings for gravity compensation.
+Once the robot has restarted, go to the **Settings** in the web interface, go to **End effector** and set both the hand drop-down menu and toggle the gripper.
 
 .. _franka-emika-software:
 
