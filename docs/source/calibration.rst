@@ -12,15 +12,13 @@ Manual Calibration
 ==================
 
 In the interim before having complete automatic calibration, we used manual calibration to determine the position of the board relative to the FRANKA base frame. The FRANKA end-effector was moved to each of the inner corners as shown below and the positions reported by the FRANKA were then hardcoded.
-When the ``MotionPlanner`` class is instantiated, the calibration is automatically taken from the hardcode values in our ``__init__`` function. In an automatic version, the hardcoded values would be replaced by coordinates gathered by the calibration procedure.
 
 .. figure:: _static/calibration_positions.png
     :align: center
     :figwidth: 30 em
+    :figclass: align-center
 
 When the ``MotionPlanner`` class is instantiated, the calibration is automatically taken from the hardcode values in our ``__init__`` function. In an automatic version, the hardcoded values would be replaced by coordinates gathered by the calibration procedure.
-
-    :figclass: align-center
 
 4 vectors are calculated from this information, along the x and y axis of the board:
 
@@ -38,28 +36,27 @@ The x and y vectors are averaged respectively to give overall x and y directiona
 These are then divided by 6 to give x and y unit vetors equivalent to a single board square.
 The H8 coordinate is stored and used as the starting point for all future location calculations.
 
-The coordinates of each square on the board are stored using 2 dictionaries, one for the numbers and one for the letters in AN. These locations are found by multiplying the unit vectors appropriately. For example, ``f`` is found by adding 2.5 times ``x_unit_vector`` to the H8 coordinate.
+The minimum z value of the board is hardcoded when manually moving the end-effector around. This value is then used to hardcode a hover height, rest position and deadzone location as global variables.
 
 Derived positions:
 
 .. figure:: _static/derived_positions.png
     :align: center
     :figwidth: 30 em
+    :figclass: align-center
 
 The coordinates of each square on the board are stored using 2 dictionaries, one for the numbers and one for the letters in algebraic notation. These locations are found by multiplying the unit vectors appropriately. For example, ``f`` is found by adding 2.5 times ``x_unit_vector`` to the H8 coordinate.
 
-.. literalinclude:: ../../motion.py
+-.. literalinclude:: ../../motion.py
    :lines: 87-105
 
 Hardcoded width values were used for the gripping width, whilst the ``board_z_max`` was used to derive the correct height at which to pick up each piece.
 
-
-The ``x,y,z`` coordinates to pick up each piece were also stored in a global dictionary. Hardcoded width values were used for the gripping width, whilst the ``board_z_max`` was used to derive the correct height at which to pick up each piece.
+Automated Calibration
+==================
 
 To advance beyond the manual hardcoded approach described above, a system was devised whereby the FRANKA end-effector could be placed in the centre of the field of view of the camera, allowing it to automatically calibrate itself from predetermined controlled motions.
 To calibrate the chess board, image recognition techniques described in the Perception module were used to relate the Franka base frame to the camera. A trackable marker located on the robot end-effector allowed the camera to locate the arm in space as it moved between 8 vertices of a cube (built around the starting position of the end-effector).
-
-To advance beyond the manual hardcoded approach described above we devised a system whereby we could place the the FRANKA end-effector in the centre of the field of view of our camera, and allow it to automatically calibrate itself off some small controlled motions.
 
 The ``generate_cube`` function generates an array of 9 ``x, y, z`` coordinates for calibration based on an end-effector (1 x 3 array) input position followed by the 8 coordinates of the each vertex of the cube.
 
