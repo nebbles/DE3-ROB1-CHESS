@@ -23,7 +23,7 @@
 - Sanish Mistry ([@sanish96](https://github.com/sanish96))
 - Leah Pattison ([@leahpattison](https://github.com/leahpattison))
 - Paolo Ruegg ([@pa17](https://github.com/pa17))
-- Sylvia Zhang
+- Sylvia Zhang ([@SylviaZhanggg](https://github.com/SylviaZhanggg))
 
 ## Clone the repository
 
