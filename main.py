@@ -8,7 +8,6 @@ from perception.mainDetect import Perception
 from chess.engine import ChessEngine
 from franka.franka_control_ros import FrankaRos
 from motion import MotionPlanner
-from chess.chess_clock.clockTest import ClockFeed
 # noinspection PyUnresolvedReferences
 import rospy
 
