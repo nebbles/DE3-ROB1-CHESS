@@ -10,6 +10,7 @@ GitHub and Git
 * The super simple beginners guide to Git: http://rogerdudler.github.io/git-guide/
 * Understanding the workflow of git version control: https://www.git-tower.com/learn/cheat-sheets/vcs-workflow
 * Guidance to git commands you may need in the command line: https://www.git-tower.com/blog/git-cheat-sheet/
+* Guidance to git commands - The Ultimate Guide: https://acompiler.com/git-commands/
 
 Python
 ======
